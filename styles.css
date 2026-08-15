@@ -170,12 +170,12 @@ img {
 .visual-panel {
   align-items: flex-start;
   justify-content: center;
-  padding: 120px var(--panel-x) 70px;
+  padding: 112px var(--panel-x) 48px;
 }
 
 .media-frame {
   width: 100%;
-  height: min(calc((100vw - (var(--panel-x) * 2)) * 0.5625), calc(100svh - 220px));
+  height: min(calc((100vw - (var(--panel-x) * 2)) * 0.5625), calc(100svh - 172px));
   min-height: 420px;
   margin: 0;
   overflow: hidden;
@@ -288,12 +288,11 @@ img {
 }
 
 .footer-panel {
-  min-height: 100svh;
   position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 100px 160px 80px;
+  padding: 80px 160px 56px;
   scroll-snap-align: none;
   scroll-snap-stop: normal;
 }
@@ -351,7 +350,7 @@ img {
   font-size: 20px;
   font-weight: 510;
   line-height: 1.2;
-  text-transform: lowercase;
+  text-transform: uppercase;
 }
 
 .footer-heading-group h2 {
@@ -363,6 +362,11 @@ img {
 
 .footer-column {
   gap: 15px;
+}
+
+.footer-contact,
+.footer-archive {
+  padding-top: 83px;
 }
 
 .footer-column h2 {
@@ -423,13 +427,14 @@ img {
   }
 
   .visual-panel {
-    padding-top: 100px;
+    padding-top: 96px;
+    padding-bottom: 48px;
   }
 
   .media-frame {
     width: 100%;
-    height: min(calc((100vw - (var(--panel-x) * 2)) * 0.9756), calc(100svh - 200px));
-    min-height: 520px;
+    height: calc(100svh - 144px);
+    min-height: 0;
   }
 
   .category-panel {
@@ -452,7 +457,7 @@ img {
   }
 
   .footer-panel {
-    padding: 100px 48px 60px;
+    padding: 72px 48px 48px;
   }
 
   .footer-grid {
@@ -535,14 +540,14 @@ img {
   }
 
   .visual-panel {
-    padding-top: 80px;
-    padding-bottom: 80px;
+    padding-top: 76px;
+    padding-bottom: 48px;
   }
 
   .media-frame {
     width: 100%;
-    height: min(calc((100vw - (var(--panel-x) * 2)) * 1.4286), calc(100svh - 160px));
-    min-height: 420px;
+    height: calc(100svh - 104px);
+    min-height: 0;
   }
 
   .category-panel {
@@ -591,7 +596,7 @@ img {
 
   .footer-panel {
     align-items: flex-start;
-    padding: 100px 20px 60px;
+    padding: 72px 20px 48px;
   }
 
   .footer-content {
@@ -629,6 +634,11 @@ img {
     gap: 14px;
   }
 
+  .footer-contact,
+  .footer-archive {
+    padding-top: 0;
+  }
+
   .footer-column a {
     font-size: 14px;
   }
@@ -655,7 +665,7 @@ img {
   }
 
   .media-frame {
-    min-height: 380px;
+    min-height: 0;
   }
 }
 
