@@ -13,12 +13,12 @@
     mobileMenu.classList.remove("is-open");
   };
 
-  const scrollToPanel = (hash) => {
+  const scrollToPanel = (hash, behavior = prefersReducedMotion ? "auto" : "smooth") => {
     const target = document.querySelector(hash);
     if (!target) return;
     scroller?.classList.toggle("is-footer-free", hash === "#archive");
     target.scrollIntoView({
-      behavior: prefersReducedMotion ? "auto" : "smooth",
+      behavior,
       block: "start",
     });
   };
@@ -32,6 +32,10 @@
       scrollToPanel(hash);
     });
   });
+
+  if (scroller && window.location.hash) {
+    requestAnimationFrame(() => scrollToPanel(window.location.hash, "auto"));
+  }
 
   menuButton?.addEventListener("click", () => {
     if (!mobileMenu) return;
