@@ -37,7 +37,8 @@ body {
   word-break: keep-all;
 }
 
-body.works-page {
+body.works-page,
+body.project-page {
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -486,6 +487,91 @@ img {
   padding-bottom: 100px;
 }
 
+.project-detail-main {
+  min-height: 100svh;
+  background: var(--background);
+}
+
+.project-detail-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 160px var(--panel-x) 0;
+}
+
+.project-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.project-title-group h1 {
+  margin: 0;
+  color: #000000;
+  font-family: "Apple SD Gothic Neo", var(--font-system);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.project-description {
+  width: min(790px, 100%);
+  margin: 0;
+  color: #000000;
+  font-family: "Apple SD Gothic Neo", var(--font-system);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.project-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  margin: 0;
+  padding: 0;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 510;
+  line-height: 1.2;
+}
+
+.project-meta-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.project-meta dt,
+.project-meta dd {
+  margin: 0;
+}
+
+.project-image-stack {
+  display: flex;
+  flex-direction: column;
+  padding: 120px var(--panel-x);
+}
+
+.project-image-frame {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #000000;
+}
+
+.project-image-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.project-detail-footer {
+  padding-top: 100px;
+  padding-bottom: 100px;
+}
+
 @media (max-width: 1099px) {
   :root {
     --panel-x: 48px;
@@ -579,6 +665,28 @@ img {
   }
 
   .works-footer {
+    padding-top: 84px;
+    padding-bottom: 72px;
+  }
+
+  .project-detail-hero {
+    padding-top: 144px;
+  }
+
+  .project-title-group h1 {
+    font-size: 28px;
+  }
+
+  .project-description {
+    font-size: 15px;
+  }
+
+  .project-image-stack {
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+
+  .project-detail-footer {
     padding-top: 84px;
     padding-bottom: 72px;
   }
@@ -792,6 +900,41 @@ img {
   }
 
   .works-footer {
+    padding-top: 72px;
+    padding-bottom: 48px;
+  }
+
+  .project-detail-hero {
+    gap: 32px;
+    padding-top: 104px;
+  }
+
+  .project-title-group {
+    gap: 24px;
+  }
+
+  .project-title-group h1 {
+    font-size: 22px;
+    line-height: 1.32;
+  }
+
+  .project-description {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .project-meta {
+    flex-direction: column;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .project-image-stack {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+
+  .project-detail-footer {
     padding-top: 72px;
     padding-bottom: 48px;
   }
