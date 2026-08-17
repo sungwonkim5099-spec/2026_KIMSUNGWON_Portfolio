@@ -20,7 +20,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Responsive Web",
     image: "assets/works/calmato.png",
     imageAlt: "Calmato project preview",
-    href: "calmato",
+    href: "calmato/",
     nodeId: "288:460",
   },
   {
@@ -37,7 +37,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Mobile App Design",
     image: "assets/works/beerby.jpg",
     imageAlt: "Beerby project preview",
-    href: "beerby",
+    href: "beerby/",
     nodeId: "288:462",
   },
   {
@@ -45,7 +45,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Mobile App Design",
     image: "assets/works/on-the-trip.png",
     imageAlt: "On The Trip project preview",
-    href: "onthetrip",
+    href: "onthetrip/",
     nodeId: "288:463",
   },
   {
