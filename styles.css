@@ -750,7 +750,7 @@ img {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 833px) {
   :root {
     --panel-x: 20px;
     --header-height: 72px;
@@ -769,10 +769,9 @@ img {
   }
 
   .nav-logo {
-    position: fixed;
-    top: calc(var(--header-height) / 2);
-    left: 50vw;
-    transform: translate(-50%, -50%);
+    position: static;
+    justify-self: auto;
+    transform: none;
   }
 
   .mobile-menu-button {
