@@ -185,15 +185,15 @@ img {
 }
 
 .visual-panel {
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 0 var(--panel-x);
+  padding: calc(var(--header-height) + 20px) var(--panel-x) 60px;
 }
 
 .media-frame {
   width: 100%;
-  height: min(calc((100vw - (var(--panel-x) * 2)) * 0.5625), calc(100svh - 172px));
-  min-height: 420px;
+  height: 720px;
+  min-height: 0;
   margin: 0;
   overflow: hidden;
   background: #000000;
@@ -204,8 +204,8 @@ img {
 .hero-video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center 55%;
+  object-fit: cover;
+  object-position: center center;
 }
 
 .video-fallback,
@@ -590,7 +590,7 @@ img {
   padding-bottom: 100px;
 }
 
-@media (max-width: 1099px) {
+@media (max-width: 1439px) {
   :root {
     --panel-x: 48px;
     --header-height: 88px;
@@ -613,21 +613,20 @@ img {
   }
 
   .visual-panel {
-    justify-content: flex-start;
-    padding-top: var(--header-height);
+    padding-top: calc(var(--header-height) + 12px);
     padding-bottom: 56px;
   }
 
   .media-frame {
     width: 100%;
-    height: calc(100svh - var(--header-height) - 56px);
+    height: 720px;
     min-height: 0;
   }
 
   .media-frame img,
   .hero-video {
     object-fit: cover;
-    object-position: center 55%;
+    object-position: center center;
   }
 
   .category-panel {
@@ -751,7 +750,7 @@ img {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 833px) {
   :root {
     --panel-x: 20px;
     --header-height: 72px;
@@ -813,21 +812,20 @@ img {
   }
 
   .visual-panel {
-    justify-content: flex-start;
-    padding-top: var(--header-height);
+    padding-top: calc(var(--header-height) + 8px);
     padding-bottom: 32px;
   }
 
   .media-frame {
     width: 100%;
-    height: calc(100svh - var(--header-height) - 32px);
+    height: 500px;
     min-height: 0;
   }
 
   .media-frame img,
   .hero-video {
     object-fit: cover;
-    object-position: center 55%;
+    object-position: center center;
   }
 
   .category-panel {
