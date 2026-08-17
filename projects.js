@@ -20,7 +20,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Responsive Web",
     image: "assets/works/calmato.png",
     imageAlt: "Calmato project preview",
-    href: "#visual",
+    href: "calmato",
     nodeId: "288:460",
   },
   {
