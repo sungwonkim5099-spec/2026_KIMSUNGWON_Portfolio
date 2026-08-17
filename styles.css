@@ -185,9 +185,9 @@ img {
 }
 
 .visual-panel {
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 112px var(--panel-x) 48px;
+  padding: 0 var(--panel-x);
 }
 
 .media-frame {
@@ -225,7 +225,7 @@ img {
 .category-panel {
   align-items: center;
   justify-content: center;
-  padding: 80px var(--panel-x);
+  padding: 140px var(--panel-x);
 }
 
 .category-stack {
@@ -241,7 +241,7 @@ img {
   place-items: center;
   color: #000000;
   font-size: 110px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
@@ -309,7 +309,7 @@ img {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 80px 160px 56px;
+  padding: 100px var(--panel-x);
   scroll-snap-align: none;
   scroll-snap-stop: normal;
 }
@@ -319,25 +319,26 @@ img {
 }
 
 .footer-content {
-  width: min(1120px, 100%);
+  width: 100%;
 }
 
 .footer-divider {
   width: 100%;
   height: 2px;
+  margin-bottom: 40px;
   background: var(--line);
 }
 
 .footer-grid {
   min-height: 255px;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 220px 220px;
+  grid-template-columns: 170px minmax(0, 1fr) 180px 132px 180px;
+  grid-template-rows: 154px 21px;
   grid-template-areas:
-    "identity contact archive"
-    "note note .";
-  column-gap: 90px;
-  row-gap: 58px;
-  padding-top: 60px;
+    "identity . contact . archive"
+    "note note note note note";
+  column-gap: 0;
+  row-gap: 80px;
 }
 
 .footer-identity {
@@ -345,12 +346,12 @@ img {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 44px;
+  gap: 20px;
 }
 
 .footer-mark {
-  width: 31px;
-  height: 39px;
+  width: 30px;
+  height: 38px;
 }
 
 .footer-heading-group,
@@ -362,12 +363,16 @@ img {
 
 .footer-label,
 .footer-column h2 {
-  margin: 0 0 22px;
+  margin: 0;
   color: var(--accent);
   font-size: 20px;
   font-weight: 510;
   line-height: 1.2;
   text-transform: uppercase;
+}
+
+.footer-label {
+  margin-bottom: 20px;
 }
 
 .footer-heading-group h2 {
@@ -378,16 +383,16 @@ img {
 }
 
 .footer-column {
-  gap: 15px;
+  gap: 14px;
 }
 
 .footer-contact,
 .footer-archive {
-  padding-top: 83px;
+  padding-top: 58px;
 }
 
 .footer-column h2 {
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 .footer-column a {
@@ -406,11 +411,12 @@ img {
 
 .footer-note {
   grid-area: note;
+  max-width: 750px;
   margin: 0;
   color: var(--foreground-muted);
   font-size: 18px;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 .footer-note > span:first-child {
@@ -606,8 +612,8 @@ img {
   }
 
   .visual-panel {
-    padding-top: 96px;
-    padding-bottom: 48px;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .media-frame {
@@ -617,13 +623,17 @@ img {
   }
 
   .category-panel {
-    padding-top: 100px;
-    padding-bottom: 100px;
+    padding-top: 120px;
+    padding-bottom: 120px;
+  }
+
+  .category-stack {
+    gap: 10px;
   }
 
   .category-link {
     height: 191px;
-    font-size: 110px;
+    font-size: 100px;
   }
 
   .about-panel {
@@ -636,13 +646,22 @@ img {
   }
 
   .footer-panel {
-    padding: 72px 48px 48px;
+    padding: 60px 48px;
   }
 
   .footer-grid {
-    grid-template-columns: minmax(170px, 1fr) minmax(170px, 1fr) minmax(160px, 1fr);
-    column-gap: 34px;
-    row-gap: 50px;
+    min-height: 218px;
+    grid-template-columns: 160px minmax(0, 1fr) 155px 75px 152px;
+    grid-template-rows: 137px 21px;
+    grid-template-areas:
+      "identity . contact . archive"
+      "note note note note note";
+    row-gap: 60px;
+  }
+
+  .footer-mark {
+    width: 26px;
+    height: 32px;
   }
 
   .footer-label,
@@ -650,12 +669,33 @@ img {
     font-size: 18px;
   }
 
+  .footer-label {
+    margin-bottom: 18px;
+  }
+
   .footer-heading-group h2 {
     font-size: 16px;
   }
 
+  .footer-column {
+    gap: 13px;
+  }
+
+  .footer-contact,
+  .footer-archive {
+    padding-top: 52px;
+  }
+
+  .footer-column h2 {
+    margin-bottom: 4px;
+  }
+
   .footer-column a {
     font-size: 14px;
+  }
+
+  .footer-note {
+    max-width: 656px;
   }
 
   .project-gallery {
@@ -676,8 +716,8 @@ img {
   }
 
   .works-footer {
-    padding-top: 84px;
-    padding-bottom: 72px;
+    padding-top: 60px;
+    padding-bottom: 60px;
   }
 
   .project-detail-hero {
@@ -698,8 +738,8 @@ img {
   }
 
   .project-detail-footer {
-    padding-top: 84px;
-    padding-bottom: 72px;
+    padding-top: 60px;
+    padding-bottom: 60px;
   }
 }
 
@@ -765,8 +805,8 @@ img {
   }
 
   .visual-panel {
-    padding-top: 76px;
-    padding-bottom: 48px;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .media-frame {
@@ -787,11 +827,11 @@ img {
 
   .category-link {
     height: 80px;
-    font-size: 60px;
+    font-size: 50px;
   }
 
   .about-panel {
-    align-items: flex-start;
+    align-items: center;
     padding-top: 100px;
     padding-bottom: 100px;
   }
@@ -821,7 +861,7 @@ img {
 
   .footer-panel {
     align-items: flex-start;
-    padding: 72px 20px 48px;
+    padding: 60px 20px;
   }
 
   .footer-content {
@@ -829,15 +869,14 @@ img {
   }
 
   .footer-grid {
-    min-height: auto;
+    min-height: 491px;
     display: flex;
     flex-direction: column;
-    gap: 38px;
-    padding-top: 40px;
+    gap: 40px;
   }
 
   .footer-identity {
-    gap: 39px;
+    gap: 20px;
   }
 
   .footer-mark {
@@ -847,8 +886,11 @@ img {
 
   .footer-label,
   .footer-column h2 {
-    margin-bottom: 15px;
     font-size: 18px;
+  }
+
+  .footer-label {
+    margin-bottom: 18px;
   }
 
   .footer-heading-group h2 {
@@ -856,7 +898,7 @@ img {
   }
 
   .footer-column {
-    gap: 14px;
+    gap: 13px;
   }
 
   .footer-contact,
@@ -871,6 +913,7 @@ img {
   .footer-note {
     align-self: flex-start;
     max-width: 350px;
+    margin-top: 11px;
     font-size: 14px;
     line-height: 1.4;
   }
@@ -913,8 +956,8 @@ img {
   }
 
   .works-footer {
-    padding-top: 72px;
-    padding-bottom: 48px;
+    padding-top: 60px;
+    padding-bottom: 60px;
   }
 
   .project-detail-hero {
@@ -948,14 +991,14 @@ img {
   }
 
   .project-detail-footer {
-    padding-top: 72px;
-    padding-bottom: 48px;
+    padding-top: 60px;
+    padding-bottom: 60px;
   }
 }
 
 @media (max-width: 360px) {
   .category-link {
-    font-size: 54px;
+    font-size: 44px;
   }
 
   .media-frame {
