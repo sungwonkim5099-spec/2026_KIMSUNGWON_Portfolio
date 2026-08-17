@@ -1042,3 +1042,28 @@ img {
   height: auto;
   object-fit: contain;
 }
+/* 기본: Desktop + Tablet */
+
+.project-description-mobile {
+
+  display: none;
+
+}
+
+/* Mobile: 833px 이하 */
+
+@media (max-width: 833px) {
+
+  .project-description-desktop {
+
+    display: none;
+
+  }
+
+  .project-description-mobile {
+
+    display: block;
+
+  }
+
+}
