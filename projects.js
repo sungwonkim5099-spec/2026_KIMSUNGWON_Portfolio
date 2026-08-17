@@ -28,7 +28,8 @@ window.PORTFOLIO_PROJECTS = [
     description: "Youtube",
     image: "assets/works/youtube-calmato.png",
     imageAlt: "Youtube Calmato project preview",
-    href: "#archive",
+    href: "https://youtube.com/channel/UCyv16-9W5sOhQr-svxCJ1qQ?si=epe7wnfn21DEp5SN",
+    external: true,
     nodeId: "288:461",
   },
   {
