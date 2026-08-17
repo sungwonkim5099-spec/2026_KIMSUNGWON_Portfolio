@@ -4,7 +4,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "BI · Personal Branding",
     image: "assets/works/ace.png",
     imageAlt: "ACE project preview",
-    href: "#visual",
+    href: "ace/",
     nodeId: "288:458",
   },
   {
