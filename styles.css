@@ -941,12 +941,12 @@ img {
   }
 
   .project-gallery {
-    padding-top: 104px;
+    padding-top: 120px;
   }
 
   .project-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 48px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px 16px;
   }
 
   .project-card {
@@ -954,15 +954,17 @@ img {
   }
 
   .project-media {
-    border-radius: 6px;
+    height: 196px;
+    aspect-ratio: auto;
+    border-radius: 8px;
   }
 
   .project-info {
-    gap: 6px;
+    gap: 4px;
   }
 
   .project-info h2 {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .project-info p {
