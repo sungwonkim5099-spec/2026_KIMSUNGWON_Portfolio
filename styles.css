@@ -1036,3 +1036,9 @@ img {
     animation-iteration-count: 1 !important;
   }
 }
+.project-image-frame video {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
