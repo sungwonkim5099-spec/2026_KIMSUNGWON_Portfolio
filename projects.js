@@ -37,7 +37,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Mobile App Design",
     image: "assets/works/beerby.jpg",
     imageAlt: "Beerby project preview",
-    href: "beerby",
+    href: "Beerby",
     nodeId: "288:462",
   },
   {
@@ -45,7 +45,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Mobile App Design",
     image: "assets/works/on-the-trip.png",
     imageAlt: "On The Trip project preview",
-    href: "on the trip",
+    href: "On The Trip",
     nodeId: "288:463",
   },
   {
