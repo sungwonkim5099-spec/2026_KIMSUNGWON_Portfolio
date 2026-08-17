@@ -3,8 +3,63 @@
   const menuButton = document.querySelector("[data-menu-toggle]");
   const mobileMenu = document.querySelector("[data-mobile-menu]");
   const heroVideo = document.querySelector("[data-hero-video]");
+  const projectGrid = document.querySelector("[data-project-grid]");
+  const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
   const links = [...document.querySelectorAll("[data-snap-link]")];
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const resolveProjectPath = (value, rootPrefix) => {
+    if (!value) return "#";
+    if (value.startsWith("#")) return `${rootPrefix}${value}`;
+    if (/^(https?:|mailto:|tel:|\/|\.{1,2}\/)/.test(value)) return value;
+    return `${rootPrefix}${value}`;
+  };
+
+  const renderProjectCards = () => {
+    if (!projectGrid || projects.length === 0) return;
+
+    const rootPrefix = projectGrid.dataset.projectRoot || "";
+    const fragment = document.createDocumentFragment();
+
+    projects.forEach((project, index) => {
+      const card = document.createElement("a");
+      const href = resolveProjectPath(project.href, rootPrefix);
+      card.className = "project-card";
+      card.href = href;
+
+      if (project.nodeId) card.dataset.nodeId = project.nodeId;
+      if (/^https?:/.test(project.href || "")) {
+        card.target = "_blank";
+        card.rel = "noreferrer";
+      }
+
+      const figure = document.createElement("figure");
+      figure.className = "project-media";
+
+      const image = document.createElement("img");
+      image.src = resolveProjectPath(project.image, rootPrefix);
+      image.alt = project.imageAlt || `${project.title} project preview`;
+      image.loading = project.loading || (index < 2 ? "eager" : "lazy");
+
+      const info = document.createElement("div");
+      info.className = "project-info";
+
+      const title = document.createElement("h2");
+      title.textContent = project.title;
+
+      const description = document.createElement("p");
+      description.textContent = project.description;
+
+      figure.append(image);
+      info.append(title, description);
+      card.append(figure, info);
+      fragment.append(card);
+    });
+
+    projectGrid.replaceChildren(fragment);
+  };
+
+  renderProjectCards();
 
   const closeMenu = () => {
     if (!menuButton || !mobileMenu) return;
