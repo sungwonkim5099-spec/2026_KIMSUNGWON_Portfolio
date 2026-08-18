@@ -1075,3 +1075,22 @@ img {
   }
 
 }
+/* HOME MOBILE HERO VIDEO */
+@media (max-width: 833px) {
+
+  .visual-panel .media-frame {
+    width: 100% !important;
+    height: 85svh !important;
+    min-height: 85svh !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  .visual-panel .media-frame .hero-video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+
+}
