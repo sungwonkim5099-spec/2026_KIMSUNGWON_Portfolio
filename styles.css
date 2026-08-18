@@ -191,13 +191,21 @@ img {
 }
 
 .media-frame {
+
   width: 100%;
-  height: min(calc((100vw - (var(--panel-x) * 2)) * 0.5625), calc(100svh - 172px));
-  min-height: min(420px, calc(100svh - var(--header-height) - 80px));
+
+  height: calc(100svh - var(--header-height) - 80px);
+
+  min-height: calc(100svh - var(--header-height) - 80px);
+
   margin: 0;
+
   overflow: hidden;
+
   background: #000000;
+
   position: relative;
+
 }
 
 .media-frame img,
@@ -1063,27 +1071,6 @@ img {
   .project-description-mobile {
 
     display: block;
-
-  }
-
-}
-@media (max-width: 833px) {
-
-  .project-image-frame {
-
-    height: 100svh;
-
-    overflow: hidden;
-
-  }
-
-  .project-image-frame video {
-
-    width: 100%;
-
-    height: 100%;
-
-    object-fit: cover;
 
   }
 
