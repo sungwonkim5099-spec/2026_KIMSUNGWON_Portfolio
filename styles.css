@@ -1094,3 +1094,133 @@ img {
   }
 
 }
+/* ===== MOBILE MENU ===== */
+@media (max-width: 833px) {
+
+  /* 헤더 */
+  .site-header {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* 펼쳐지는 메뉴 */
+  .mobile-menu {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+
+    margin: 0;
+    padding: 28px var(--panel-x) 36px;
+
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 0;
+    z-index: 999;
+  }
+
+  /* 메뉴 글자 */
+  .mobile-menu a {
+    display: block;
+    text-align: right;
+  }
+
+
+  /* ======================
+     햄버거 → X
+  ====================== */
+
+  .mobile-menu-button {
+    position: relative;
+    width: 40px;
+    height: 40px;
+  }
+
+  /* 메뉴가 열렸을 때 기존 햄버거 이미지 숨김 */
+  .mobile-menu-button[aria-expanded="true"] img {
+    opacity: 0;
+  }
+
+  /* X 선 두 개 */
+  .mobile-menu-button::before,
+  .mobile-menu-button::after {
+    content: "";
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 28px;
+    height: 3px;
+
+    background: #000;
+    border-radius: 999px;
+
+    opacity: 0;
+    transform-origin: center;
+  }
+
+  .mobile-menu-button[aria-expanded="true"]::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .mobile-menu-button[aria-expanded="true"]::after {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+}
+@media (max-width: 833px) {
+
+  /* 헤더는 투명하게 */
+  .site-header {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    z-index: 1002;
+  }
+
+  /* 메뉴 */
+  .mobile-menu {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+
+    margin: 0;
+    padding: 28px var(--panel-x) 36px;
+
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+
+    border: 0;
+    z-index: 1002;
+  }
+
+  /* 메뉴가 열렸을 때 헤더부터 이어지는 하나의 블러 레이어 */
+ .site-header:has(.mobile-menu[aria-hidden="false"])::before {
+  content: "";
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100vw;
+  height: 250px;
+
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  z-index: -1;
+}
+
+  .mobile-menu a {
+    display: block;
+    text-align: right;
+  }
+}
