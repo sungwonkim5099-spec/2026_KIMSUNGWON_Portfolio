@@ -1067,3 +1067,24 @@ img {
   }
 
 }
+@media (max-width: 833px) {
+
+  .project-image-frame {
+
+    height: 100svh;
+
+    overflow: hidden;
+
+  }
+
+  .project-image-frame video {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+  }
+
+}
