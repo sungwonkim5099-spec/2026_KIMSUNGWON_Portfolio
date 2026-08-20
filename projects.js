@@ -49,7 +49,7 @@ window.PORTFOLIO_PROJECTS = [
     nodeId: "288:463",
   },
   {
-    title: "Zippo",
+    title: "Zippo X Old School",
     description: "PACKAGE · GRAPHIC DESIGN",
     image: "assets/works/zippo.jpg",
     imageAlt: "Zippo project preview",
@@ -61,7 +61,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Responsive Web",
     image: "assets/works/demolition-corps.png",
     imageAlt: "철거병단 project preview",
-    href: "demolition-corps/",
+    href: "철거병단",
     nodeId: "288:465",
   },
 ];

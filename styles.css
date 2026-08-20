@@ -912,7 +912,7 @@ img {
   }
 
   .footer-label {
-    margin-bottom: 18px;
+    margin-bottom: 10px;
   }
 
   .footer-heading-group h2 {
@@ -920,7 +920,7 @@ img {
   }
 
   .footer-column {
-    gap: 13px;
+    gap: 10px;
   }
 
   .footer-contact,
