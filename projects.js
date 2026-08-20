@@ -50,10 +50,10 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Zippo",
-    description: "UX/UI· Responsive Web",
+    description: "PACKAGE · GRAPHIC DESIGN",
     image: "assets/works/zippo.jpg",
     imageAlt: "Zippo project preview",
-    href: "#visual",
+    href: "zippo/",
     nodeId: "288:464",
   },
   {
@@ -61,7 +61,7 @@ window.PORTFOLIO_PROJECTS = [
     description: "UX/UI· Responsive Web",
     image: "assets/works/demolition-corps.png",
     imageAlt: "철거병단 project preview",
-    href: "#visual",
+    href: "demolition-corps/",
     nodeId: "288:465",
   },
 ];
