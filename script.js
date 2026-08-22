@@ -278,16 +278,19 @@
     });
 
     const setElsewhereSnapIndex = (nextIndex) => {
-      elsewhereSnapDots.forEach((dot, index) => {
-        const isActive = index === nextIndex;
-        dot.classList.toggle("is-active", isActive);
-        dot.setAttribute("aria-current", isActive ? "true" : "false");
-      });
-
-      elsewhereSnapPanels.forEach((panel) => {
-        panel.classList.toggle("is-visible", Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex);
-      });
-    };
+  elsewhereSnapDots.forEach((dot, index) => {
+    const isActive = index === nextIndex;
+    dot.classList.toggle("is-active", isActive);
+    dot.setAttribute("aria-current", isActive ? "true" : "false");
+  });
+  elsewhereSnapPanels.forEach((panel) => {
+    panel.classList.toggle(
+      "is-visible",
+      Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex
+    );
+  });
+  elsewhereSwitcher?.classList.toggle("is-hidden", nextIndex !== 0);
+};
 
     if (elsewhereSnapRoot && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
       elsewhereSnapDots.forEach((dot) => {
