@@ -218,12 +218,21 @@
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
+    let elsewhereSlideTimer = 0;
 
     const setElsewherePanel = (nextPanel) => {
       if (!elsewhereSwitcher || !elsewhereTabs.length || !elsewherePanels.length) return;
       if (!["calmato", "unsplash"].includes(nextPanel) || nextPanel === elsewhereActivePanel) return;
 
       const isMovingToRight = nextPanel === "unsplash";
+      elsewhereSwitcher.dataset.slideDirection = isMovingToRight ? "right" : "left";
+      elsewhereSwitcher.classList.add("is-sliding");
+      elsewhereSwitcher.style.setProperty("--elsewhere-active-index", nextPanel === "calmato" ? "0" : "1");
+      window.clearTimeout(elsewhereSlideTimer);
+      elsewhereSlideTimer = window.setTimeout(() => {
+        elsewhereSwitcher.classList.remove("is-sliding");
+      }, prefersReducedMotion ? 0 : 440);
+
       if (elsewherePanelStage) {
         elsewherePanelStage.style.minHeight = `${elsewherePanelStage.offsetHeight}px`;
         window.clearTimeout(elsewherePanelHeightTimer);
@@ -249,6 +258,7 @@
       });
     };
 
+    elsewhereSwitcher?.style.setProperty("--elsewhere-active-index", "0");
     elsewhereTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         setElsewherePanel(tab.dataset.elsewhereTab || "calmato");
