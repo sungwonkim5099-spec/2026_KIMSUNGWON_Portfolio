@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="ko" data-theme="light">
+<html lang="ko">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="light dark">
     <title>Kim SungWon Portfolio - Snap Home</title>
     <meta
       name="description"
       content="Designer Kim SungWon portfolio home screen with Apple system inspired responsive snap scrolling."
     >
     <meta name="portfolio-version" content="2026-08-18-project-data">
+    <script src="./script.js?v=20260818-project-data"></script>
     <link rel="stylesheet" href="./styles.css?v=20260818-project-data">
-    <script defer src="./script.js?v=20260818-project-data"></script>
   </head>
   <body>
     <header class="site-header" data-nav>
@@ -164,5 +164,25 @@ and design forms and structures that come together as one clear message.
         </footer>
       </section>
     </main>
+
+<button
+  class="theme-toggle"
+  type="button"
+  aria-label="다크 모드로 전환"
+  data-theme-toggle
+>
+  <img
+    class="theme-icon theme-icon-sun"
+    src="./assets/icon-sun.png"
+    alt=""
+  >
+
+  <img
+    class="theme-icon theme-icon-moon"
+    src="./assets/icon-moon.png"
+    alt=""
+  >
+</button>
+
   </body>
 </html>
