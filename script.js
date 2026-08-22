@@ -220,6 +220,31 @@
     let elsewherePanelHeightTimer = 0;
     let elsewhereSlideTimer = 0;
 
+    const animateElsewhereIndicator = (nextPanel) => {
+      const indicator = elsewhereSwitcher?.querySelector(".elsewhere-switcher-indicator");
+      if (!indicator || typeof indicator.animate !== "function") return;
+
+      const fromIndex = elsewhereActivePanel === "unsplash" ? 1 : 0;
+      const toIndex = nextPanel === "unsplash" ? 1 : 0;
+      const travel = indicator.offsetWidth;
+      const fromX = fromIndex * travel;
+      const toX = toIndex * travel;
+
+      indicator.getAnimations().forEach((animation) => animation.cancel());
+      indicator.animate(
+        [
+          { transform: `translate3d(${fromX}px, 0, 0) scaleX(1)` },
+          { transform: `translate3d(${(fromX + toX) / 2}px, 0, 0) scaleX(1.08)`, offset: 0.52 },
+          { transform: `translate3d(${toX}px, 0, 0) scaleX(1)` },
+        ],
+        {
+          duration: 520,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "both",
+        }
+      );
+    };
+
     const setElsewherePanel = (nextPanel) => {
       if (!elsewhereSwitcher || !elsewhereTabs.length || !elsewherePanels.length) return;
       if (!["calmato", "unsplash"].includes(nextPanel) || nextPanel === elsewhereActivePanel) return;
@@ -227,10 +252,11 @@
       const isMovingToRight = nextPanel === "unsplash";
       elsewhereSwitcher.dataset.slideDirection = isMovingToRight ? "right" : "left";
       elsewhereSwitcher.classList.add("is-sliding");
+      animateElsewhereIndicator(nextPanel);
       window.clearTimeout(elsewhereSlideTimer);
       elsewhereSlideTimer = window.setTimeout(() => {
         elsewhereSwitcher.classList.remove("is-sliding");
-      }, prefersReducedMotion ? 0 : 440);
+      }, 520);
 
       if (elsewherePanelStage) {
         elsewherePanelStage.style.minHeight = `${elsewherePanelStage.offsetHeight}px`;

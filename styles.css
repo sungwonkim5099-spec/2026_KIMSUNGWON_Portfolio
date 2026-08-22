@@ -1848,7 +1848,6 @@ html[data-theme="dark"] .theme-toggle {
     --theme-toggle-scale: 1;
   }
 
-  .elsewhere-switcher-indicator,
   .elsewhere-panel,
   .calmato-video-frame::after,
   .calmato-video-frame iframe {
