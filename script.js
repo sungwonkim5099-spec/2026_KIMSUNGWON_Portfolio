@@ -42,6 +42,25 @@
     const links = [...document.querySelectorAll("[data-snap-link]")];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // Calmato YouTube videos: replace only url/title/description when updating the Elsewhere page.
+    const calmatoVideos = [
+      {
+        url: "https://www.youtube.com/watch?v=VIDEO_ID_01",
+        title: "Calmato Video 01",
+        description: "Replace this URL and title with a Calmato YouTube video.",
+      },
+      {
+        url: "https://youtu.be/VIDEO_ID_02",
+        title: "Calmato Video 02",
+        description: "YouTube watch and youtu.be links are both supported.",
+      },
+      {
+        url: "https://www.youtube.com/watch?v=VIDEO_ID_03",
+        title: "Calmato Video 03",
+        description: "The video will play inline inside this page.",
+      },
+    ];
+
     const ensureThemeToggle = () => {
       const existingToggle = document.querySelector("[data-theme-toggle]");
       if (existingToggle) return existingToggle;
@@ -121,6 +140,155 @@
     };
 
     renderProjectCards();
+
+    const getYouTubeId = (url) => {
+      if (!url) return "";
+
+      try {
+        const parsedUrl = new URL(url);
+        const host = parsedUrl.hostname.replace(/^www\./, "");
+
+        if (host === "youtu.be") return parsedUrl.pathname.split("/").filter(Boolean)[0] || "";
+        if (!host.includes("youtube.com")) return "";
+        if (parsedUrl.searchParams.has("v")) return parsedUrl.searchParams.get("v") || "";
+
+        const pathParts = parsedUrl.pathname.split("/").filter(Boolean);
+        const videoPathIndex = pathParts.findIndex((part) => ["embed", "shorts", "live"].includes(part));
+        return videoPathIndex >= 0 ? pathParts[videoPathIndex + 1] || "" : "";
+      } catch {
+        return "";
+      }
+    };
+
+    const renderCalmatoVideos = () => {
+      const videoGrid = document.querySelector("[data-calmato-video-grid]");
+      if (!videoGrid) return;
+
+      const fragment = document.createDocumentFragment();
+
+      calmatoVideos.forEach((video) => {
+        const videoId = getYouTubeId(video.url);
+        if (!videoId) return;
+
+        const card = document.createElement("article");
+        card.className = "calmato-video-card";
+
+        const frame = document.createElement("div");
+        frame.className = "calmato-video-frame";
+
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1&playsinline=1`;
+        iframe.title = video.title;
+        iframe.loading = "lazy";
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+        iframe.setAttribute("playsinline", "");
+
+        const info = document.createElement("div");
+        info.className = "calmato-video-info";
+
+        const title = document.createElement("h3");
+        title.textContent = video.title;
+
+        info.append(title);
+
+        if (video.description) {
+          const description = document.createElement("p");
+          description.textContent = video.description;
+          info.append(description);
+        }
+
+        frame.append(iframe);
+        card.append(frame, info);
+        fragment.append(card);
+      });
+
+      videoGrid.replaceChildren(fragment);
+    };
+
+    renderCalmatoVideos();
+
+    // Elsewhere switcher
+    const elsewhere = document.querySelector("[data-elsewhere]");
+    const elsewhereSwitcher = document.querySelector("[data-elsewhere-switcher]");
+    const elsewherePanelStage = document.querySelector("[data-elsewhere-panel-stage]");
+    const elsewhereTabs = [...document.querySelectorAll("[data-elsewhere-tab]")];
+    const elsewherePanels = [...document.querySelectorAll("[data-elsewhere-panel]")];
+    let elsewhereActivePanel = "calmato";
+    let elsewhereTouchStartX = 0;
+    let elsewhereTouchStartY = 0;
+    let elsewherePanelHeightTimer = 0;
+
+    const setElsewherePanel = (nextPanel) => {
+      if (!elsewhereSwitcher || !elsewhereTabs.length || !elsewherePanels.length) return;
+      if (!["calmato", "unsplash"].includes(nextPanel) || nextPanel === elsewhereActivePanel) return;
+
+      const isMovingToRight = nextPanel === "unsplash";
+      if (elsewherePanelStage) {
+        elsewherePanelStage.style.minHeight = `${elsewherePanelStage.offsetHeight}px`;
+        window.clearTimeout(elsewherePanelHeightTimer);
+        elsewherePanelHeightTimer = window.setTimeout(() => {
+          elsewherePanelStage.style.minHeight = "";
+        }, prefersReducedMotion ? 0 : 420);
+      }
+
+      elsewhereActivePanel = nextPanel;
+      elsewhereSwitcher.dataset.active = nextPanel;
+
+      elsewhereTabs.forEach((tab) => {
+        const isActive = tab.dataset.elsewhereTab === nextPanel;
+        tab.classList.toggle("is-active", isActive);
+        tab.setAttribute("aria-selected", String(isActive));
+      });
+
+      elsewherePanels.forEach((panel) => {
+        const isActive = panel.dataset.elsewherePanel === nextPanel;
+        panel.classList.toggle("is-active", isActive);
+        panel.classList.toggle("is-before", !isActive && isMovingToRight);
+        panel.setAttribute("aria-hidden", String(!isActive));
+      });
+    };
+
+    elsewhereTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        setElsewherePanel(tab.dataset.elsewhereTab || "calmato");
+      });
+
+      tab.addEventListener("keydown", (event) => {
+        if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+        event.preventDefault();
+        const nextPanel = event.key === "ArrowRight" ? "unsplash" : "calmato";
+        setElsewherePanel(nextPanel);
+        document.querySelector(`[data-elsewhere-tab="${nextPanel}"]`)?.focus();
+      });
+    });
+
+    elsewhere?.addEventListener(
+      "touchstart",
+      (event) => {
+        const touch = event.touches[0];
+        if (!touch) return;
+        elsewhereTouchStartX = touch.clientX;
+        elsewhereTouchStartY = touch.clientY;
+      },
+      { passive: true }
+    );
+
+    elsewhere?.addEventListener(
+      "touchend",
+      (event) => {
+        const touch = event.changedTouches[0];
+        if (!touch) return;
+
+        const deltaX = touch.clientX - elsewhereTouchStartX;
+        const deltaY = touch.clientY - elsewhereTouchStartY;
+        const isHorizontalSwipe = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4;
+        if (!isHorizontalSwipe) return;
+
+        setElsewherePanel(deltaX < 0 ? "unsplash" : "calmato");
+      },
+      { passive: true }
+    );
 
     const closeMenu = () => {
       if (!menuButton || !mobileMenu) return;

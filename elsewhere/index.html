@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Elsewhere - Kim SungWon Portfolio</title>
+    <meta
+      name="description"
+      content="Elsewhere channels and Calmato YouTube contents by designer Kim SungWon."
+    >
+    <meta name="portfolio-version" content="2026-08-18-project-data">
+    <script src="../script.js?v=20260818-project-data"></script>
+    <link rel="stylesheet" href="../styles.css?v=20260818-project-data">
+  </head>
+  <body class="elsewhere-page">
+    <header class="site-header" data-nav>
+      <nav class="nav-shell" aria-label="Portfolio navigation">
+        <div class="nav-group nav-primary">
+          <a href="../works/">works</a>
+          <a href="../#about">About</a>
+          <a href="./" aria-current="page">Elsewhere</a>
+        </div>
+
+        <a class="nav-logo" href="../" aria-label="Kim SungWon home">
+          <img src="../assets/nav-logo.svg" alt="">
+        </a>
+
+        <div class="nav-group nav-utility" aria-label="Utility links">
+          <a
+            class="icon-link"
+            href="https://youtube.com/channel/UCyv16-9W5sOhQr-svxCJ1qQ?si=cmL-SAkKw4Sa639q"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="YouTube - Calmato"
+          >
+            <img src="../assets/icon-youtube.svg" alt="">
+          </a>
+          <a
+            class="icon-link"
+            href="https://unsplash.com/ko/@kimsungwon"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Unsplash - Kim SungWon"
+          >
+            <img src="../assets/icon-profile.svg" alt="">
+          </a>
+        </div>
+
+        <button class="mobile-menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu">
+          <span class="sr-only">메뉴 열기</span>
+          <img src="../assets/mobile-menu.svg" alt="">
+        </button>
+      </nav>
+
+      <div class="mobile-menu" id="mobile-menu" data-mobile-menu aria-hidden="true">
+        <a href="../works/">works</a>
+        <a href="../#about">About</a>
+        <a href="./" aria-current="page">Elsewhere</a>
+      </div>
+    </header>
+
+    <main class="elsewhere-main" data-elsewhere>
+      <section class="elsewhere-content" aria-labelledby="elsewhere-page-title">
+        <h1 class="sr-only" id="elsewhere-page-title">Elsewhere</h1>
+
+        <!-- Elsewhere - Switcher -->
+        <div class="elsewhere-switcher" data-elsewhere-switcher data-active="calmato" role="tablist" aria-label="Elsewhere channels">
+          <span class="elsewhere-switcher-indicator" aria-hidden="true"></span>
+          <button
+            class="elsewhere-tab is-active"
+            type="button"
+            role="tab"
+            id="elsewhere-tab-calmato"
+            aria-selected="true"
+            aria-controls="elsewhere-panel-calmato"
+            data-elsewhere-tab="calmato"
+          >Calmato</button>
+          <button
+            class="elsewhere-tab"
+            type="button"
+            role="tab"
+            id="elsewhere-tab-unsplash"
+            aria-selected="false"
+            aria-controls="elsewhere-panel-unsplash"
+            data-elsewhere-tab="unsplash"
+          >Unsplash</button>
+        </div>
+
+        <div class="elsewhere-panel-stage" data-elsewhere-panel-stage>
+          <section
+            class="elsewhere-panel is-active"
+            id="elsewhere-panel-calmato"
+            role="tabpanel"
+            aria-labelledby="elsewhere-tab-calmato"
+            data-elsewhere-panel="calmato"
+          >
+            <!-- Elsewhere - Calmato Featured -->
+            <section class="calmato-feature" aria-labelledby="calmato-title">
+              <figure class="calmato-feature-media">
+                <img
+                  src="../assets/elsewhere/calmato-profile.jpg"
+                  alt="Calmato YouTube channel profile"
+                  loading="eager"
+                >
+              </figure>
+
+              <div class="calmato-feature-content">
+                <p class="calmato-kicker">CALMATO</p>
+                <h2 id="calmato-title">YouTube Channel</h2>
+                <p>
+                  A space for quiet moments,<br>
+                  sound, stories, and days that stay with you.
+                </p>
+                <a
+                  class="calmato-channel-link"
+                  href="https://youtube.com/channel/UCyv16-9W5sOhQr-svxCJ1qQ?si=cmL-SAkKw4Sa639q"
+                  target="_blank"
+                  rel="noreferrer"
+                >View Channel <span aria-hidden="true">↗</span></a>
+              </div>
+            </section>
+
+            <!-- Elsewhere - Calmato Video Grid -->
+            <section class="calmato-videos" aria-labelledby="calmato-videos-title">
+              <div class="calmato-section-heading">
+                <p>Calmato Content</p>
+                <h2 id="calmato-videos-title">YouTube Videos</h2>
+              </div>
+
+              <div class="calmato-grid" data-calmato-video-grid></div>
+            </section>
+          </section>
+
+          <section
+            class="elsewhere-panel"
+            id="elsewhere-panel-unsplash"
+            role="tabpanel"
+            aria-labelledby="elsewhere-tab-unsplash"
+            aria-hidden="true"
+            data-elsewhere-panel="unsplash"
+          >
+            <!-- Unsplash layout will be added later -->
+          </section>
+        </div>
+      </section>
+
+      <section class="footer-panel elsewhere-footer" aria-labelledby="elsewhere-footer-title">
+        <footer class="footer-content" data-node-id="288:467">
+          <div class="footer-divider" aria-hidden="true"></div>
+
+          <div class="footer-grid">
+            <section class="footer-identity" aria-labelledby="designer-title">
+              <img class="footer-mark" src="../assets/footer-mark.svg" alt="">
+              <div class="footer-heading-group">
+                <p class="footer-label">Designer</p>
+                <h2 id="designer-title">KIM SUNGWON</h2>
+              </div>
+            </section>
+
+            <section class="footer-column footer-contact" aria-labelledby="contact-title">
+              <h2 id="contact-title">contact</h2>
+              <a href="mailto:harry5099@naver.com">harry5099@naver.com</a>
+              <a href="tel:+821050991469">+82 010 5099 1469</a>
+            </section>
+
+            <section class="footer-column footer-archive" aria-labelledby="elsewhere-footer-title">
+              <h2 id="elsewhere-footer-title">ELSEWHERE</h2>
+              <a
+                href="https://youtube.com/channel/UCyv16-9W5sOhQr-svxCJ1qQ?si=cmL-SAkKw4Sa639q"
+                target="_blank"
+                rel="noreferrer"
+              >Youtube - Calmato</a>
+              <a href="https://unsplash.com/ko/@kimsungwon" target="_blank" rel="noreferrer">Unsplash</a>
+            </section>
+
+            <p class="footer-note">
+              <span>©2026</span> KIM SUNGWON.<span class="footer-note-desktop">
+                Thank you for exploring the thinking behind my work.</span
+              ><span class="footer-note-mobile">
+                <br>
+                ---<br>
+                Thank you for exploring<br>
+                the thinking behind my work.</span
+              >
+            </p>
+          </div>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>
