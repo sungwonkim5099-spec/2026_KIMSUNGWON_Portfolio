@@ -221,6 +221,32 @@
 
     if (scroller && "IntersectionObserver" in window) {
       const panels = [...document.querySelectorAll(".snap-panel, .footer-panel")];
+      const snapDots = [...document.querySelectorAll(".snap-dot")];
+
+      const indicatorTargets = ["visual", "works", "about"];
+
+snapDots.forEach((dot, index) => {
+
+  dot.addEventListener("click", () => {
+
+    const targetId = indicatorTargets[index];
+
+    const target = document.getElementById(targetId);
+
+    if (!target) return;
+
+    target.scrollIntoView({
+
+      behavior: "smooth",
+
+      block: "start",
+
+    });
+
+  });
+
+});
+
       const observer = new IntersectionObserver(
         (entries) => {
           const current = entries
@@ -229,6 +255,21 @@
 
           if (!current) return;
 
+          const indicatorTargets = ["visual", "works", "about"];
+
+const currentIndex = indicatorTargets.indexOf(current.target.id);
+
+snapDots.forEach((dot, index) => {
+
+  dot.classList.toggle("is-active", index === currentIndex);
+
+});
+
+links.forEach((link) => {
+
+  link.classList.toggle("is-active", link.getAttribute("href") === `#${current.target.id}`);
+
+});
           links.forEach((link) => {
             link.classList.toggle("is-active", link.getAttribute("href") === `#${current.target.id}`);
           });
@@ -261,7 +302,7 @@
       if (!themeToggle) return;
       themeToggle.classList.add("is-scroll-hidden");
       window.clearTimeout(themeToggleRevealTimer);
-      themeToggleRevealTimer = window.setTimeout(showThemeToggle, 2000);
+      themeToggleRevealTimer = window.setTimeout(showThemeToggle, 1000);
     };
 
     const scrollTargets = new Set([window]);

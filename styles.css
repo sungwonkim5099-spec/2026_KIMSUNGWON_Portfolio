@@ -13,7 +13,7 @@
   --theme-toggle-background: rgba(255, 255, 255, 0.75);
   --theme-toggle-border: rgba(0, 0, 0, 0.12);
   --theme-toggle-color: #111111;
-  --theme-toggle-hidden-y: 8px;
+  --theme-toggle-hidden-y: 14px;
   --panel-x: 80px;
   --header-height: 100px;
 }
@@ -44,6 +44,7 @@ body {
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -150,7 +151,7 @@ img {
   position: fixed;
   z-index: 1;
   top: calc(var(--header-height) / 2);
-  left: 50vw;
+  left: calc(50vw - 10px);
   transform: translate(-50%, -50%);
   width: 44px;
   height: 44px;
@@ -193,16 +194,85 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .snap-root {
+
   height: 100svh;
+
   overflow-x: hidden;
+
   overflow-y: auto;
+
   scroll-behavior: smooth;
+
   scroll-snap-type: y mandatory;
+
   overscroll-behavior-y: contain;
-  scrollbar-width: thin;
+
+  scrollbar-width: none;
+
   background: var(--background);
+
 }
 
+.snap-root::-webkit-scrollbar {
+
+  display: none;
+
+}
+/* ===== SNAP INDICATOR ===== */
+
+.snap-indicator {
+
+  position: fixed;
+
+  top: 50%;
+
+  right: 24px;
+
+  transform: translateY(-50%);
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 14px;
+
+  z-index: 1500;
+
+}
+
+.snap-dot {
+
+  width: 6px;
+
+  height: 6px;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  background: var(--foreground);
+
+  opacity: 0.25;
+
+  cursor: pointer;
+
+  transition:
+
+    opacity 0.25s ease,
+
+    transform 0.25s ease;
+
+}
+
+.snap-dot.is-active {
+
+  opacity: 1;
+
+  transform: scale(1.35);
+
+}
 .snap-panel {
   min-height: 100svh;
   position: relative;
@@ -583,7 +653,7 @@ html[data-theme="dark"] .footer-mark {
   color: var(--foreground);
   font-family: "Apple SD Gothic Neo", var(--font-system);
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 450;
   line-height: 1.5;
 }
 
@@ -595,7 +665,7 @@ html[data-theme="dark"] .footer-mark {
   padding: 0;
   color: var(--foreground);
   font-size: 14px;
-  font-weight: 510;
+  font-weight: 450;
   line-height: 1.2;
 }
 
@@ -1279,11 +1349,11 @@ html[data-theme="dark"] .footer-mark {
   pointer-events: auto;
   transform: translateY(var(--theme-toggle-y)) scale(var(--theme-toggle-scale));
 
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease,
-    background 0.25s ease,
-    border-color 0.25s ease;
+transition:
+  opacity 0.25s ease,
+  transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+  background 0.25s ease,
+  border-color 0.25s ease;
 }
 
 .theme-toggle:hover {
@@ -1295,9 +1365,13 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .theme-toggle.is-scroll-hidden {
+
   --theme-toggle-y: var(--theme-toggle-hidden-y);
+
   opacity: 0;
+
   pointer-events: none;
+
 }
 
 
@@ -1363,13 +1437,15 @@ html[data-theme="dark"] .theme-toggle {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
+ /*
+*,
+*::before,
+*::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+}
+*/
 
   .theme-icon {
     transition-delay: 0s !important;
