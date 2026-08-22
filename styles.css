@@ -152,7 +152,7 @@ img {
   position: fixed;
   z-index: 1;
   top: calc(var(--header-height) / 2);
-  left: calc(50vw - 10px);
+  left: 50vw;
   transform: translate(-50%, -50%);
   width: 44px;
   height: 44px;
@@ -713,23 +713,29 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .elsewhere-content {
-  padding: 160px var(--panel-x) 0;
+  position: relative;
+  padding: 0;
 }
 
 .elsewhere-switcher {
   --elsewhere-slide-scale: 1;
-  position: relative;
-  width: min(360px, 100%);
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--header-height) + 64px);
+  left: 50vw;
+  width: 360px;
+  max-width: calc(100vw - (var(--panel-x) * 2));
   min-height: 48px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   padding: 4px;
-  margin: 0 0 70px;
+  margin: 0;
   overflow: hidden;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--nav-material);
+  transform: translateX(-50%);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -844,6 +850,7 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .elsewhere-snap-panel {
+  height: 100svh;
   min-height: 100svh;
   display: flex;
   align-items: center;
@@ -878,14 +885,10 @@ html[data-theme="dark"] .footer-mark {
   transform: scale(1.35);
 }
 
-.elsewhere-snap-dot[aria-disabled="true"] {
-  cursor: default;
-}
-
 /* Elsewhere - Calmato Hero */
 .calmato-hero {
   position: relative;
-  padding: clamp(72px, 10svh, 128px) 0 clamp(96px, 14svh, 156px);
+  padding: 0 var(--panel-x);
 }
 
 .calmato-hero-content {
@@ -896,7 +899,6 @@ html[data-theme="dark"] .footer-mark {
   gap: 24px;
   margin: 0 auto;
   text-align: center;
-  transform: translateY(-4svh);
 }
 
 .calmato-hero-label {
@@ -1114,11 +1116,11 @@ html[data-theme="dark"] .footer-mark {
   }
 
   .elsewhere-content {
-    padding-top: 144px;
+    padding-top: 0;
   }
 
   .elsewhere-switcher {
-    margin-bottom: 58px;
+    top: calc(var(--header-height) + 56px);
   }
 
   .calmato-hero-content {
@@ -1406,13 +1408,14 @@ html[data-theme="dark"] .footer-mark {
   }
 
   .elsewhere-content {
-    padding-top: 104px;
+    padding-top: 0;
   }
 
   .elsewhere-switcher {
-    width: 100%;
+    top: calc(var(--header-height) + 34px);
+    width: 320px;
+    max-width: calc(100vw - (var(--panel-x) * 2));
     min-height: 46px;
-    margin-bottom: 40px;
   }
 
   .elsewhere-tab {
@@ -1426,13 +1429,11 @@ html[data-theme="dark"] .footer-mark {
   }
 
   .calmato-hero {
-    padding-top: 58px;
-    padding-bottom: 92px;
+    padding: 0 var(--panel-x);
   }
 
   .calmato-hero-content {
     gap: 18px;
-    transform: translateY(-2svh);
   }
 
   .calmato-hero-label {
