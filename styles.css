@@ -723,13 +723,13 @@ html[data-theme="dark"] .footer-mark {
   z-index: 3;
   top: calc(var(--header-height) + 64px);
   left: 50vw;
-  width: 360px;
+  width: 320px;
   max-width: calc(100vw - (var(--panel-x) * 2));
-  min-height: 48px;
+  min-height: 44px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
-  padding: 4px;
+  padding: 3px;
   margin: 0;
   overflow: hidden;
   border: 1px solid var(--line-strong);
@@ -755,10 +755,10 @@ html[data-theme="dark"] .footer-mark {
 .elsewhere-switcher-indicator {
   position: absolute;
   z-index: 0;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  width: calc((100% - 8px) / 2);
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 2);
   border-radius: 999px;
   background: var(--accent);
   transform: translate3d(0, 0, 0) scaleX(var(--elsewhere-slide-scale));
@@ -775,12 +775,12 @@ html[data-theme="dark"] .footer-mark {
   position: relative;
   z-index: 1;
   min-width: 0;
-  min-height: 40px;
-  padding: 0 18px;
+  min-height: 38px;
+  padding: 0 14px;
   border-radius: 999px;
   color: var(--foreground-muted);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 590;
   line-height: 1;
   transition: color 260ms ease, opacity 180ms ease;
@@ -1521,14 +1521,14 @@ html[data-theme="dark"] .footer-mark {
 
   .elsewhere-switcher {
     top: calc(var(--header-height) + 34px);
-    width: 320px;
+    width: 286px;
     max-width: calc(100vw - (var(--panel-x) * 2));
-    min-height: 46px;
+    min-height: 40px;
   }
 
   .elsewhere-tab {
-    min-height: 38px;
-    padding: 0 12px;
+    min-height: 34px;
+    padding: 0 10px;
     font-size: 13px;
   }
 
