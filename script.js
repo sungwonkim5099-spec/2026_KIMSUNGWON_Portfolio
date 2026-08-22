@@ -243,11 +243,49 @@
     const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];
     const elsewhereSnapDots = [...document.querySelectorAll("[data-elsewhere-snap-dot]")];
 
+    const getElsewhereYouTubeId = (url) => {
+      if (!url) return "";
+
+      try {
+        const parsedUrl = new URL(url);
+        const host = parsedUrl.hostname.replace(/^www\./, "");
+
+        if (host === "youtu.be") return parsedUrl.pathname.split("/").filter(Boolean)[0] || "";
+        if (!host.includes("youtube.com")) return "";
+        if (parsedUrl.searchParams.has("v")) return parsedUrl.searchParams.get("v") || "";
+
+        const pathParts = parsedUrl.pathname.split("/").filter(Boolean);
+        const videoPathIndex = pathParts.findIndex((part) => ["embed", "shorts", "live"].includes(part));
+        return videoPathIndex >= 0 ? pathParts[videoPathIndex + 1] || "" : "";
+      } catch {
+        return "";
+      }
+    };
+
+    document.querySelectorAll("[data-youtube-url]").forEach((video) => {
+      const videoId = getElsewhereYouTubeId(video.dataset.youtubeUrl || "");
+      const frame = video.querySelector("[data-youtube-frame]");
+      if (!videoId || !frame) return;
+
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1&playsinline=1`;
+      iframe.title = video.getAttribute("aria-label") || "Calmato YouTube video";
+      iframe.loading = "lazy";
+      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.allowFullscreen = true;
+      iframe.setAttribute("playsinline", "");
+      frame.replaceChildren(iframe);
+    });
+
     const setElsewhereSnapIndex = (nextIndex) => {
       elsewhereSnapDots.forEach((dot, index) => {
         const isActive = index === nextIndex;
         dot.classList.toggle("is-active", isActive);
         dot.setAttribute("aria-current", isActive ? "true" : "false");
+      });
+
+      elsewhereSnapPanels.forEach((panel) => {
+        panel.classList.toggle("is-visible", Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex);
       });
     };
 
