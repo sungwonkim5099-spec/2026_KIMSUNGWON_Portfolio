@@ -791,7 +791,7 @@ html[data-theme="dark"] .footer-mark {
 
 .elsewhere-tab:focus-visible,
 .calmato-channel-link:focus-visible,
-.calmato-video-card:focus-within {
+.elsewhere-snap-dot:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
@@ -828,66 +828,107 @@ html[data-theme="dark"] .footer-mark {
   transform: translateX(-16px);
 }
 
-/* Elsewhere - Calmato Featured */
-.calmato-feature {
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-  gap: 60px;
-  align-items: stretch;
+/* Elsewhere - Calmato Snap */
+.elsewhere-snap-root {
+  position: relative;
+  height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
 }
 
-.calmato-feature-media {
-  min-width: 0;
-  aspect-ratio: 4 / 3;
-  margin: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  background: var(--line);
+.elsewhere-snap-root::-webkit-scrollbar {
+  display: none;
 }
 
-.calmato-feature-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: none;
+.elsewhere-snap-panel {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
-.calmato-feature-content {
-  min-width: 0;
+.elsewhere-snap-nav {
+  position: absolute;
+  z-index: 2;
+  top: 50svh;
+  right: 24px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 24px;
-  padding: 8px 0;
-  color: var(--foreground);
+  gap: 12px;
+  transform: translateY(-50%);
 }
 
-.calmato-kicker,
-.calmato-section-heading p {
+.elsewhere-snap-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--foreground);
+  opacity: 0.25;
+  cursor: pointer;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.elsewhere-snap-dot.is-active {
+  opacity: 1;
+  transform: scale(1.35);
+}
+
+.elsewhere-snap-dot[aria-disabled="true"] {
+  cursor: default;
+}
+
+/* Elsewhere - Calmato Hero */
+.calmato-hero {
+  position: relative;
+  padding: clamp(72px, 10svh, 128px) 0 clamp(96px, 14svh, 156px);
+}
+
+.calmato-hero-content {
+  width: min(1040px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin: 0 auto;
+  text-align: center;
+  transform: translateY(-4svh);
+}
+
+.calmato-hero-label {
   margin: 0;
   color: var(--accent);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.00;
+  font-size: 13px;
+  font-weight: 590;
+  line-height: 1;
   text-transform: uppercase;
 }
 
-.calmato-feature-content h2,
-.calmato-section-heading h2 {
+.calmato-hero-content h2 {
+  max-width: 1040px;
   margin: 0;
   color: var(--foreground);
-  font-size: 32px;
-  font-weight: 500;
-  line-height: 0.80;
+  font-size: clamp(50px, 5.2vw, 78px);
+  font-weight: 620;
+  line-height: 0.96;
 }
 
-.calmato-feature-content > p {
-  max-width: 460px;
+.calmato-hero-content h2 span {
+  display: block;
+  white-space: nowrap;
+}
+
+.calmato-hero-description {
+  max-width: 660px;
   margin: 0;
   color: var(--foreground-soft);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
-  line-height: 1.55;
+  line-height: 1.7;
 }
 
 .calmato-channel-link {
@@ -908,96 +949,9 @@ html[data-theme="dark"] .footer-mark {
   transform: translateX(2px);
 }
 
-/* Elsewhere - Calmato Video Grid */
-.calmato-videos {
-  padding-top: 60px;
-}
-
-.calmato-section-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 40px;
-}
-
-.calmato-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 70px 32px;
-}
-
-.calmato-video-card {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  color: var(--foreground);
-}
-
-.calmato-video-frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 8px;
-  background: #000000;
-}
-
-.calmato-video-frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0);
-  pointer-events: none;
-  transition: background 480ms cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.calmato-video-frame iframe {
-  width: 100%;
-  height: 100%;
-  display: block;
-  border: 0;
-  filter: none;
-  transition: transform 480ms cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.calmato-video-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.calmato-video-info h3,
-.calmato-video-info p {
-  margin: 0;
-  font-family: "SF Pro Text", var(--font-system);
-  font-weight: 400;
-}
-
-.calmato-video-info h3 {
-  font-size: 18px;
-  line-height: 1.3;
-}
-
-.calmato-video-info p {
-  color: var(--foreground-soft);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
 .elsewhere-footer {
   padding-top: 120px;
   padding-bottom: 100px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .calmato-video-card:hover .calmato-video-frame iframe {
-    transform: scale(1.05);
-  }
-
-  .calmato-video-card:hover .calmato-video-frame::after {
-    background: rgba(0, 0, 0, 0.16);
-  }
 }
 
 @media (max-width: 1099px) {
@@ -1167,23 +1121,21 @@ html[data-theme="dark"] .footer-mark {
     margin-bottom: 58px;
   }
 
-  .calmato-feature {
-    grid-template-columns: 1fr;
-    gap: 36px;
+  .calmato-hero-content {
+    width: min(760px, 100%);
+    gap: 24px;
   }
 
-  .calmato-feature-content {
-    max-width: 620px;
+  .calmato-hero-content h2 {
+    font-size: clamp(44px, 6.8vw, 62px);
   }
 
-  .calmato-feature-content h2,
-  .calmato-section-heading h2 {
-    font-size: 24px;
+  .calmato-hero-description {
+    max-width: 600px;
   }
 
-  .calmato-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 58px 32px;
+  .elsewhere-snap-nav {
+    right: 18px;
   }
 
   .elsewhere-footer {
@@ -1469,47 +1421,46 @@ html[data-theme="dark"] .footer-mark {
     font-size: 13px;
   }
 
-  .calmato-feature {
-    gap: 28px;
+  .elsewhere-snap-panel {
+    min-height: 100svh;
   }
 
-  .calmato-feature-media {
-    aspect-ratio: 1 / 1;
+  .calmato-hero {
+    padding-top: 58px;
+    padding-bottom: 92px;
   }
 
-  .calmato-feature-content {
+  .calmato-hero-content {
     gap: 18px;
+    transform: translateY(-2svh);
   }
 
-  .calmato-feature-content h2,
-  .calmato-section-heading h2 {
-    font-size: 24px;
+  .calmato-hero-label {
+    font-size: 11px;
   }
 
-  .calmato-feature-content > p {
-    font-size: 15px;
-    line-height: 1.55;
+  .calmato-hero-content h2 {
+    font-size: clamp(38px, 11vw, 46px);
+    line-height: 0.98;
   }
 
-  .calmato-videos {
-    padding-top: 72px;
+  .calmato-hero-content h2 span {
+    white-space: normal;
   }
 
-  .calmato-section-heading {
-    margin-bottom: 28px;
+  .calmato-hero-description {
+    max-width: 330px;
+    font-size: 13px;
+    line-height: 1.68;
   }
 
-  .calmato-grid {
-    grid-template-columns: 1fr;
-    gap: 40px;
+  .calmato-channel-link {
+    font-size: 14px;
   }
 
-  .calmato-video-card {
-    gap: 14px;
-  }
-
-  .calmato-video-info h3 {
-    font-size: 18px;
+  .elsewhere-snap-nav {
+    right: 12px;
+    gap: 10px;
   }
 
   .elsewhere-footer {
@@ -1824,7 +1775,8 @@ html[data-theme="dark"] .theme-toggle {
   }
 
   html,
-  .snap-root {
+  .snap-root,
+  .elsewhere-snap-root {
     scroll-behavior: auto;
   }
 
@@ -1849,8 +1801,8 @@ html[data-theme="dark"] .theme-toggle {
   }
 
   .elsewhere-panel,
-  .calmato-video-frame::after,
-  .calmato-video-frame iframe {
+  .elsewhere-snap-dot,
+  .calmato-channel-link {
     transition-duration: 0.01ms !important;
   }
 }

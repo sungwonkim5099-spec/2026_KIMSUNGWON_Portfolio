@@ -42,25 +42,6 @@
     const links = [...document.querySelectorAll("[data-snap-link]")];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Calmato YouTube videos: replace only url/title/description when updating the Elsewhere page.
-    const calmatoVideos = [
-      {
-        url: "https://www.youtube.com/watch?v=VIDEO_ID_01",
-        title: "Calmato Video 01",
-        description: "Replace this URL and title with a Calmato YouTube video.",
-      },
-      {
-        url: "https://youtu.be/VIDEO_ID_02",
-        title: "Calmato Video 02",
-        description: "YouTube watch and youtu.be links are both supported.",
-      },
-      {
-        url: "https://www.youtube.com/watch?v=VIDEO_ID_03",
-        title: "Calmato Video 03",
-        description: "The video will play inline inside this page.",
-      },
-    ];
-
     const ensureThemeToggle = () => {
       const existingToggle = document.querySelector("[data-theme-toggle]");
       if (existingToggle) return existingToggle;
@@ -140,73 +121,6 @@
     };
 
     renderProjectCards();
-
-    const getYouTubeId = (url) => {
-      if (!url) return "";
-
-      try {
-        const parsedUrl = new URL(url);
-        const host = parsedUrl.hostname.replace(/^www\./, "");
-
-        if (host === "youtu.be") return parsedUrl.pathname.split("/").filter(Boolean)[0] || "";
-        if (!host.includes("youtube.com")) return "";
-        if (parsedUrl.searchParams.has("v")) return parsedUrl.searchParams.get("v") || "";
-
-        const pathParts = parsedUrl.pathname.split("/").filter(Boolean);
-        const videoPathIndex = pathParts.findIndex((part) => ["embed", "shorts", "live"].includes(part));
-        return videoPathIndex >= 0 ? pathParts[videoPathIndex + 1] || "" : "";
-      } catch {
-        return "";
-      }
-    };
-
-    const renderCalmatoVideos = () => {
-      const videoGrid = document.querySelector("[data-calmato-video-grid]");
-      if (!videoGrid) return;
-
-      const fragment = document.createDocumentFragment();
-
-      calmatoVideos.forEach((video) => {
-        const videoId = getYouTubeId(video.url);
-        if (!videoId) return;
-
-        const card = document.createElement("article");
-        card.className = "calmato-video-card";
-
-        const frame = document.createElement("div");
-        frame.className = "calmato-video-frame";
-
-        const iframe = document.createElement("iframe");
-        iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1&playsinline=1`;
-        iframe.title = video.title;
-        iframe.loading = "lazy";
-        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-        iframe.allowFullscreen = true;
-        iframe.setAttribute("playsinline", "");
-
-        const info = document.createElement("div");
-        info.className = "calmato-video-info";
-
-        const title = document.createElement("h3");
-        title.textContent = video.title;
-
-        info.append(title);
-
-        if (video.description) {
-          const description = document.createElement("p");
-          description.textContent = video.description;
-          info.append(description);
-        }
-
-        frame.append(iframe);
-        card.append(frame, info);
-        fragment.append(card);
-      });
-
-      videoGrid.replaceChildren(fragment);
-    };
-
-    renderCalmatoVideos();
 
     // Elsewhere switcher
     const elsewhere = document.querySelector("[data-elsewhere]");
@@ -323,6 +237,54 @@
       },
       { passive: true }
     );
+
+    // Elsewhere snap indicator
+    const elsewhereSnapRoot = document.querySelector("[data-elsewhere-snap-root]");
+    const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];
+    const elsewhereSnapDots = [...document.querySelectorAll("[data-elsewhere-snap-dot]")];
+
+    const setElsewhereSnapIndex = (nextIndex) => {
+      elsewhereSnapDots.forEach((dot, index) => {
+        const isActive = index === nextIndex;
+        dot.classList.toggle("is-active", isActive);
+        dot.setAttribute("aria-current", isActive ? "true" : "false");
+      });
+    };
+
+    if (elsewhereSnapRoot && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
+      elsewhereSnapDots.forEach((dot) => {
+        dot.addEventListener("click", () => {
+          const targetPanel = elsewhereSnapPanels.find(
+            (panel) => panel.dataset.elsewhereSnapPanel === dot.dataset.elsewhereSnapDot
+          );
+
+          if (!targetPanel) return;
+          elsewhereSnapRoot.scrollTo({
+            top: targetPanel.offsetTop,
+            behavior: prefersReducedMotion ? "auto" : "smooth",
+          });
+        });
+      });
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const current = entries
+              .filter((entry) => entry.isIntersecting)
+              .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+            if (!current) return;
+            setElsewhereSnapIndex(Number(current.target.dataset.elsewhereSnapPanel || 0));
+          },
+          {
+            root: elsewhereSnapRoot,
+            threshold: [0.5, 0.7, 0.9],
+          }
+        );
+
+        elsewhereSnapPanels.forEach((panel) => observer.observe(panel));
+      }
+    }
 
     const closeMenu = () => {
       if (!menuButton || !mobileMenu) return;
