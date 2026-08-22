@@ -1,7 +1,7 @@
 window.PORTFOLIO_PROJECTS = [
   {
     title: "ACE",
-    description: "Bi · Personal Branding",
+    description: "Brand Identity · Graphic Design",
     image: "assets/works/ace.png",
     imageAlt: "ACE project preview",
     href: "ace/",
@@ -9,7 +9,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Brand New Day",
-    description: "UX/UI · Promotional Web",
+    description: "UX/UI · Web Design",
     image: "assets/works/brand-new-day.jpg",
     imageAlt: "Brand New Day project preview",
     href: "brand-new-day/",
@@ -17,14 +17,14 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Calmato",
-    description: "UX/UI · Responsive Web",
+    description: "UX/UI · Web Design",
     image: "assets/works/calmato.png",
     imageAlt: "Calmato project preview",
     href: "calmato/",
     nodeId: "288:460",
   },
   {
-    title: "Youtube Calmato",
+    title: "Calmato Youtube",
     description: "Youtube",
     image: "assets/works/youtube-calmato.png",
     imageAlt: "Youtube Calmato project preview",
@@ -34,7 +34,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Beerby",
-    description: "UX/UI · Mobile App Design",
+    description: "UX/UI · Mobile App",
     image: "assets/works/beerby.jpg",
     imageAlt: "Beerby project preview",
     href: "beerby/",
@@ -42,7 +42,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "On The Trip",
-    description: "UX/UI · Mobile App Design",
+    description: "UX/UI · Mobile App",
     image: "assets/works/on-the-trip.png",
     imageAlt: "On The Trip project preview",
     href: "onthetrip/",
@@ -58,7 +58,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "철거병단",
-    description: "Branding · Logo Design",
+    description: "Brand Identity · Graphic Design",
     image: "assets/works/demolition-corps.png",
     imageAlt: "철거병단 project preview",
     href: "철거병단",
