@@ -227,7 +227,6 @@
       const isMovingToRight = nextPanel === "unsplash";
       elsewhereSwitcher.dataset.slideDirection = isMovingToRight ? "right" : "left";
       elsewhereSwitcher.classList.add("is-sliding");
-      elsewhereSwitcher.style.setProperty("--elsewhere-active-index", nextPanel === "calmato" ? "0" : "1");
       window.clearTimeout(elsewhereSlideTimer);
       elsewhereSlideTimer = window.setTimeout(() => {
         elsewhereSwitcher.classList.remove("is-sliding");
@@ -258,7 +257,6 @@
       });
     };
 
-    elsewhereSwitcher?.style.setProperty("--elsewhere-active-index", "0");
     elsewhereTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         setElsewherePanel(tab.dataset.elsewhereTab || "calmato");

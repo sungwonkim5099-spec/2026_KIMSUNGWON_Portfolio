@@ -717,7 +717,6 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .elsewhere-switcher {
-  --elsewhere-active-index: 0;
   --elsewhere-slide-scale: 1;
   position: relative;
   width: min(360px, 100%);
@@ -733,14 +732,6 @@ html[data-theme="dark"] .footer-mark {
   background: var(--nav-material);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-}
-
-.elsewhere-switcher[data-active="calmato"] {
-  --elsewhere-active-index: 0;
-}
-
-.elsewhere-switcher[data-active="unsplash"] {
-  --elsewhere-active-index: 1;
 }
 
 .elsewhere-switcher.is-sliding {
@@ -764,9 +755,13 @@ html[data-theme="dark"] .footer-mark {
   width: calc((100% - 8px) / 2);
   border-radius: 999px;
   background: var(--accent);
-  transform: translate3d(calc(var(--elsewhere-active-index) * 100%), 0, 0) scaleX(var(--elsewhere-slide-scale));
+  transform: translate3d(0, 0, 0) scaleX(var(--elsewhere-slide-scale));
   transition: transform 440ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
+}
+
+.elsewhere-switcher[data-active="unsplash"] .elsewhere-switcher-indicator {
+  transform: translate3d(100%, 0, 0) scaleX(var(--elsewhere-slide-scale));
 }
 
 
