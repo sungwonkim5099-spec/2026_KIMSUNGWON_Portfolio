@@ -905,6 +905,7 @@ html[data-theme="dark"] .footer-mark {
   gap: 24px;
   margin: 0 auto;
   text-align: center;
+  transform: translateY(40px);
 }
 
 .calmato-hero-label {
@@ -1781,6 +1782,25 @@ html[data-theme="dark"] .footer-mark {
   }
 }
 @media (max-width: 833px) {
+    .calmato-hero-content h2 {
+  font-size: 36px;
+  line-height: 1.05;
+  width: 100%;
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+  .calmato-hero-description {
+  max-width: 620px;
+  margin: 0 auto;
+  font-size: 13px;
+  line-height: 1.75;
+  text-align: center;
+
+}
+
+}
 
   /* 헤더는 투명하게 */
   .site-header {
