@@ -849,6 +849,7 @@ html[data-theme="dark"] .footer-mark {
   scroll-behavior: smooth;
   scroll-snap-type: y mandatory;
   scrollbar-width: none;
+  background: var(--background);
 }
 
 .elsewhere-snap-root::-webkit-scrollbar {
@@ -866,24 +867,34 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .elsewhere-snap-nav {
-  position: absolute;
-  z-index: 2;
-  top: 50svh;
+  position: fixed;
+  z-index: 1500;
+  top: 50%;
   right: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   transform: translateY(-50%);
+  transition: opacity 0.25s ease;
+}
+
+.elsewhere-snap-nav.is-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .elsewhere-snap-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
   background: var(--foreground);
   opacity: 0.25;
   cursor: pointer;
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .elsewhere-snap-dot.is-active {
@@ -1257,10 +1268,6 @@ html[data-theme="dark"] .footer-mark {
   margin-right: auto;
 }
 
-  .elsewhere-snap-nav {
-    right: 18px;
-  }
-
   .elsewhere-footer {
     padding-top: 96px;
     padding-bottom: 60px;
@@ -1630,11 +1637,6 @@ html[data-theme="dark"] .footer-mark {
 
   .calmato-featured-video:nth-child(2) {
     transform: translateY(34px);
-  }
-
-  .elsewhere-snap-nav {
-    right: 12px;
-    gap: 10px;
   }
 
   .elsewhere-footer {

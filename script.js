@@ -128,6 +128,7 @@
     const elsewherePanelStage = document.querySelector("[data-elsewhere-panel-stage]");
     const elsewhereTabs = [...document.querySelectorAll("[data-elsewhere-tab]")];
     const elsewherePanels = [...document.querySelectorAll("[data-elsewhere-panel]")];
+    const elsewhereSnapNav = document.querySelector("[data-elsewhere-snap-nav]");
     let elsewhereActivePanel = "calmato";
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
@@ -195,6 +196,8 @@
         panel.classList.toggle("is-before", !isActive && isMovingToRight);
         panel.setAttribute("aria-hidden", String(!isActive));
       });
+
+      elsewhereSnapNav?.classList.toggle("is-hidden", nextPanel !== "calmato");
     };
 
     elsewhereTabs.forEach((tab) => {
@@ -242,6 +245,9 @@
     const elsewhereSnapRoot = document.querySelector("[data-elsewhere-snap-root]");
     const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];
     const elsewhereSnapDots = [...document.querySelectorAll("[data-elsewhere-snap-dot]")];
+    const elsewhereFooter = document.querySelector("[data-elsewhere-footer]");
+    const elsewhereSnapScroller = elsewhereSnapRoot;
+    let elsewhereSnapStateFrame = 0;
 
     const getElsewhereYouTubeId = (url) => {
       if (!url) return "";
@@ -277,22 +283,59 @@
       frame.replaceChildren(iframe);
     });
 
-    const setElsewhereSnapIndex = (nextIndex) => {
-  elsewhereSnapDots.forEach((dot, index) => {
-    const isActive = index === nextIndex;
-    dot.classList.toggle("is-active", isActive);
-    dot.setAttribute("aria-current", isActive ? "true" : "false");
-  });
-  elsewhereSnapPanels.forEach((panel) => {
-    panel.classList.toggle(
-      "is-visible",
-      Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex
-    );
-  });
-  elsewhereSwitcher?.classList.toggle("is-hidden", nextIndex !== 0);
-};
+    const getElsewhereScrollTop = (target) => {
+      if (!elsewhereSnapScroller || !target) return 0;
+      return target.offsetTop;
+    };
 
-    if (elsewhereSnapRoot && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
+    const isElsewhereFooterVisible = () => {
+      if (!elsewhereFooter) return false;
+      const footerRect = elsewhereFooter.getBoundingClientRect();
+      return footerRect.top < window.innerHeight && footerRect.bottom > 0;
+    };
+
+    const setElsewhereSnapIndex = (nextIndex) => {
+      elsewhereSnapDots.forEach((dot, index) => {
+        const isActive = index === nextIndex;
+        dot.classList.toggle("is-active", isActive);
+        dot.setAttribute("aria-current", isActive ? "true" : "false");
+      });
+
+      elsewhereSnapPanels.forEach((panel) => {
+        panel.classList.toggle(
+          "is-visible",
+          Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex
+        );
+      });
+
+      elsewhereSwitcher?.classList.toggle("is-hidden", nextIndex !== 0);
+    };
+
+    const updateElsewhereSnapState = () => {
+      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length) return;
+
+      if (isElsewhereFooterVisible()) {
+        setElsewhereSnapIndex(-1);
+        return;
+      }
+
+      const viewportCenter = elsewhereSnapScroller.scrollTop + elsewhereSnapScroller.clientHeight / 2;
+      const currentPanel = elsewhereSnapPanels
+        .map((panel, index) => {
+          const panelCenter = getElsewhereScrollTop(panel) + panel.offsetHeight / 2;
+          return { index, distance: Math.abs(viewportCenter - panelCenter) };
+        })
+        .sort((a, b) => a.distance - b.distance)[0];
+
+      setElsewhereSnapIndex(currentPanel?.index ?? 0);
+    };
+
+    const requestElsewhereSnapState = () => {
+      window.cancelAnimationFrame(elsewhereSnapStateFrame);
+      elsewhereSnapStateFrame = window.requestAnimationFrame(updateElsewhereSnapState);
+    };
+
+    if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
       elsewhereSnapDots.forEach((dot) => {
         dot.addEventListener("click", () => {
           const targetPanel = elsewhereSnapPanels.find(
@@ -300,31 +343,84 @@
           );
 
           if (!targetPanel) return;
-          elsewhereSnapRoot.scrollTo({
-            top: targetPanel.offsetTop,
+          setElsewhereSnapIndex(Number(dot.dataset.elsewhereSnapDot || 0));
+          elsewhereSnapScroller.scrollTo({
+            top: getElsewhereScrollTop(targetPanel),
             behavior: prefersReducedMotion ? "auto" : "smooth",
           });
         });
       });
 
+      elsewhereSnapScroller.addEventListener(
+        "scroll",
+        () => {
+          requestElsewhereSnapState();
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "wheel",
+        (event) => {
+          if (event.deltaY < 0 && isElsewhereFooterVisible()) {
+            event.preventDefault();
+            window.scrollBy({
+              top: event.deltaY,
+              left: 0,
+              behavior: "auto",
+            });
+            requestElsewhereSnapState();
+            return;
+          }
+
+          const lastSnapPanel = elsewhereSnapPanels[elsewhereSnapPanels.length - 1];
+          if (!lastSnapPanel || event.deltaY <= 0) return;
+
+          const lastPanelTop = getElsewhereScrollTop(lastSnapPanel);
+          const isAtLastPanel = Math.abs(elsewhereSnapScroller.scrollTop - lastPanelTop) < 12;
+          const isAtScrollEnd =
+            elsewhereSnapScroller.scrollTop + elsewhereSnapScroller.clientHeight >= elsewhereSnapScroller.scrollHeight - 2;
+
+          if (isAtLastPanel && isAtScrollEnd) {
+            setElsewhereSnapIndex(-1);
+          }
+        },
+        { passive: false }
+      );
+
+      window.addEventListener("scroll", requestElsewhereSnapState, { passive: true });
+
       if ("IntersectionObserver" in window) {
         const observer = new IntersectionObserver(
-          (entries) => {
-            const current = entries
-              .filter((entry) => entry.isIntersecting)
-              .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-            if (!current) return;
-            setElsewhereSnapIndex(Number(current.target.dataset.elsewhereSnapPanel || 0));
-          },
+          requestElsewhereSnapState,
           {
-            root: elsewhereSnapRoot,
-            threshold: [0.5, 0.7, 0.9],
+            root: elsewhereSnapScroller,
+            threshold: [0, 0.5, 0.7, 0.9],
           }
         );
 
         elsewhereSnapPanels.forEach((panel) => observer.observe(panel));
       }
+
+      if (elsewhereFooter && "IntersectionObserver" in window) {
+        const footerObserver = new IntersectionObserver(
+          () => {
+            if (isElsewhereFooterVisible()) {
+              setElsewhereSnapIndex(-1);
+              return;
+            }
+
+            updateElsewhereSnapState();
+          },
+          {
+            threshold: [0, 0.05],
+          }
+        );
+
+        footerObserver.observe(elsewhereFooter);
+      }
+
+      updateElsewhereSnapState();
     }
 
     const closeMenu = () => {
@@ -512,6 +608,8 @@ links.forEach((link) => {
 
     const scrollTargets = new Set([window]);
     if (scroller) scrollTargets.add(scroller);
+    if (elsewhere) scrollTargets.add(elsewhere);
+    if (elsewhereSnapRoot) scrollTargets.add(elsewhereSnapRoot);
     scrollTargets.forEach((target) => {
       target.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
     });

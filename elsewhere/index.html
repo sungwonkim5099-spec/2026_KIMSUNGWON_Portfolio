@@ -88,6 +88,14 @@
         </div>
 
         <div class="elsewhere-panel-stage" data-elsewhere-panel-stage>
+          <!-- Elsewhere - Snap Indicator -->
+          <nav class="elsewhere-snap-nav" aria-label="Calmato section navigation" data-elsewhere-snap-nav>
+            <button class="elsewhere-snap-dot is-active" type="button" aria-label="01 Calmato Hero" aria-current="true" data-elsewhere-snap-dot="0"></button>
+            <button class="elsewhere-snap-dot" type="button" aria-label="02 About Calmato" aria-current="false" data-elsewhere-snap-dot="1"></button>
+            <button class="elsewhere-snap-dot" type="button" aria-label="03 YouTube Contents" aria-current="false" data-elsewhere-snap-dot="2"></button>
+            <button class="elsewhere-snap-dot" type="button" aria-label="04 Closing / Channel CTA" aria-current="false" data-elsewhere-snap-dot="3"></button>
+          </nav>
+
           <section
             class="elsewhere-panel is-active"
             id="elsewhere-panel-calmato"
@@ -95,15 +103,7 @@
             aria-labelledby="elsewhere-tab-calmato"
             data-elsewhere-panel="calmato"
           >
-            <!-- Elsewhere - Calmato Snap Indicator -->
-            <nav class="elsewhere-snap-nav" aria-label="Calmato section navigation" data-elsewhere-snap-nav>
-              <button class="elsewhere-snap-dot is-active" type="button" aria-label="01 Calmato Hero" aria-current="true" data-elsewhere-snap-dot="0"></button>
-              <button class="elsewhere-snap-dot" type="button" aria-label="02 About Calmato" aria-current="false" data-elsewhere-snap-dot="1"></button>
-              <button class="elsewhere-snap-dot" type="button" aria-label="03 YouTube Contents" aria-current="false" data-elsewhere-snap-dot="2"></button>
-              <button class="elsewhere-snap-dot" type="button" aria-label="04 Closing / Channel CTA" aria-current="false" data-elsewhere-snap-dot="3"></button>
-            </nav>
-
-            <!-- Elsewhere - Calmato Snap Root -->
+            <!-- Elsewhere - Calmato Snap Sections -->
             <div class="elsewhere-snap-root" data-elsewhere-snap-root>
               <section
                 class="elsewhere-snap-panel calmato-hero"
@@ -172,17 +172,14 @@
                     >
                       <div class="calmato-featured-video-frame" data-youtube-frame></div>
                     </article>
-                    
+
                     <article
-                    class="calmato-featured-video"
-                    data-youtube-url="https://youtu.be/5tMdvZvKWYs"
-
-                    aria-label="Calmato featured video 04"
-                  >
-                    <div class="calmato-featured-video-frame" data-youtube-frame></div>
-
-</article>
-
+                      class="calmato-featured-video"
+                      data-youtube-url="https://youtu.be/5tMdvZvKWYs"
+                      aria-label="Calmato featured video 04"
+                    >
+                      <div class="calmato-featured-video-frame" data-youtube-frame></div>
+                    </article>
                   </div>
                 </div>
                 <!-- Calmato 02 - VS Code Edit Area End -->
@@ -217,7 +214,8 @@
         </div>
       </section>
 
-      <section class="footer-panel elsewhere-footer" aria-labelledby="elsewhere-footer-title">
+      <!-- Elsewhere - Footer -->
+      <section class="footer-panel elsewhere-footer" aria-labelledby="elsewhere-footer-title" data-elsewhere-footer>
         <footer class="footer-content" data-node-id="288:467">
           <div class="footer-divider" aria-hidden="true"></div>
 
