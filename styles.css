@@ -1581,8 +1581,8 @@ html[data-theme="dark"] .footer-mark {
   }
 
   .calmato-featured {
-    padding: 0 var(--panel-x);
-  }
+  padding: 0 12px;
+}
 
   .calmato-featured-content {
     --featured-final-y: 18px;
@@ -1607,7 +1607,7 @@ html[data-theme="dark"] .footer-mark {
 
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  gap: 28px;
+  gap: 12px;
 
   width: min(100%, 520px);
 
@@ -1641,7 +1641,7 @@ html[data-theme="dark"] .footer-mark {
     padding-top: 72px;
     padding-bottom: 60px;
   }
-}
+
 
 @media (max-width: 360px) {
   .category-link {
@@ -1850,7 +1850,7 @@ html[data-theme="dark"] .footer-mark {
     display: block;
     text-align: right;
   }
-}
+
 /* ===== THEME BUTTON ===== */
 
 .theme-toggle {
