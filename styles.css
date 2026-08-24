@@ -708,8 +708,21 @@ html[data-theme="dark"] .footer-mark {
 
 /* Elsewhere - Switcher */
 .elsewhere-main {
-  min-height: 100svh;
+  height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
   background: var(--background);
+}
+
+.elsewhere-main::-webkit-scrollbar {
+  display: none;
+}
+
+.elsewhere-main.is-footer-free {
+  scroll-snap-type: none;
 }
 
 .elsewhere-content {
@@ -843,12 +856,7 @@ html[data-theme="dark"] .footer-mark {
 /* Elsewhere - Calmato Snap */
 .elsewhere-snap-root {
   position: relative;
-  height: 100svh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
-  scrollbar-width: none;
+  min-height: 100svh;
   background: var(--background);
 }
 
@@ -1971,6 +1979,7 @@ html[data-theme="dark"] .theme-toggle {
 
   html,
   .snap-root,
+  .elsewhere-main,
   .elsewhere-snap-root {
     scroll-behavior: auto;
   }

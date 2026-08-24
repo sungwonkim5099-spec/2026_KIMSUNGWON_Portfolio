@@ -134,7 +134,6 @@
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
     let elsewhereSlideTimer = 0;
-    let releaseElsewhereFooterFromTouch = () => false;
 
     const animateElsewhereIndicator = (nextPanel) => {
       const indicator = elsewhereSwitcher?.querySelector(".elsewhere-switcher-indicator");
@@ -237,11 +236,7 @@
         const isHorizontalSwipe = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4;
         if (isHorizontalSwipe) {
           setElsewherePanel(deltaX < 0 ? "unsplash" : "calmato");
-          return;
         }
-
-        const isVerticalFooterSwipe = Math.abs(deltaY) > 48 && Math.abs(deltaY) > Math.abs(deltaX) * 1.4;
-        if (isVerticalFooterSwipe) releaseElsewhereFooterFromTouch(deltaY);
       },
       { passive: true }
     );
@@ -251,7 +246,7 @@
     const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];
     const elsewhereSnapDots = [...document.querySelectorAll("[data-elsewhere-snap-dot]")];
     const elsewhereFooter = document.querySelector("[data-elsewhere-footer]");
-    const elsewhereSnapScroller = elsewhereSnapRoot;
+    const elsewhereSnapScroller = elsewhere || elsewhereSnapRoot;
     let elsewhereSnapStateFrame = 0;
 
     const getElsewhereYouTubeId = (url) => {
@@ -290,7 +285,9 @@
 
     const getElsewhereScrollTop = (target) => {
       if (!elsewhereSnapScroller || !target) return 0;
-      return target.offsetTop;
+      const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      return elsewhereSnapScroller.scrollTop + targetRect.top - scrollerRect.top;
     };
 
     const isElsewhereFooterVisible = () => {
@@ -340,25 +337,27 @@
       elsewhereSnapStateFrame = window.requestAnimationFrame(updateElsewhereSnapState);
     };
 
-    releaseElsewhereFooterFromTouch = (deltaY) => {
-      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length || !elsewhereFooter) return false;
-      if (elsewhereActivePanel !== "calmato" || deltaY >= 0) return false;
-
+    const isElsewhereAtLastSnapPanel = () => {
+      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length) return false;
       const lastSnapPanel = elsewhereSnapPanels[elsewhereSnapPanels.length - 1];
       const lastPanelTop = getElsewhereScrollTop(lastSnapPanel);
-      const isAtLastPanel = Math.abs(elsewhereSnapScroller.scrollTop - lastPanelTop) < 12;
-      const isAtScrollEnd =
-        elsewhereSnapScroller.scrollTop + elsewhereSnapScroller.clientHeight >= elsewhereSnapScroller.scrollHeight - 2;
+      return Math.abs(elsewhereSnapScroller.scrollTop - lastPanelTop) < 32;
+    };
 
-      if (!isAtLastPanel || !isAtScrollEnd) return false;
+    const updateElsewhereFooterSnap = () => {
+      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length) return;
+      const lastSnapPanel = elsewhereSnapPanels[elsewhereSnapPanels.length - 1];
+      const releasePoint = getElsewhereScrollTop(lastSnapPanel) + 8;
+      const isFooterFree = elsewhereSnapScroller.scrollTop > releasePoint || isElsewhereFooterVisible();
+      elsewhereSnapScroller.classList.toggle("is-footer-free", isFooterFree);
+    };
 
+    const releaseElsewhereFooterSnap = () => {
+      if (!elsewhereSnapScroller || elsewhereActivePanel !== "calmato") return;
+      if (!isElsewhereAtLastSnapPanel()) return;
+
+      elsewhereSnapScroller.classList.add("is-footer-free");
       setElsewhereSnapIndex(-1);
-      elsewhereFooter.scrollIntoView({
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-        block: "start",
-      });
-      requestElsewhereSnapState();
-      return true;
     };
 
     if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
@@ -370,6 +369,7 @@
 
           if (!targetPanel) return;
           setElsewhereSnapIndex(Number(dot.dataset.elsewhereSnapDot || 0));
+          elsewhereSnapScroller.classList.remove("is-footer-free");
           elsewhereSnapScroller.scrollTo({
             top: getElsewhereScrollTop(targetPanel),
             behavior: prefersReducedMotion ? "auto" : "smooth",
@@ -380,7 +380,22 @@
       elsewhereSnapScroller.addEventListener(
         "scroll",
         () => {
+          updateElsewhereFooterSnap();
           requestElsewhereSnapState();
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "touchmove",
+        (event) => {
+          const touch = event.touches[0];
+          if (!touch) return;
+
+          const deltaX = touch.clientX - elsewhereTouchStartX;
+          const deltaY = touch.clientY - elsewhereTouchStartY;
+          const isVerticalRelease = deltaY < -24 && Math.abs(deltaY) > Math.abs(deltaX) * 1.4;
+          if (isVerticalRelease) releaseElsewhereFooterSnap();
         },
         { passive: true }
       );
@@ -388,30 +403,9 @@
       elsewhereSnapScroller.addEventListener(
         "wheel",
         (event) => {
-          if (event.deltaY < 0 && isElsewhereFooterVisible()) {
-            event.preventDefault();
-            window.scrollBy({
-              top: event.deltaY,
-              left: 0,
-              behavior: "auto",
-            });
-            requestElsewhereSnapState();
-            return;
-          }
-
-          const lastSnapPanel = elsewhereSnapPanels[elsewhereSnapPanels.length - 1];
-          if (!lastSnapPanel || event.deltaY <= 0) return;
-
-          const lastPanelTop = getElsewhereScrollTop(lastSnapPanel);
-          const isAtLastPanel = Math.abs(elsewhereSnapScroller.scrollTop - lastPanelTop) < 12;
-          const isAtScrollEnd =
-            elsewhereSnapScroller.scrollTop + elsewhereSnapScroller.clientHeight >= elsewhereSnapScroller.scrollHeight - 2;
-
-          if (isAtLastPanel && isAtScrollEnd) {
-            setElsewhereSnapIndex(-1);
-          }
+          if (event.deltaY > 0) releaseElsewhereFooterSnap();
         },
-        { passive: false }
+        { passive: true }
       );
 
       window.addEventListener("scroll", requestElsewhereSnapState, { passive: true });
