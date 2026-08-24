@@ -134,6 +134,7 @@
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
     let elsewhereSlideTimer = 0;
+    let releaseElsewhereFooterFromTouch = () => false;
 
     const animateElsewhereIndicator = (nextPanel) => {
       const indicator = elsewhereSwitcher?.querySelector(".elsewhere-switcher-indicator");
@@ -234,9 +235,13 @@
         const deltaX = touch.clientX - elsewhereTouchStartX;
         const deltaY = touch.clientY - elsewhereTouchStartY;
         const isHorizontalSwipe = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4;
-        if (!isHorizontalSwipe) return;
+        if (isHorizontalSwipe) {
+          setElsewherePanel(deltaX < 0 ? "unsplash" : "calmato");
+          return;
+        }
 
-        setElsewherePanel(deltaX < 0 ? "unsplash" : "calmato");
+        const isVerticalFooterSwipe = Math.abs(deltaY) > 48 && Math.abs(deltaY) > Math.abs(deltaX) * 1.4;
+        if (isVerticalFooterSwipe) releaseElsewhereFooterFromTouch(deltaY);
       },
       { passive: true }
     );
@@ -333,6 +338,27 @@
     const requestElsewhereSnapState = () => {
       window.cancelAnimationFrame(elsewhereSnapStateFrame);
       elsewhereSnapStateFrame = window.requestAnimationFrame(updateElsewhereSnapState);
+    };
+
+    releaseElsewhereFooterFromTouch = (deltaY) => {
+      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length || !elsewhereFooter) return false;
+      if (elsewhereActivePanel !== "calmato" || deltaY >= 0) return false;
+
+      const lastSnapPanel = elsewhereSnapPanels[elsewhereSnapPanels.length - 1];
+      const lastPanelTop = getElsewhereScrollTop(lastSnapPanel);
+      const isAtLastPanel = Math.abs(elsewhereSnapScroller.scrollTop - lastPanelTop) < 12;
+      const isAtScrollEnd =
+        elsewhereSnapScroller.scrollTop + elsewhereSnapScroller.clientHeight >= elsewhereSnapScroller.scrollHeight - 2;
+
+      if (!isAtLastPanel || !isAtScrollEnd) return false;
+
+      setElsewhereSnapIndex(-1);
+      elsewhereFooter.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+      requestElsewhereSnapState();
+      return true;
     };
 
     if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
