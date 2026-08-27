@@ -1339,10 +1339,10 @@ html[data-theme="dark"] .calmato-video-controls {
 }
 
 .calmato-closing-horizon {
-  --horizon-width: min(1680px, 174vw);
-  --horizon-height: 230px;
+  --horizon-width: min(1780px, 184vw);
+  --horizon-height: 320px;
   --horizon-top: clamp(40px, 8svh, 76px);
-  --horizon-glow: 0 0 22px rgba(227, 61, 0, 0.48), 0 0 86px rgba(227, 61, 0, 0.3);
+  --horizon-glow: 0 0 22px rgba(227, 61, 0, 0.46), 0 0 96px rgba(227, 61, 0, 0.28);
   position: relative;
   width: var(--horizon-width);
   height: var(--horizon-height);
@@ -1354,13 +1354,15 @@ html[data-theme="dark"] .calmato-video-controls {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: calc(var(--horizon-height) * -0.78);
+  bottom: calc(var(--horizon-height) * -0.72);
   width: 100%;
   height: calc(var(--horizon-height) * 1.35);
   border-top: 1px solid var(--accent);
-  border-radius: 50% 50% 0 0 / 42% 42% 0 0;
+  border-radius: 50% 50% 0 0 / 64% 64% 0 0;
   box-shadow: var(--horizon-glow);
   transform: translateX(-50%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, #000 44%, rgba(0, 0, 0, 0.72) 66%, transparent 100%);
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, #000 44%, rgba(0, 0, 0, 0.72) 66%, transparent 100%);
   animation: calmatoClosingHorizon 8s ease-in-out infinite;
 }
 
@@ -1368,19 +1370,25 @@ html[data-theme="dark"] .calmato-video-controls {
   content: "";
   position: absolute;
   left: 50%;
-  top: 18%;
-  width: 72%;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(227, 61, 0, 0.18),
-    rgba(255, 174, 92, 0.92),
-    rgba(227, 61, 0, 0.18),
-    transparent
+  top: 0;
+  width: 74%;
+  height: 152px;
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(255, 185, 112, 0.88) 0%,
+    rgba(227, 61, 0, 0.42) 22%,
+    rgba(227, 61, 0, 0.18) 46%,
+    rgba(227, 61, 0, 0.06) 64%,
+    transparent 78%
+  ),
+  radial-gradient(
+    ellipse at 50% 100%,
+    rgba(255, 112, 42, 0.32) 0%,
+    rgba(227, 61, 0, 0.18) 34%,
+    transparent 72%
   );
-  filter: blur(6px);
-  opacity: 0.74;
+  filter: blur(18px);
+  opacity: 0.82;
   transform: translateX(-50%);
   animation: calmatoClosingHorizonGlow 8s ease-in-out infinite;
 }
@@ -1531,7 +1539,7 @@ html[data-theme="dark"] .calmato-video-controls {
 
   .calmato-closing-horizon {
     --horizon-width: min(1400px, 188vw);
-    --horizon-height: 210px;
+    --horizon-height: 280px;
     --horizon-top: clamp(34px, 6svh, 58px);
   }
 }
@@ -1577,7 +1585,7 @@ html[data-theme="dark"] .calmato-video-controls {
 
   .calmato-closing-horizon {
     --horizon-width: 184vw;
-    --horizon-height: 170px;
+    --horizon-height: 220px;
     --horizon-top: 38px;
     --horizon-glow: 0 0 18px rgba(227, 61, 0, 0.42), 0 0 64px rgba(227, 61, 0, 0.26);
   }
