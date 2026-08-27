@@ -1128,8 +1128,12 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .calmato-video-controls {
-  --calmato-video-control-color: var(--foreground-muted);
+  --calmato-video-control-color: var(--foreground);
   --calmato-video-control-hover-color: var(--foreground);
+  --calmato-video-control-border: var(--line-strong);
+  --calmato-video-control-hover-border: var(--foreground-muted);
+  --calmato-video-control-background: transparent;
+  --calmato-video-control-hover-background: var(--line);
   display: flex;
   justify-content: center;
   gap: 60px;
@@ -1154,26 +1158,35 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .calmato-video-control-icon {
+  position: relative;
   width: 40px;
   height: 40px;
   display: block;
-  background: currentColor;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-size: contain;
+  border: 1px solid var(--calmato-video-control-border);
+  border-radius: 50%;
+  background: var(--calmato-video-control-background);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
 }
 
-.calmato-video-control[data-calmato-video-prev] .calmato-video-control-icon {
-  -webkit-mask-image: url("./assets/elsewhere_arrow_left.svg");
-  mask-image: url("./assets/elsewhere_arrow_left.svg");
+.calmato-video-control-icon::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
 }
 
-.calmato-video-control[data-calmato-video-next] .calmato-video-control-icon {
-  -webkit-mask-image: url("./assets/elsewhere_arrow_right.svg");
-  mask-image: url("./assets/elsewhere_arrow_right.svg");
+.calmato-video-control[data-calmato-video-prev] .calmato-video-control-icon::before {
+  transform: translate(-36%, -50%) rotate(-135deg);
+}
+
+.calmato-video-control[data-calmato-video-next] .calmato-video-control-icon::before {
+  transform: translate(-64%, -50%) rotate(45deg);
 }
 
 .calmato-video-control:hover {
@@ -1182,9 +1195,18 @@ html[data-theme="dark"] .footer-mark {
   transform: translateY(-1px);
 }
 
+.calmato-video-control:hover .calmato-video-control-icon {
+  border-color: var(--calmato-video-control-hover-border);
+  background: var(--calmato-video-control-hover-background);
+}
+
 html[data-theme="dark"] .calmato-video-controls {
-  --calmato-video-control-color: #848484;
+  --calmato-video-control-color: #ffffff;
   --calmato-video-control-hover-color: #ffffff;
+  --calmato-video-control-border: rgba(255, 255, 255, 0.18);
+  --calmato-video-control-hover-border: rgba(255, 255, 255, 0.38);
+  --calmato-video-control-background: transparent;
+  --calmato-video-control-hover-background: rgba(255, 255, 255, 0.08);
 }
 
 .elsewhere-footer {
