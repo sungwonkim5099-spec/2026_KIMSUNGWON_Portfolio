@@ -331,47 +331,89 @@
     };
 
     const setCalmatoVideoPage = (direction) => {
-      if (!calmatoVideoGrid || calmatoVideoCards.length === 0 || calmatoVideoIsAnimating) return;
+  if (
+    !calmatoVideoGrid ||
+    calmatoVideoCards.length === 0 ||
+    calmatoVideoIsAnimating
+  ) {
+    return;
+  }
 
-      const pageSize = getCalmatoVideoPageSize();
-      const pageCount = Math.max(1, Math.ceil(calmatoVideoCards.length / pageSize));
-      if (pageCount <= 1) return;
+  const pageSize = getCalmatoVideoPageSize();
+  const pageCount = Math.max(
+    1,
+    Math.ceil(calmatoVideoCards.length / pageSize)
+  );
 
-      const visibleCards = calmatoVideoCards.filter((card) => !card.hidden);
-      calmatoVideoPage += direction;
+  if (pageCount <= 1) return;
 
-      if (prefersReducedMotion) {
-        updateCalmatoVideoPage();
-        return;
+  calmatoVideoIsAnimating = true;
+
+  const visibleCards = calmatoVideoCards.filter(
+    (card) => !card.hidden
+  );
+
+  // 현재 카드: 멀리 밀리지 않고 살짝 이동하며 디졸브
+  visibleCards.forEach((card, index) => {
+    card.animate(
+      [
+        {
+          transform: "translateX(0)",
+          opacity: 1,
+        },
+        {
+          transform: `translateX(${direction * -4}vw)`,
+          opacity: 0,
+        },
+      ],
+      {
+        duration: 480,
+        delay: index * 30,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        fill: "forwards",
       }
+    );
+  });
 
-      calmatoVideoIsAnimating = true;
-      clearCalmatoVideoMotion();
-      setCalmatoVideoMotion(visibleCards, direction, "is-sliding-out");
+  window.clearTimeout(calmatoVideoTransitionTimer);
 
-      window.clearTimeout(calmatoVideoTransitionTimer);
-      calmatoVideoTransitionTimer = window.setTimeout(() => {
-        clearCalmatoVideoMotion();
-        updateCalmatoVideoPage();
-        const enteringCards = calmatoVideoCards.filter((card) => !card.hidden);
+  // 기존 카드가 사라진 후 다음 페이지로 전환
+  calmatoVideoTransitionTimer = window.setTimeout(() => {
+    calmatoVideoPage += direction;
+    updateCalmatoVideoPage();
 
-        enteringCards.forEach((card, index) => {
-          card.style.setProperty("--calmato-video-card-enter-x", `${direction * 100}vw`);
-          card.style.setProperty("--calmato-video-card-exit-x", `${direction * -24}vw`);
-          card.style.setProperty("--calmato-video-card-order", index);
-        });
+    const enteringCards = calmatoVideoCards.filter(
+      (card) => !card.hidden
+    );
 
-        calmatoVideoGrid.getBoundingClientRect();
-        enteringCards.forEach((card) => {
-          card.classList.add("is-sliding-in");
-        });
+    // 새 카드: 가까운 화면 밖에서 천천히 슬라이드 + 페이드 인
+    enteringCards.forEach((card, index) => {
+      card.animate(
+        [
+          {
+            transform: `translateX(${direction * 18}vw)`,
+            opacity: 0,
+          },
+          {
+            transform: "translateX(0)",
+            opacity: 1,
+          },
+        ],
+        {
+          duration: 900,
+          delay: index * 55,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "both",
+        }
+      );
+    });
 
-        calmatoVideoTransitionTimer = window.setTimeout(() => {
-          clearCalmatoVideoMotion();
-          calmatoVideoIsAnimating = false;
-        }, 820);
-      }, 260);
-    };
+    // 애니메이션 종료 후 다음 클릭 허용
+    calmatoVideoTransitionTimer = window.setTimeout(() => {
+      calmatoVideoIsAnimating = false;
+    }, 1080);
+  }, 560);
+};
 
     if (calmatoVideoCards.length > 0) {
       updateCalmatoVideoPage();

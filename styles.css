@@ -1132,13 +1132,13 @@ html[data-theme="dark"] .footer-mark {
   --calmato-video-control-hover-color: var(--foreground);
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin-top: 4px;
+  gap: 60px;
+  margin-top: 14px;
 }
 
 .calmato-video-control {
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -1154,8 +1154,8 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .calmato-video-control-icon {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   display: block;
   background: currentColor;
   -webkit-mask-position: center;
