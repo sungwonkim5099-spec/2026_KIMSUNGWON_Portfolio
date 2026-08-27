@@ -1230,12 +1230,12 @@ html[data-theme="dark"] .calmato-video-controls {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--header-height) + 48px) 0 72px;
+  padding: 0;
   text-align: center;
 }
 
 .calmato-closing-hero {
-  transform: translateY(32px);
+  transform: none;
 }
 
 .calmato-closing-title {
@@ -1346,6 +1346,7 @@ html[data-theme="dark"] .calmato-video-controls {
   position: relative;
   width: var(--horizon-width);
   height: var(--horizon-height);
+  display: none;
   margin-top: var(--horizon-top);
   pointer-events: none;
 }
@@ -1373,20 +1374,6 @@ html[data-theme="dark"] .calmato-video-controls {
   top: 0;
   width: 74%;
   height: 152px;
-  background: radial-gradient(
-    ellipse at 50% 100%,
-    rgba(255, 185, 112, 0.88) 0%,
-    rgba(227, 61, 0, 0.42) 22%,
-    rgba(227, 61, 0, 0.18) 46%,
-    rgba(227, 61, 0, 0.06) 64%,
-    transparent 78%
-  ),
-  radial-gradient(
-    ellipse at 50% 100%,
-    rgba(255, 112, 42, 0.32) 0%,
-    rgba(227, 61, 0, 0.18) 34%,
-    transparent 72%
-  );
   filter: blur(18px);
   opacity: 0.82;
   transform: translateX(-50%);
@@ -1520,8 +1507,7 @@ html[data-theme="dark"] .calmato-video-controls {
 
 @media (max-width: 1099px) {
   .calmato-closing-content {
-    padding-top: calc(var(--header-height) + 42px);
-    padding-bottom: 64px;
+    padding: 0;
   }
 
   .calmato-closing-title {
@@ -1552,8 +1538,7 @@ html[data-theme="dark"] .calmato-video-controls {
 
 @media (max-width: 833px) {
   .calmato-closing-content {
-    padding-top: calc(var(--header-height) + 36px);
-    padding-bottom: 56px;
+    padding: 0;
   }
 
   .calmato-closing-title {
