@@ -412,6 +412,17 @@
       return footerRect.top < window.innerHeight && footerRect.bottom > 0;
     };
 
+    const syncElsewhereSwitcherVisibility = (snapIndex) => {
+      if (!elsewhereSwitcher || !elsewhereSnapScroller) return;
+
+      const isAtFirstSnapTop =
+        snapIndex === 0 &&
+        elsewhereSnapScroller.scrollTop <= 8 &&
+        !isElsewhereFooterVisible();
+
+      elsewhereSwitcher.classList.toggle("is-hidden", !isAtFirstSnapTop);
+    };
+
     const setElsewhereSnapIndex = (nextIndex) => {
       elsewhereSnapDots.forEach((dot, index) => {
         const isActive = index === nextIndex;
@@ -426,7 +437,7 @@
         );
       });
 
-      elsewhereSwitcher?.classList.toggle("is-hidden", nextIndex !== 0);
+      syncElsewhereSwitcherVisibility(nextIndex);
     };
 
     const updateElsewhereSnapState = () => {
@@ -468,12 +479,20 @@
       elsewhereSnapScroller.classList.toggle("is-footer-free", isFooterFree);
     };
 
-    const releaseElsewhereFooterSnap = () => {
+    const releaseElsewhereFooterSnap = (scrollAmount = 0, behavior = "auto") => {
       if (!elsewhereSnapScroller || elsewhereActivePanel !== "calmato") return;
       if (!isElsewhereAtLastSnapPanel()) return;
 
       elsewhereSnapScroller.classList.add("is-footer-free");
       setElsewhereSnapIndex(-1);
+
+      if (scrollAmount > 0) {
+        elsewhereSnapScroller.scrollBy({
+          top: scrollAmount,
+          left: 0,
+          behavior,
+        });
+      }
     };
 
     if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
@@ -496,6 +515,10 @@
       elsewhereSnapScroller.addEventListener(
         "scroll",
         () => {
+          if (elsewhereSnapScroller.scrollTop > 8) {
+            elsewhereSwitcher?.classList.add("is-hidden");
+          }
+
           updateElsewhereFooterSnap();
           requestElsewhereSnapState();
         },
@@ -517,11 +540,40 @@
       );
 
       elsewhereSnapScroller.addEventListener(
+        "touchend",
+        (event) => {
+          const touch = event.changedTouches[0];
+          if (!touch) return;
+
+          const deltaX = touch.clientX - elsewhereTouchStartX;
+          const deltaY = touch.clientY - elsewhereTouchStartY;
+          const isVerticalRelease = deltaY < -48 && Math.abs(deltaY) > Math.abs(deltaX) * 1.4;
+          if (!isVerticalRelease) return;
+
+          releaseElsewhereFooterSnap(Math.min(Math.max(Math.abs(deltaY) * 1.6, 140), 520));
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
         "wheel",
         (event) => {
           if (event.deltaY > 0) releaseElsewhereFooterSnap();
         },
         { passive: true }
+      );
+
+      window.addEventListener(
+        "wheel",
+        (event) => {
+          if (event.ctrlKey || event.deltaY <= 0) return;
+          if (elsewhereActivePanel !== "calmato") return;
+          if (!isElsewhereAtLastSnapPanel()) return;
+
+          event.preventDefault();
+          releaseElsewhereFooterSnap(Math.max(event.deltaY, 140));
+        },
+        { capture: true, passive: false }
       );
 
       window.addEventListener("scroll", requestElsewhereSnapState, { passive: true });
