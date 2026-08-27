@@ -1209,6 +1209,420 @@ html[data-theme="dark"] .calmato-video-controls {
   --calmato-video-control-hover-background: rgba(255, 255, 255, 0.08);
 }
 
+/* =========================
+   Calmato Closing / Page 04
+========================= */
+#calmato-closing {
+  position: relative;
+  overflow: hidden;
+  padding: 0 var(--panel-x);
+  color: var(--foreground);
+  background: var(--background);
+  isolation: isolate;
+}
+
+.calmato-closing-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--header-height) + 48px) 0 72px;
+  text-align: center;
+}
+
+.calmato-closing-hero {
+  transform: translateY(32px);
+}
+
+.calmato-closing-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: clamp(52px, 6.2vw, 92px);
+  font-weight: 620;
+  line-height: 0.96;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.calmato-closing-title > span {
+  display: block;
+}
+
+.calmato-closing-accent-dot {
+  display: inline;
+  color: var(--accent);
+}
+
+.calmato-closing-message {
+  max-width: 620px;
+  margin: clamp(22px, 3svh, 34px) 0 0;
+  color: var(--foreground-soft);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.78;
+}
+
+.calmato-closing-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 32px;
+}
+
+.calmato-closing-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  opacity: 0.72;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.calmato-closing-link:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.calmato-closing-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.calmato-closing-link-icon {
+  width: 17px;
+  height: 17px;
+  display: inline-block;
+}
+
+.calmato-closing-youtube-icon {
+  background: currentColor;
+  -webkit-mask: url("assets/icon-youtube.svg") center / contain no-repeat;
+  mask: url("assets/icon-youtube.svg") center / contain no-repeat;
+}
+
+.calmato-closing-instagram-icon {
+  position: relative;
+  border: 1.7px solid currentColor;
+  border-radius: 5px;
+}
+
+.calmato-closing-instagram-icon::before,
+.calmato-closing-instagram-icon::after {
+  content: "";
+  position: absolute;
+}
+
+.calmato-closing-instagram-icon::before {
+  inset: 4px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.calmato-closing-instagram-icon::after {
+  top: 3px;
+  right: 3px;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.calmato-closing-horizon {
+  --horizon-width: min(1680px, 174vw);
+  --horizon-height: 230px;
+  --horizon-top: clamp(40px, 8svh, 76px);
+  --horizon-glow: 0 0 22px rgba(227, 61, 0, 0.48), 0 0 86px rgba(227, 61, 0, 0.3);
+  position: relative;
+  width: var(--horizon-width);
+  height: var(--horizon-height);
+  margin-top: var(--horizon-top);
+  pointer-events: none;
+}
+
+.calmato-closing-horizon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--horizon-height) * -0.78);
+  width: 100%;
+  height: calc(var(--horizon-height) * 1.35);
+  border-top: 1px solid var(--accent);
+  border-radius: 50% 50% 0 0 / 42% 42% 0 0;
+  box-shadow: var(--horizon-glow);
+  transform: translateX(-50%);
+  animation: calmatoClosingHorizon 8s ease-in-out infinite;
+}
+
+.calmato-closing-horizon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  width: 72%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(227, 61, 0, 0.18),
+    rgba(255, 174, 92, 0.92),
+    rgba(227, 61, 0, 0.18),
+    transparent
+  );
+  filter: blur(6px);
+  opacity: 0.74;
+  transform: translateX(-50%);
+  animation: calmatoClosingHorizonGlow 8s ease-in-out infinite;
+}
+
+.calmato-closing-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.calmato-closing-particle {
+  position: absolute;
+  width: var(--particle-size, 3px);
+  height: var(--particle-size, 3px);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(227, 61, 0, 0.72);
+  opacity: 0;
+  transform: scale(0.7);
+  animation: calmatoClosingParticle var(--particle-duration, 7s) ease-in-out infinite;
+  animation-delay: var(--particle-delay, 0s);
+}
+
+.particle-01 {
+  --particle-size: 2px;
+  --particle-duration: 6.8s;
+  --particle-delay: 0.4s;
+  top: 21%;
+  left: 14%;
+}
+
+.particle-02 {
+  --particle-size: 3px;
+  --particle-duration: 8.2s;
+  --particle-delay: 2.1s;
+  top: 30%;
+  left: 73%;
+}
+
+.particle-03 {
+  --particle-size: 2px;
+  --particle-duration: 7.4s;
+  --particle-delay: 3.2s;
+  top: 44%;
+  left: 24%;
+}
+
+.particle-04 {
+  --particle-size: 4px;
+  --particle-duration: 9s;
+  --particle-delay: 1.3s;
+  top: 57%;
+  left: 82%;
+}
+
+.particle-05 {
+  --particle-size: 2px;
+  --particle-duration: 6.2s;
+  --particle-delay: 4.7s;
+  top: 67%;
+  left: 18%;
+}
+
+.particle-06 {
+  --particle-size: 3px;
+  --particle-duration: 8.8s;
+  --particle-delay: 0.9s;
+  top: 18%;
+  left: 88%;
+}
+
+.particle-07 {
+  --particle-size: 2px;
+  --particle-duration: 7.9s;
+  --particle-delay: 5.5s;
+  top: 74%;
+  left: 64%;
+}
+
+.particle-08 {
+  --particle-size: 3px;
+  --particle-duration: 6.6s;
+  --particle-delay: 2.8s;
+  top: 39%;
+  left: 9%;
+}
+
+@keyframes calmatoClosingParticle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  30% {
+    opacity: 0.82;
+  }
+
+  70% {
+    opacity: 0.52;
+    transform: scale(1);
+  }
+}
+
+@keyframes calmatoClosingHorizon {
+  0%,
+  100% {
+    opacity: 0.72;
+    filter: blur(0.1px);
+  }
+
+  50% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes calmatoClosingHorizonGlow {
+  0%,
+  100% {
+    opacity: 0.56;
+  }
+
+  50% {
+    opacity: 0.86;
+  }
+}
+
+@media (max-width: 1099px) {
+  .calmato-closing-content {
+    padding-top: calc(var(--header-height) + 42px);
+    padding-bottom: 64px;
+  }
+
+  .calmato-closing-title {
+    font-size: clamp(48px, 8vw, 76px);
+  }
+
+  .calmato-closing-message {
+    max-width: 560px;
+    font-size: 14px;
+  }
+
+  .calmato-closing-links {
+    margin-top: 30px;
+  }
+
+  .calmato-closing-horizon {
+    --horizon-width: min(1400px, 188vw);
+    --horizon-height: 210px;
+    --horizon-top: clamp(34px, 6svh, 58px);
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1439px) {
+  .calmato-closing-title {
+    font-size: clamp(52px, 6.6vw, 84px);
+  }
+}
+
+@media (max-width: 833px) {
+  .calmato-closing-content {
+    padding-top: calc(var(--header-height) + 36px);
+    padding-bottom: 56px;
+  }
+
+  .calmato-closing-title {
+    font-size: clamp(40px, 11.2vw, 52px);
+    line-height: 1;
+  }
+
+  .calmato-closing-message {
+    max-width: 320px;
+    margin-top: 20px;
+    font-size: 13px;
+    line-height: 1.72;
+  }
+
+  .calmato-closing-links {
+    gap: 18px;
+    margin-top: 26px;
+  }
+
+  .calmato-closing-link {
+    gap: 7px;
+    font-size: 13px;
+  }
+
+  .calmato-closing-link-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .calmato-closing-horizon {
+    --horizon-width: 184vw;
+    --horizon-height: 170px;
+    --horizon-top: 38px;
+    --horizon-glow: 0 0 18px rgba(227, 61, 0, 0.42), 0 0 64px rgba(227, 61, 0, 0.26);
+  }
+
+  .particle-01 {
+    top: 22%;
+    left: 12%;
+  }
+
+  .particle-02 {
+    top: 28%;
+    left: 78%;
+  }
+
+  .particle-03 {
+    top: 48%;
+    left: 16%;
+  }
+
+  .particle-04 {
+    top: 61%;
+    left: 86%;
+  }
+
+  .particle-05 {
+    top: 71%;
+    left: 22%;
+  }
+
+  .particle-06 {
+    top: 18%;
+    left: 90%;
+  }
+
+  .particle-07 {
+    top: 77%;
+    left: 62%;
+  }
+
+  .particle-08 {
+    top: 39%;
+    left: 8%;
+  }
+}
+
 .elsewhere-footer {
   padding-top: 120px;
   padding-bottom: 100px;
