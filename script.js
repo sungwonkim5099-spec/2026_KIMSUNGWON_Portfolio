@@ -41,7 +41,84 @@
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
     const links = [...document.querySelectorAll("[data-snap-link]")];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+// Calmato Hero Typewriter
 
+const calmatoTypewriter = document.querySelector(
+  "[data-calmato-typewriter]"
+);
+
+console.log("Calmato Typewriter:", calmatoTypewriter);
+
+if (calmatoTypewriter) {
+
+  const lines = [
+
+    "일상의 끝에 잠시 머물 수 있는 순간을 전하는 음악 콘텐츠 채널입니다.",
+
+    "콘텐츠의 기획부터 비주얼, 영상과 사운드까지 하나의 방향성으로 설계하며,",
+
+    "누군가의 하루가 조금 더 차분하고 평온하게 마무리될 수 있는 콘텐츠를 제작하고 있습니다."
+
+  ];
+
+  const speed = 30;
+
+  const lineDelay = 100;
+
+  const startTypewriter = () => {
+
+    if (calmatoTypewriter.dataset.typed === "true") return;
+
+    calmatoTypewriter.dataset.typed = "true";
+
+    calmatoTypewriter.innerHTML = "";
+
+    let lineIndex = 0;
+
+    let charIndex = 0;
+
+    const typeLine = () => {
+
+      if (lineIndex >= lines.length) return;
+
+      if (charIndex < lines[lineIndex].length) {
+
+        calmatoTypewriter.append(
+
+          document.createTextNode(lines[lineIndex][charIndex])
+
+        );
+
+        charIndex++;
+
+        window.setTimeout(typeLine, speed);
+
+        return;
+
+      }
+
+      lineIndex++;
+
+      charIndex = 0;
+
+      if (lineIndex < lines.length) {
+
+        calmatoTypewriter.append(document.createElement("br"));
+
+        window.setTimeout(typeLine, lineDelay);
+
+      }
+
+    };
+
+    typeLine();
+
+  };
+
+  window.setTimeout(startTypewriter, 300);
+
+}
     const ensureThemeToggle = () => {
       const existingToggle = document.querySelector("[data-theme-toggle]");
       if (existingToggle) return existingToggle;

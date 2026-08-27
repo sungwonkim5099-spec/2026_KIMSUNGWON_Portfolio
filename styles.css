@@ -964,6 +964,16 @@ html[data-theme="dark"] .footer-mark {
   white-space: nowrap;
 }
 
+.calmato-hero-content h2 .calmato-title-no-break {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.calmato-hero-content h2 .calmato-closing-accent-dot {
+  display: inline;
+  white-space: nowrap;
+}
+
 .calmato-hero-description {
   max-width: 660px;
   margin: 0;
@@ -1259,11 +1269,12 @@ html[data-theme="dark"] .calmato-video-controls {
 
 .calmato-closing-message {
   max-width: 620px;
-  margin: clamp(22px, 3svh, 34px) 0 0;
+  margin: clamp(22px, 3svh, 34px) auto 0;
   color: var(--foreground-soft);
   font-size: 15px;
   font-weight: 400;
   line-height: 1.78;
+  text-align: center;
 }
 
 .calmato-closing-links {
