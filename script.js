@@ -283,6 +283,122 @@
       frame.replaceChildren(iframe);
     });
 
+    const calmatoVideoGrid = document.querySelector("[data-calmato-video-grid]");
+    const calmatoVideoCards = [...document.querySelectorAll("[data-calmato-video-card]")];
+    const calmatoVideoPrev = document.querySelector("[data-calmato-video-prev]");
+    const calmatoVideoNext = document.querySelector("[data-calmato-video-next]");
+    const calmatoVideoMobileQuery = window.matchMedia("(max-width: 833px)");
+    let calmatoVideoPage = 0;
+    let calmatoVideoTransitionTimer = 0;
+    let calmatoVideoIsAnimating = false;
+
+    const getCalmatoVideoPageSize = () => (calmatoVideoMobileQuery.matches ? 2 : 3);
+
+    const clearCalmatoVideoMotion = () => {
+      calmatoVideoCards.forEach((card) => {
+        card.classList.remove("is-sliding-in", "is-sliding-out");
+        card.style.removeProperty("--calmato-video-card-enter-x");
+        card.style.removeProperty("--calmato-video-card-exit-x");
+        card.style.removeProperty("--calmato-video-card-order");
+      });
+    };
+
+    const setCalmatoVideoMotion = (cards, direction, motionClass) => {
+      cards.forEach((card, index) => {
+        card.style.setProperty("--calmato-video-card-enter-x", `${direction * 100}vw`);
+        card.style.setProperty("--calmato-video-card-exit-x", `${direction * -24}vw`);
+        card.style.setProperty("--calmato-video-card-order", index);
+        card.classList.add(motionClass);
+      });
+    };
+
+    const updateCalmatoVideoPage = () => {
+      if (!calmatoVideoGrid || calmatoVideoCards.length === 0) return;
+
+      const pageSize = getCalmatoVideoPageSize();
+      const pageCount = Math.max(1, Math.ceil(calmatoVideoCards.length / pageSize));
+      calmatoVideoPage = (calmatoVideoPage + pageCount) % pageCount;
+      const pageStart = calmatoVideoPage * pageSize;
+      const pageEnd = pageStart + pageSize;
+
+      calmatoVideoCards.forEach((card, index) => {
+        const isVisible = index >= pageStart && index < pageEnd;
+        card.hidden = !isVisible;
+        card.setAttribute("aria-hidden", String(!isVisible));
+      });
+
+      calmatoVideoGrid.dataset.activePage = String(calmatoVideoPage + 1);
+    };
+
+    const setCalmatoVideoPage = (direction) => {
+      if (!calmatoVideoGrid || calmatoVideoCards.length === 0 || calmatoVideoIsAnimating) return;
+
+      const pageSize = getCalmatoVideoPageSize();
+      const pageCount = Math.max(1, Math.ceil(calmatoVideoCards.length / pageSize));
+      if (pageCount <= 1) return;
+
+      const visibleCards = calmatoVideoCards.filter((card) => !card.hidden);
+      calmatoVideoPage += direction;
+
+      if (prefersReducedMotion) {
+        updateCalmatoVideoPage();
+        return;
+      }
+
+      calmatoVideoIsAnimating = true;
+      clearCalmatoVideoMotion();
+      setCalmatoVideoMotion(visibleCards, direction, "is-sliding-out");
+
+      window.clearTimeout(calmatoVideoTransitionTimer);
+      calmatoVideoTransitionTimer = window.setTimeout(() => {
+        clearCalmatoVideoMotion();
+        updateCalmatoVideoPage();
+        const enteringCards = calmatoVideoCards.filter((card) => !card.hidden);
+
+        enteringCards.forEach((card, index) => {
+          card.style.setProperty("--calmato-video-card-enter-x", `${direction * 100}vw`);
+          card.style.setProperty("--calmato-video-card-exit-x", `${direction * -24}vw`);
+          card.style.setProperty("--calmato-video-card-order", index);
+        });
+
+        calmatoVideoGrid.getBoundingClientRect();
+        enteringCards.forEach((card) => {
+          card.classList.add("is-sliding-in");
+        });
+
+        calmatoVideoTransitionTimer = window.setTimeout(() => {
+          clearCalmatoVideoMotion();
+          calmatoVideoIsAnimating = false;
+        }, 820);
+      }, 260);
+    };
+
+    if (calmatoVideoCards.length > 0) {
+      updateCalmatoVideoPage();
+
+      calmatoVideoPrev?.addEventListener("click", () => {
+        setCalmatoVideoPage(-1);
+      });
+
+      calmatoVideoNext?.addEventListener("click", () => {
+        setCalmatoVideoPage(1);
+      });
+
+      const handleCalmatoVideoBreakpoint = () => {
+        window.clearTimeout(calmatoVideoTransitionTimer);
+        clearCalmatoVideoMotion();
+        calmatoVideoIsAnimating = false;
+        calmatoVideoPage = 0;
+        updateCalmatoVideoPage();
+      };
+
+      if (typeof calmatoVideoMobileQuery.addEventListener === "function") {
+        calmatoVideoMobileQuery.addEventListener("change", handleCalmatoVideoBreakpoint);
+      } else {
+        calmatoVideoMobileQuery.addListener(handleCalmatoVideoBreakpoint);
+      }
+    }
+
     const getElsewhereScrollTop = (target) => {
       if (!elsewhereSnapScroller || !target) return 0;
       const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();

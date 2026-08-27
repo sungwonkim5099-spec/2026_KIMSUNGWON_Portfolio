@@ -132,12 +132,19 @@
               </section>
 
               <section
-                class="elsewhere-snap-panel calmato-featured"
+                class="elsewhere-snap-panel calmato-snap-placeholder"
                 id="calmato-about"
-                aria-labelledby="calmato-featured-title"
+                aria-label="About Calmato"
                 data-elsewhere-snap-panel="1"
+              ></section>
+
+              <section
+                class="elsewhere-snap-panel calmato-featured"
+                id="calmato-youtube"
+                aria-labelledby="calmato-featured-title"
+                data-elsewhere-snap-panel="2"
               >
-                <!-- Calmato 02 - VS Code Edit Area: 텍스트와 data-youtube-url 값만 직접 수정하면 됩니다. -->
+                <!-- Calmato 03 - VS Code Edit Area: 텍스트와 data-youtube-url 값만 직접 수정하면 됩니다. -->
                 <div class="calmato-featured-content">
                   <p class="calmato-hero-label">FEATURED CONTENT</p>
                   <h2 id="calmato-featured-title">
@@ -148,10 +155,11 @@
                     음악과 영상을 통해 일상 속 잠시 머물고 싶은 순간을 만듭니다.
                   </p>
 
-                  <div class="calmato-featured-grid" aria-label="Calmato featured YouTube videos">
+                  <div class="calmato-featured-grid" aria-label="Calmato featured YouTube videos" aria-live="polite" data-calmato-video-grid>
                     <article
                       class="calmato-featured-video"
                       data-youtube-url="https://youtu.be/qUYlbVk4skE"
+                      data-calmato-video-card
                       aria-label="Calmato featured video 01"
                     >
                       <div class="calmato-featured-video-frame" data-youtube-frame></div>
@@ -160,6 +168,7 @@
                     <article
                       class="calmato-featured-video"
                       data-youtube-url="https://youtu.be/zCrS2qY7vtU"
+                      data-calmato-video-card
                       aria-label="Calmato featured video 02"
                     >
                       <div class="calmato-featured-video-frame" data-youtube-frame></div>
@@ -168,6 +177,7 @@
                     <article
                       class="calmato-featured-video"
                       data-youtube-url="https://youtu.be/c598NT3LmM0"
+                      data-calmato-video-card
                       aria-label="Calmato featured video 03"
                     >
                       <div class="calmato-featured-video-frame" data-youtube-frame></div>
@@ -176,21 +186,42 @@
                     <article
                       class="calmato-featured-video"
                       data-youtube-url="https://youtu.be/5tMdvZvKWYs"
+                      data-calmato-video-card
                       aria-label="Calmato featured video 04"
                     >
                       <div class="calmato-featured-video-frame" data-youtube-frame></div>
                     </article>
+
+                    <article
+                      class="calmato-featured-video"
+                      data-youtube-url="https://youtu.be/VIDEO_ID_05"
+                      data-calmato-video-card
+                      aria-label="Calmato featured video 05"
+                    >
+                      <div class="calmato-featured-video-frame" data-youtube-frame></div>
+                    </article>
+
+                    <article
+                      class="calmato-featured-video"
+                      data-youtube-url="https://youtu.be/VIDEO_ID_06"
+                      data-calmato-video-card
+                      aria-label="Calmato featured video 06"
+                    >
+                      <div class="calmato-featured-video-frame" data-youtube-frame></div>
+                    </article>
+                  </div>
+
+                  <div class="calmato-video-controls" aria-label="Calmato video navigation">
+                    <button class="calmato-video-control" type="button" aria-label="Previous Calmato videos" data-calmato-video-prev>
+                      <span class="calmato-video-control-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="calmato-video-control" type="button" aria-label="Next Calmato videos" data-calmato-video-next>
+                      <span class="calmato-video-control-icon" aria-hidden="true"></span>
+                    </button>
                   </div>
                 </div>
-                <!-- Calmato 02 - VS Code Edit Area End -->
+                <!-- Calmato 03 - VS Code Edit Area End -->
               </section>
-
-              <section
-                class="elsewhere-snap-panel calmato-snap-placeholder"
-                id="calmato-youtube"
-                aria-label="YouTube Contents"
-                data-elsewhere-snap-panel="2"
-              ></section>
 
               <section
                 class="elsewhere-snap-panel calmato-snap-placeholder"
