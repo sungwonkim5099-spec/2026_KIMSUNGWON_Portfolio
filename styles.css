@@ -877,12 +877,11 @@ html[data-theme="dark"] .footer-mark {
 
 .unsplash-gallery {
   /* VS Code Edit: 카드 크기, 전체 폭, 아치 간격은 아래 5개 값을 먼저 조정하세요. */
-  --unsplash-card-width: clamp(220px, 18vw, 800px);
-  --unsplash-card-height: clamp(320px, 26vw, 500px);
-  --unsplash-card-step: clamp(208px, 19.2vw, 278px);
-  --unsplash-stage-width: min(calc(100% - 48px), 1360px);
-  --unsplash-stage-height: clamp(440px, 57svh, 610px);
-  --unsplash-carousel-duration: 760ms;
+  --unsplash-card-width: clamp(120px, 21vw, 300px);
+  --unsplash-card-step: calc(var(--unsplash-card-width) * 1.12);
+  --unsplash-stage-width: 100%;
+  --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
+  --unsplash-carousel-duration: 680ms;
   --unsplash-carousel-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --unsplash-arc-y-near: 28;
   --unsplash-arc-y-far: 52;
@@ -964,7 +963,8 @@ html[data-theme="dark"] .unsplash-carousel {
   left: 50%;
   z-index: var(--unsplash-card-order, 1);
   width: var(--unsplash-card-width);
-  height: var(--unsplash-card-height);
+  height: auto;
+  aspect-ratio: 2 / 3;
   padding: 0;
   overflow: hidden;
   border-radius: 14px;
@@ -1007,6 +1007,8 @@ html[data-theme="dark"] .unsplash-carousel {
 
 .unsplash-card img {
   object-fit: cover;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .unsplash-card-placeholder {
@@ -1231,13 +1233,6 @@ body.is-unsplash-lightbox-open .elsewhere-main {
 
 @media (max-width: 1099px) {
   .unsplash-gallery {
-    --unsplash-card-width: clamp(200px, 22vw, 250px);
-    --unsplash-card-height: clamp(290px, 32vw, 360px);
-    --unsplash-card-step: clamp(225px, 24vw, 280px);
-    --unsplash-stage-width: min(calc(100% - 40px), 1040px);
-    --unsplash-stage-height: clamp(410px, 56svh, 560px);
-    --unsplash-arc-y-near: 20;
-    --unsplash-arc-y-far: 36;
     padding-top: calc(var(--header-height) + 96px);
     padding-bottom: 56px;
   }
@@ -1258,14 +1253,6 @@ body.is-unsplash-lightbox-open .elsewhere-main {
 
 @media (max-width: 833px) {
   .unsplash-gallery {
-    --unsplash-card-width: clamp(76px, 16.8vw, 132px);
-    --unsplash-card-height: clamp(112px, 24.5vw, 194px);
-    --unsplash-card-step: clamp(81px, 20vw, 160px);
-    --unsplash-stage-width: 100vw;
-    --unsplash-stage-height: clamp(260px, 48svh, 420px);
-    --unsplash-arc-y-near: 16;
-    --unsplash-arc-y-far: 34;
-    min-height: 100svh;
     padding-top: calc(var(--header-height) + 92px);
     padding-bottom: 44px;
   }
@@ -1331,6 +1318,15 @@ body.is-unsplash-lightbox-open .elsewhere-main {
   justify-content: center;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+}
+
+body:has(.elsewhere-switcher[data-active="unsplash"]) .elsewhere-snap-root {
+  scroll-snap-type: none !important;
+}
+
+body:has(.elsewhere-switcher[data-active="unsplash"]) .elsewhere-snap-panel {
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
 }
 
 .elsewhere-snap-nav {

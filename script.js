@@ -357,7 +357,7 @@ if (calmatoTypewriter) {
       {
         src: "../assets/elsewhere_unsplash/04_unsplash.jpg",
         alt: "Unsplash photo 05 image path placeholder",
-        title: "Night Tokyo tower",
+        title: "Night Tokyo",
         location: "Tokyo, Japan",
         year: "2026.03",
         url: "#",
@@ -480,11 +480,17 @@ if (calmatoTypewriter) {
     let unsplashWheelTimer = 0;
     let unsplashPointerStartX = 0;
     let unsplashPointerStartY = 0;
+    let unsplashPointerCurrentX = 0;
+    let unsplashPointerLastX = 0;
+    let unsplashPointerLastTime = 0;
+    let unsplashPointerVelocityX = 0;
+    let unsplashPointerCardStep = 1;
     let unsplashPointerMoved = false;
     let unsplashPointerIsDown = false;
     let unsplashLightboxOpen = false;
     let unsplashPreviousFocus = null;
     let unsplashMotionTimer = 0;
+    let unsplashSwitcherRevealTimer = 0;
 
     const isUnsplashPanelActive = () => unsplashPanel?.classList.contains("is-active");
 
@@ -508,6 +514,20 @@ if (calmatoTypewriter) {
     const getUnsplashMotionValue = (style, property, fallback) => {
       const value = Number.parseFloat(style.getPropertyValue(property));
       return Number.isFinite(value) ? value : fallback;
+    };
+
+    const getUnsplashCardStep = () => {
+      if (!unsplashTrack) return 1;
+      const cards = [...unsplashTrack.children];
+      const activeCard = cards[unsplashActiveIndex];
+      const adjacentCard = cards.find((card, index) => getUnsplashOffset(index) === 1);
+      if (!activeCard || !adjacentCard) return Math.max(unsplashCarousel?.clientWidth * 0.25 || 1, 1);
+
+      const activeRect = activeCard.getBoundingClientRect();
+      const adjacentRect = adjacentCard.getBoundingClientRect();
+      const activeCenter = activeRect.left + activeRect.width / 2;
+      const adjacentCenter = adjacentRect.left + adjacentRect.width / 2;
+      return Math.max(Math.abs(adjacentCenter - activeCenter), 1);
     };
 
     const setUnsplashExternalLink = (link, item) => {
@@ -548,7 +568,7 @@ if (calmatoTypewriter) {
       unsplashMetaTimer = window.setTimeout(applyMeta, 140);
     };
 
-    const updateUnsplashCards = (immediate = false) => {
+    const updateUnsplashCards = (immediate = false, dragProgress = 0) => {
       if (!unsplashTrack || unsplashItems.length === 0) return;
 
       const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
@@ -564,17 +584,21 @@ if (calmatoTypewriter) {
       const depthFar = getUnsplashMotionValue(motionStyle, "--unsplash-depth-far", -58);
 
       [...unsplashTrack.children].forEach((card, index) => {
-        const offset = getUnsplashOffset(index);
+        const baseOffset = getUnsplashOffset(index);
+        const offset = baseOffset + dragProgress;
         const distance = Math.abs(offset);
-        const isVisible = distance <= 2;
-        const isActive = offset === 0;
-        const xPosition = isVisible ? offset : offset > 0 ? 3 : -3;
-        const yPosition = distance === 0 ? 0 : distance === 1 ? arcNearY : arcFarY;
-        const cardScale = distance === 0 ? 1 : distance === 1 ? scaleNear : scaleFar;
-        const cardOpacity = isVisible ? (distance === 0 ? 1 : distance === 1 ? opacityNear : opacityFar) : 0;
+        const isVisible = distance <= 2.5;
+        const isActive = Math.abs(offset) < 0.5;
+        const xPosition = offset;
+        const clampedDistance = Math.min(distance, 2);
+        const nearMix = Math.min(clampedDistance, 1);
+        const farMix = Math.max(clampedDistance - 1, 0);
+        const yPosition = clampedDistance <= 1 ? arcNearY * nearMix : arcNearY + (arcFarY - arcNearY) * farMix;
+        const cardScale = clampedDistance <= 1 ? 1 + (scaleNear - 1) * nearMix : scaleNear + (scaleFar - scaleNear) * farMix;
+        const cardOpacity = clampedDistance <= 1 ? 1 + (opacityNear - 1) * nearMix : opacityNear + (opacityFar - opacityNear) * farMix;
         const cardTilt = isVisible ? offset * tiltStep : 0;
         const cardRotate = isVisible ? offset * rotateYStep : 0;
-        const cardDepth = distance === 0 ? 0 : distance === 1 ? depthNear : depthFar;
+        const cardDepth = clampedDistance <= 1 ? depthNear * nearMix : depthNear + (depthFar - depthNear) * farMix;
         const cardOrder = 10 - distance;
 
         card.classList.toggle("is-active", isActive);
@@ -588,10 +612,10 @@ if (calmatoTypewriter) {
         card.style.setProperty("--unsplash-card-rotate", `${cardRotate}deg`);
         card.style.setProperty("--unsplash-card-depth", `${cardDepth}px`);
         card.style.setProperty("--unsplash-card-order", cardOrder);
-        card.style.transitionDuration = immediate || prefersReducedMotion ? "0ms" : "";
+        card.style.transitionDuration = immediate || unsplashPointerIsDown || prefersReducedMotion ? "0ms" : "";
       });
 
-      updateUnsplashMeta(unsplashItems[unsplashActiveIndex], immediate);
+      if (!unsplashPointerIsDown) updateUnsplashMeta(unsplashItems[unsplashActiveIndex], immediate);
     };
 
     const setUnsplashActiveIndex = (nextIndex, immediate = false) => {
@@ -741,7 +765,9 @@ if (calmatoTypewriter) {
         },
         { passive: false }
       );
-
+      unsplashCarousel.addEventListener("dragstart", (event) => {
+        event.preventDefault();
+      });
       unsplashCarousel.addEventListener("pointerdown", (event) => {
         if (!isUnsplashPanelActive() || unsplashLightboxOpen || event.button > 0) return;
         stopUnsplashMotion();
@@ -749,36 +775,70 @@ if (calmatoTypewriter) {
         unsplashPointerMoved = false;
         unsplashPointerStartX = event.clientX;
         unsplashPointerStartY = event.clientY;
+        unsplashPointerCurrentX = event.clientX;
+        unsplashPointerLastX = event.clientX;
+        unsplashPointerLastTime = event.timeStamp;
+        unsplashPointerVelocityX = 0;
+        unsplashPointerCardStep = getUnsplashCardStep();
         unsplashCarousel.classList.add("is-dragging");
+        window.clearTimeout(unsplashSwitcherRevealTimer);
+        if (elsewhereActivePanel === "unsplash") {
+          elsewhereSwitcher?.classList.add("is-hidden");
+        }
         unsplashCarousel.setPointerCapture?.(event.pointerId);
       });
 
       unsplashCarousel.addEventListener("pointermove", (event) => {
         if (!unsplashPointerIsDown) return;
+
         const deltaX = event.clientX - unsplashPointerStartX;
         const deltaY = event.clientY - unsplashPointerStartY;
-        if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+        const elapsed = Math.max(event.timeStamp - unsplashPointerLastTime, 1);
+        const instantVelocity = (event.clientX - unsplashPointerLastX) / elapsed;
+
+        unsplashPointerCurrentX = event.clientX;
+        unsplashPointerVelocityX = unsplashPointerVelocityX * 0.72 + instantVelocity * 0.28;
+        unsplashPointerLastX = event.clientX;
+        unsplashPointerLastTime = event.timeStamp;
+
+        if (Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY)) {
           unsplashPointerMoved = true;
         }
+
+        const dragProgress = deltaX / unsplashPointerCardStep;
+        updateUnsplashCards(false, dragProgress);
       });
 
       const endUnsplashPointer = (event) => {
         if (!unsplashPointerIsDown) return;
-        const deltaX = event.clientX - unsplashPointerStartX;
+        const pointerEndX = event.type === "pointercancel" ? unsplashPointerCurrentX : event.clientX;
+        const deltaX = pointerEndX - unsplashPointerStartX;
         const deltaY = event.clientY - unsplashPointerStartY;
-        const isHorizontalDrag = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
+        const dragDistance = deltaX / unsplashPointerCardStep;
+        const velocityAge = event.timeStamp - unsplashPointerLastTime;
+        const releaseVelocityX = velocityAge <= 90 ? unsplashPointerVelocityX : 0;
+        const velocityDistance = Math.max(-0.35, Math.min(0.35, (releaseVelocityX * 150) / unsplashPointerCardStep));
+        const projectedDistance = dragDistance + velocityDistance;
+        const isHorizontalDrag = Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY);
+        const isFlick = Math.abs(dragDistance) >= 0.12 && Math.abs(releaseVelocityX) >= 0.55;
+        const shouldAdvance = Math.abs(dragDistance) >= 0.2 || isFlick;
 
         unsplashPointerIsDown = false;
         unsplashCarousel.classList.remove("is-dragging");
         unsplashCarousel.releasePointerCapture?.(event.pointerId);
+        if (elsewhereActivePanel === "unsplash") {
+          window.clearTimeout(unsplashSwitcherRevealTimer);
+          unsplashSwitcherRevealTimer = window.setTimeout(() => {
+            elsewhereSwitcher?.classList.remove("is-hidden");
+          }, 1000);
+        }
 
-        if (isHorizontalDrag) {
-          moveUnsplashCarousel(deltaX < 0 ? 1 : -1);
-          startUnsplashMotion();
-          window.setTimeout(() => {
-            unsplashPointerMoved = false;
-          }, 0);
-          return;
+        if (isHorizontalDrag && shouldAdvance) {
+          const releaseDirection = projectedDistance || dragDistance;
+          const jumpCount = Math.min(2, Math.max(1, Math.round(Math.abs(releaseDirection))));
+          moveUnsplashCarousel((releaseDirection > 0 ? -1 : 1) * jumpCount);
+        } else {
+          updateUnsplashCards();
         }
 
         startUnsplashMotion();
@@ -1426,17 +1486,21 @@ links.forEach((link) => {
     };
 
     const scrollTargets = new Set([window]);
-    if (scroller) scrollTargets.add(scroller);
-    if (elsewhere) scrollTargets.add(elsewhere);
-    if (elsewhereSnapRoot) scrollTargets.add(elsewhereSnapRoot);
-    scrollTargets.forEach((target) => {
-      target.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
-    });
-  };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", onReady, { once: true });
-  } else {
-    onReady();
-  }
+if (scroller) scrollTargets.add(scroller);
+if (elsewhere) scrollTargets.add(elsewhere);
+if (elsewhereSnapRoot) scrollTargets.add(elsewhereSnapRoot);
+
+scrollTargets.forEach((target) => {
+  target.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
+});
+
+}; // onReady 끝
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", onReady, { once: true });
+} else {
+  onReady();
+}
+
 })();
