@@ -491,6 +491,7 @@ if (calmatoTypewriter) {
     let unsplashPreviousFocus = null;
     let unsplashMotionTimer = 0;
     let unsplashSwitcherRevealTimer = 0;
+    let unsplashReboundTimer = 0;
 
     const isUnsplashPanelActive = () => unsplashPanel?.classList.contains("is-active");
 
@@ -568,7 +569,7 @@ if (calmatoTypewriter) {
       unsplashMetaTimer = window.setTimeout(applyMeta, 140);
     };
 
-    const updateUnsplashCards = (immediate = false, dragProgress = 0) => {
+    const updateUnsplashCards = (immediate = false, dragProgress = 0, syncMeta = true, transitionDuration = "") => {
       if (!unsplashTrack || unsplashItems.length === 0) return;
 
       const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
@@ -612,20 +613,52 @@ if (calmatoTypewriter) {
         card.style.setProperty("--unsplash-card-rotate", `${cardRotate}deg`);
         card.style.setProperty("--unsplash-card-depth", `${cardDepth}px`);
         card.style.setProperty("--unsplash-card-order", cardOrder);
-        card.style.transitionDuration = immediate || unsplashPointerIsDown || prefersReducedMotion ? "0ms" : "";
+        card.style.transitionDuration = immediate || unsplashPointerIsDown || prefersReducedMotion ? "0ms" : transitionDuration;
       });
 
-      if (!unsplashPointerIsDown) updateUnsplashMeta(unsplashItems[unsplashActiveIndex], immediate);
+      if (!unsplashPointerIsDown && syncMeta) updateUnsplashMeta(unsplashItems[unsplashActiveIndex], immediate);
     };
 
-    const setUnsplashActiveIndex = (nextIndex, immediate = false) => {
+    const stopUnsplashRebound = () => {
+      window.clearTimeout(unsplashReboundTimer);
+      unsplashReboundTimer = 0;
+    };
+
+    const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
+      stopUnsplashRebound();
+
+      if (prefersReducedMotion || !releaseDirection) {
+        updateUnsplashCards(false, 0, syncMeta);
+        return;
+      }
+
+      const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
+      const reboundMax = Math.max(0, getUnsplashMotionValue(motionStyle, "--unsplash-rebound-distance", 0.16));
+      const reboundDelay = Math.max(0, getUnsplashMotionValue(motionStyle, "--unsplash-rebound-delay", 180));
+      const settleDuration = Math.max(0, getUnsplashMotionValue(motionStyle, "--unsplash-rebound-settle-duration", 460));
+      const reboundMagnitude = Math.min(reboundMax, Math.max(reboundMax * 0.45, Math.abs(releaseDirection) * 0.16));
+      const reboundProgress = Math.sign(releaseDirection) * reboundMagnitude;
+
+      updateUnsplashCards(false, reboundProgress, syncMeta, `${reboundDelay}ms`);
+      unsplashReboundTimer = window.setTimeout(() => {
+        unsplashReboundTimer = 0;
+        updateUnsplashCards(false, 0, false, `${settleDuration}ms`);
+      }, reboundDelay);
+    };
+
+    const setUnsplashActiveIndex = (nextIndex, immediate = false, reboundDirection = 0) => {
       if (unsplashItems.length === 0 || unsplashLightboxOpen) return;
       unsplashActiveIndex = normalizeUnsplashIndex(nextIndex);
-      updateUnsplashCards(immediate);
+      if (!immediate && reboundDirection) {
+        playUnsplashRebound(reboundDirection);
+      } else {
+        stopUnsplashRebound();
+        updateUnsplashCards(immediate);
+      }
     };
 
     const moveUnsplashCarousel = (direction) => {
-      setUnsplashActiveIndex(unsplashActiveIndex + direction);
+      setUnsplashActiveIndex(unsplashActiveIndex + direction, false, direction > 0 ? -1 : 1);
     };
 
     const stopUnsplashMotion = () => {
@@ -662,6 +695,7 @@ if (calmatoTypewriter) {
       if (!unsplashLightbox || !setUnsplashLightboxContent(item)) return;
 
       stopUnsplashMotion();
+      stopUnsplashRebound();
       unsplashLightboxOpen = true;
       unsplashPreviousFocus = document.activeElement;
       unsplashLightbox.hidden = false;
@@ -836,9 +870,10 @@ if (calmatoTypewriter) {
         if (isHorizontalDrag && shouldAdvance) {
           const releaseDirection = projectedDistance || dragDistance;
           const jumpCount = Math.min(2, Math.max(1, Math.round(Math.abs(releaseDirection))));
-          moveUnsplashCarousel((releaseDirection > 0 ? -1 : 1) * jumpCount);
+          const nextDirection = (releaseDirection > 0 ? -1 : 1) * jumpCount;
+          setUnsplashActiveIndex(unsplashActiveIndex + nextDirection, false, releaseDirection);
         } else {
-          updateUnsplashCards();
+          playUnsplashRebound(isHorizontalDrag ? -dragDistance : 0);
         }
 
         startUnsplashMotion();

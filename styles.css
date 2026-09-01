@@ -883,6 +883,10 @@ html[data-theme="dark"] .footer-mark {
   --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
   --unsplash-carousel-duration: 680ms;
   --unsplash-carousel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* VS Code Edit: 드래그/자동 전환 후 반동 강도와 settle 속도는 아래 3개 값을 조정하세요. */
+  --unsplash-rebound-distance: 0.16;
+  --unsplash-rebound-delay: 180;
+  --unsplash-rebound-settle-duration: 460;
   --unsplash-arc-y-near: 28;
   --unsplash-arc-y-far: 52;
   --unsplash-scale-near: 0.95;
