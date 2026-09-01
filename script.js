@@ -318,6 +318,511 @@ if (calmatoTypewriter) {
       { passive: true }
     );
 
+    // Elsewhere / Unsplash Carousel
+    // VS Code Edit: 이미지 추가 후 src에 실제 확장자를 포함한 경로를 입력하세요.
+    // src 예시: "../assets/elsewhere_unsplash/00_unsplash.[실제확장자]"
+    const unsplashItems = [
+      {
+        src: "../assets/elsewhere_unsplash/00_unsplash.jpg",
+        alt: "Shinjuku Gyoen 01",
+        title: "Shinjuku Gyoen 01",
+        location: "Tokyo, Japan",
+        year: "2026.04",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/01_unsplash.jpg",
+        alt: "Shinjuku Gyoen 02",
+        title: "Shinjuku Gyoen 02",
+        location: "Tokyo, Japan",
+        year: "2026.04",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/02_unsplash.jpg",
+        alt: "Shinjuku Gyoen 03",
+        title: "Shinjuku Gyoen 03",
+        location: "Tokyo, Japan",
+        year: "2026.04",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/03_unsplash.jpg",
+        alt: "Unsplash photo 04 image path placeholder",
+        title: "Photo 04 Placeholder",
+        location: "Tokyo, Japan",
+        year: "2026.08",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/04_unsplash.jpg",
+        alt: "Unsplash photo 05 image path placeholder",
+        title: "Night Tokyo tower",
+        location: "Tokyo, Japan",
+        year: "2026.03",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/05_unsplash.jpg",
+        alt: "Unsplash photo 06 image path placeholder",
+        title: "Photo 06 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/06_unsplash.jpg",
+        alt: "Unsplash photo 07 image path placeholder",
+        title: "Photo 07 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/07_unsplash.jpg",
+        alt: "Unsplash photo 08 image path placeholder",
+        title: "Photo 08 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/08_unsplash.jpg",
+        alt: "Unsplash photo 09 image path placeholder",
+        title: "Photo 09 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/09_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/10_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/11_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/12_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/13_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/13_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/14_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+      {
+        src: "../assets/elsewhere_unsplash/15_unsplash.jpg",
+        alt: "Unsplash photo 10 image path placeholder",
+        title: "Photo 10 Placeholder",
+        location: "Location placeholder",
+        year: "2026",
+        url: "#",
+      },
+    ];
+
+    const unsplashPanel = document.querySelector('[data-elsewhere-panel="unsplash"]');
+    const unsplashGallery = document.querySelector("[data-unsplash-gallery]");
+    const unsplashCarousel = document.querySelector("[data-unsplash-carousel]");
+    const unsplashTrack = document.querySelector("[data-unsplash-track]");
+    const unsplashMeta = document.querySelector("[data-unsplash-meta]");
+    const unsplashCounter = document.querySelector("[data-unsplash-counter]");
+    const unsplashTitle = document.querySelector("[data-unsplash-title]");
+    const unsplashDetail = document.querySelector("[data-unsplash-detail]");
+    const unsplashLink = document.querySelector("[data-unsplash-link]");
+    const unsplashLightbox = document.querySelector("[data-unsplash-lightbox]");
+    const unsplashLightboxImage = document.querySelector("[data-unsplash-lightbox-image]");
+    const unsplashLightboxTitle = document.querySelector("[data-unsplash-lightbox-title]");
+    const unsplashLightboxDetail = document.querySelector("[data-unsplash-lightbox-detail]");
+    const unsplashLightboxLink = document.querySelector("[data-unsplash-lightbox-link]");
+    const unsplashLightboxCloseTargets = [...document.querySelectorAll("[data-unsplash-lightbox-close]")];
+    let unsplashActiveIndex = 0;
+    let unsplashMetaTimer = 0;
+    let unsplashWheelTimer = 0;
+    let unsplashPointerStartX = 0;
+    let unsplashPointerStartY = 0;
+    let unsplashPointerMoved = false;
+    let unsplashPointerIsDown = false;
+    let unsplashLightboxOpen = false;
+    let unsplashPreviousFocus = null;
+    let unsplashMotionTimer = 0;
+
+    const isUnsplashPanelActive = () => unsplashPanel?.classList.contains("is-active");
+
+    const normalizeUnsplashIndex = (index) => {
+      const itemCount = unsplashItems.length;
+      return ((index % itemCount) + itemCount) % itemCount;
+    };
+
+    const getUnsplashOffset = (index) => {
+      const itemCount = unsplashItems.length;
+      let offset = index - unsplashActiveIndex;
+      if (offset > itemCount / 2) offset -= itemCount;
+      if (offset < itemCount / -2) offset += itemCount;
+      return offset;
+    };
+
+    const getUnsplashItemDetail = (item) => {
+      return [item.location, item.year].filter(Boolean).join(" · ") || "Metadata placeholder";
+    };
+
+    const getUnsplashMotionValue = (style, property, fallback) => {
+      const value = Number.parseFloat(style.getPropertyValue(property));
+      return Number.isFinite(value) ? value : fallback;
+    };
+
+    const setUnsplashExternalLink = (link, item) => {
+      if (!link) return;
+      const hasUrl = Boolean(item?.url && item.url !== "#");
+      link.href = hasUrl ? item.url : "#";
+      link.toggleAttribute("target", hasUrl);
+      link.toggleAttribute("rel", hasUrl);
+      if (hasUrl) {
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.removeAttribute("aria-disabled");
+      } else {
+        link.removeAttribute("target");
+        link.removeAttribute("rel");
+        link.setAttribute("aria-disabled", "true");
+      }
+    };
+
+    const updateUnsplashMeta = (item, immediate = false) => {
+      const applyMeta = () => {
+        if (unsplashCounter) {
+          unsplashCounter.textContent = `${String(unsplashActiveIndex + 1).padStart(2, "0")} / ${String(unsplashItems.length).padStart(2, "0")}`;
+        }
+        if (unsplashTitle) unsplashTitle.textContent = item.title;
+        if (unsplashDetail) unsplashDetail.textContent = getUnsplashItemDetail(item);
+        setUnsplashExternalLink(unsplashLink, item);
+        unsplashMeta?.classList.remove("is-changing");
+      };
+
+      window.clearTimeout(unsplashMetaTimer);
+      if (immediate || prefersReducedMotion) {
+        applyMeta();
+        return;
+      }
+
+      unsplashMeta?.classList.add("is-changing");
+      unsplashMetaTimer = window.setTimeout(applyMeta, 140);
+    };
+
+    const updateUnsplashCards = (immediate = false) => {
+      if (!unsplashTrack || unsplashItems.length === 0) return;
+
+      const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
+      const arcNearY = getUnsplashMotionValue(motionStyle, "--unsplash-arc-y-near", 42);
+      const arcFarY = getUnsplashMotionValue(motionStyle, "--unsplash-arc-y-far", 78);
+      const scaleNear = getUnsplashMotionValue(motionStyle, "--unsplash-scale-near", 0.9);
+      const scaleFar = getUnsplashMotionValue(motionStyle, "--unsplash-scale-far", 0.8);
+      const opacityNear = getUnsplashMotionValue(motionStyle, "--unsplash-opacity-near", 0.98);
+      const opacityFar = getUnsplashMotionValue(motionStyle, "--unsplash-opacity-far", 0.88);
+      const tiltStep = getUnsplashMotionValue(motionStyle, "--unsplash-tilt-step", 1.8);
+      const rotateYStep = getUnsplashMotionValue(motionStyle, "--unsplash-rotate-y-step", -3);
+      const depthNear = getUnsplashMotionValue(motionStyle, "--unsplash-depth-near", -24);
+      const depthFar = getUnsplashMotionValue(motionStyle, "--unsplash-depth-far", -58);
+
+      [...unsplashTrack.children].forEach((card, index) => {
+        const offset = getUnsplashOffset(index);
+        const distance = Math.abs(offset);
+        const isVisible = distance <= 2;
+        const isActive = offset === 0;
+        const xPosition = isVisible ? offset : offset > 0 ? 3 : -3;
+        const yPosition = distance === 0 ? 0 : distance === 1 ? arcNearY : arcFarY;
+        const cardScale = distance === 0 ? 1 : distance === 1 ? scaleNear : scaleFar;
+        const cardOpacity = isVisible ? (distance === 0 ? 1 : distance === 1 ? opacityNear : opacityFar) : 0;
+        const cardTilt = isVisible ? offset * tiltStep : 0;
+        const cardRotate = isVisible ? offset * rotateYStep : 0;
+        const cardDepth = distance === 0 ? 0 : distance === 1 ? depthNear : depthFar;
+        const cardOrder = 10 - distance;
+
+        card.classList.toggle("is-active", isActive);
+        card.classList.toggle("is-hidden", !isVisible);
+        card.setAttribute("aria-hidden", String(!isVisible));
+        card.style.setProperty("--unsplash-card-x", `calc(var(--unsplash-card-step) * ${xPosition})`);
+        card.style.setProperty("--unsplash-card-y", `${yPosition}px`);
+        card.style.setProperty("--unsplash-card-scale", cardScale);
+        card.style.setProperty("--unsplash-card-opacity", cardOpacity);
+        card.style.setProperty("--unsplash-card-tilt", `${cardTilt}deg`);
+        card.style.setProperty("--unsplash-card-rotate", `${cardRotate}deg`);
+        card.style.setProperty("--unsplash-card-depth", `${cardDepth}px`);
+        card.style.setProperty("--unsplash-card-order", cardOrder);
+        card.style.transitionDuration = immediate || prefersReducedMotion ? "0ms" : "";
+      });
+
+      updateUnsplashMeta(unsplashItems[unsplashActiveIndex], immediate);
+    };
+
+    const setUnsplashActiveIndex = (nextIndex, immediate = false) => {
+      if (unsplashItems.length === 0 || unsplashLightboxOpen) return;
+      unsplashActiveIndex = normalizeUnsplashIndex(nextIndex);
+      updateUnsplashCards(immediate);
+    };
+
+    const moveUnsplashCarousel = (direction) => {
+      setUnsplashActiveIndex(unsplashActiveIndex + direction);
+    };
+
+    const stopUnsplashMotion = () => {
+      window.clearTimeout(unsplashMotionTimer);
+      unsplashMotionTimer = 0;
+    };
+
+    const startUnsplashMotion = () => {
+      // VS Code Edit: 자동 캐러셀 모션 속도는 아래 delay 값을 조정하세요.
+      const unsplashMotionDelay = 2600;
+
+      stopUnsplashMotion();
+      if (prefersReducedMotion || !isUnsplashPanelActive() || unsplashLightboxOpen || unsplashPointerIsDown) return;
+
+      unsplashMotionTimer = window.setTimeout(() => {
+        if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashPointerIsDown) return;
+        moveUnsplashCarousel(1);
+        startUnsplashMotion();
+      }, unsplashMotionDelay);
+    };
+
+    const setUnsplashLightboxContent = (item) => {
+      if (!item || !item.src || !unsplashLightboxImage) return false;
+
+      unsplashLightboxImage.src = item.src;
+      unsplashLightboxImage.alt = item.alt || item.title;
+      if (unsplashLightboxTitle) unsplashLightboxTitle.textContent = item.title;
+      if (unsplashLightboxDetail) unsplashLightboxDetail.textContent = getUnsplashItemDetail(item);
+      setUnsplashExternalLink(unsplashLightboxLink, item);
+      return true;
+    };
+
+    const openUnsplashLightbox = (item) => {
+      if (!unsplashLightbox || !setUnsplashLightboxContent(item)) return;
+
+      stopUnsplashMotion();
+      unsplashLightboxOpen = true;
+      unsplashPreviousFocus = document.activeElement;
+      unsplashLightbox.hidden = false;
+      document.body.classList.add("is-unsplash-lightbox-open");
+
+      window.requestAnimationFrame(() => {
+        unsplashLightbox.classList.add("is-open");
+        unsplashLightbox.setAttribute("aria-hidden", "false");
+        unsplashLightboxCloseTargets.find((target) => target.matches("button"))?.focus();
+      });
+    };
+
+    const closeUnsplashLightbox = () => {
+      if (!unsplashLightbox || !unsplashLightboxOpen) return;
+
+      unsplashLightboxOpen = false;
+      unsplashLightbox.classList.remove("is-open");
+      unsplashLightbox.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("is-unsplash-lightbox-open");
+
+      window.setTimeout(() => {
+        if (!unsplashLightboxOpen) {
+          unsplashLightbox.hidden = true;
+          unsplashPreviousFocus?.focus?.();
+          startUnsplashMotion();
+        }
+      }, prefersReducedMotion ? 0 : 360);
+    };
+
+    if (unsplashTrack && unsplashCarousel && unsplashItems.length > 0) {
+      const fragment = document.createDocumentFragment();
+
+      unsplashItems.forEach((item, index) => {
+        const card = document.createElement("button");
+        card.className = "unsplash-card";
+        card.type = "button";
+        card.dataset.unsplashIndex = String(index);
+        card.setAttribute("aria-label", `${String(index + 1).padStart(2, "0")} ${item.title}`);
+
+        if (item.src) {
+          const image = document.createElement("img");
+          image.src = item.src;
+          image.alt = item.alt || item.title;
+          image.loading = index < 3 ? "eager" : "lazy";
+          card.append(image);
+        } else {
+          const placeholder = document.createElement("span");
+          placeholder.className = "unsplash-card-placeholder";
+          placeholder.textContent = `${String(index).padStart(2, "0")}_unsplash image path needed`;
+          card.append(placeholder);
+        }
+
+        card.addEventListener("click", () => {
+          if (unsplashPointerMoved) return;
+          if (index !== unsplashActiveIndex) {
+            stopUnsplashMotion();
+            setUnsplashActiveIndex(index);
+            startUnsplashMotion();
+            return;
+          }
+          openUnsplashLightbox(unsplashItems[unsplashActiveIndex]);
+        });
+
+        card.addEventListener("keydown", (event) => {
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            stopUnsplashMotion();
+            moveUnsplashCarousel(-1);
+            startUnsplashMotion();
+          }
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            stopUnsplashMotion();
+            moveUnsplashCarousel(1);
+            startUnsplashMotion();
+          }
+        });
+
+        fragment.append(card);
+      });
+
+      unsplashTrack.replaceChildren(fragment);
+      updateUnsplashCards(true);
+      startUnsplashMotion();
+
+      unsplashCarousel.addEventListener(
+        "wheel",
+        (event) => {
+          if (!isUnsplashPanelActive() || unsplashLightboxOpen) return;
+          const primaryDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+          if (Math.abs(primaryDelta) < 18) return;
+
+          event.preventDefault();
+          if (unsplashWheelTimer) return;
+          stopUnsplashMotion();
+          moveUnsplashCarousel(primaryDelta > 0 ? 1 : -1);
+          startUnsplashMotion();
+          unsplashWheelTimer = window.setTimeout(() => {
+            unsplashWheelTimer = 0;
+          }, prefersReducedMotion ? 120 : 640);
+        },
+        { passive: false }
+      );
+
+      unsplashCarousel.addEventListener("pointerdown", (event) => {
+        if (!isUnsplashPanelActive() || unsplashLightboxOpen || event.button > 0) return;
+        stopUnsplashMotion();
+        unsplashPointerIsDown = true;
+        unsplashPointerMoved = false;
+        unsplashPointerStartX = event.clientX;
+        unsplashPointerStartY = event.clientY;
+        unsplashCarousel.classList.add("is-dragging");
+        unsplashCarousel.setPointerCapture?.(event.pointerId);
+      });
+
+      unsplashCarousel.addEventListener("pointermove", (event) => {
+        if (!unsplashPointerIsDown) return;
+        const deltaX = event.clientX - unsplashPointerStartX;
+        const deltaY = event.clientY - unsplashPointerStartY;
+        if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+          unsplashPointerMoved = true;
+        }
+      });
+
+      const endUnsplashPointer = (event) => {
+        if (!unsplashPointerIsDown) return;
+        const deltaX = event.clientX - unsplashPointerStartX;
+        const deltaY = event.clientY - unsplashPointerStartY;
+        const isHorizontalDrag = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2;
+
+        unsplashPointerIsDown = false;
+        unsplashCarousel.classList.remove("is-dragging");
+        unsplashCarousel.releasePointerCapture?.(event.pointerId);
+
+        if (isHorizontalDrag) {
+          moveUnsplashCarousel(deltaX < 0 ? 1 : -1);
+          startUnsplashMotion();
+          window.setTimeout(() => {
+            unsplashPointerMoved = false;
+          }, 0);
+          return;
+        }
+
+        startUnsplashMotion();
+
+        window.setTimeout(() => {
+          unsplashPointerMoved = false;
+        }, 0);
+      };
+
+      unsplashCarousel.addEventListener("pointerup", endUnsplashPointer);
+      unsplashCarousel.addEventListener("pointercancel", endUnsplashPointer);
+
+      ["touchstart", "touchmove", "touchend"].forEach((eventName) => {
+        unsplashCarousel.addEventListener(
+          eventName,
+          (event) => {
+            event.stopPropagation();
+          },
+          { passive: true }
+        );
+      });
+
+      const unsplashPanelObserver = new MutationObserver(() => {
+        if (isUnsplashPanelActive()) {
+          startUnsplashMotion();
+          return;
+        }
+
+        stopUnsplashMotion();
+      });
+
+      if (unsplashPanel) {
+        unsplashPanelObserver.observe(unsplashPanel, { attributes: true, attributeFilter: ["class"] });
+      }
+    }
+
+    unsplashLightboxCloseTargets.forEach((target) => {
+      target.addEventListener("click", closeUnsplashLightbox);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeUnsplashLightbox();
+    });
+
     // Elsewhere snap indicator
     const elsewhereSnapRoot = document.querySelector("[data-elsewhere-snap-root]");
     const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];

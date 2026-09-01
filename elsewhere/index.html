@@ -290,7 +290,52 @@
             aria-hidden="true"
             data-elsewhere-panel="unsplash"
           >
-            <!-- Unsplash layout will be added later -->
+            <!-- Elsewhere / Unsplash Carousel - VS Code Edit Area: 이미지와 텍스트 데이터는 script.js의 unsplashItems 배열에서 수정합니다. -->
+            <div class="unsplash-gallery" data-unsplash-gallery>
+              <div class="unsplash-gallery-header">
+                <p>UNSPLASH</p>
+                <h2>PHOTOGRAPHY ARCHIVE</h2>
+              </div>
+
+              <div class="unsplash-carousel" aria-label="Photography carousel" data-unsplash-carousel>
+                <div class="unsplash-carousel-track" data-unsplash-track></div>
+              </div>
+
+              <div class="unsplash-meta" aria-live="polite" data-unsplash-meta>
+                <p class="unsplash-counter" data-unsplash-counter>00 / 00</p>
+                <h3 data-unsplash-title>Photo title placeholder</h3>
+                <p data-unsplash-detail>Location placeholder · 2026</p>
+                <a class="unsplash-external-link" href="#" data-unsplash-link>
+                  <span>View on Unsplash</span>
+                  <img class="unsplash-external-logo" src="../assets/icon-profile.svg" alt="" aria-hidden="true">
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="unsplash-lightbox"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Unsplash photo preview"
+              aria-hidden="true"
+              hidden
+              data-unsplash-lightbox
+            >
+              <div class="unsplash-lightbox-backdrop" data-unsplash-lightbox-close></div>
+              <button class="unsplash-lightbox-close" type="button" aria-label="사진 크게 보기 닫기" data-unsplash-lightbox-close>×</button>
+              <figure class="unsplash-lightbox-content">
+                <img class="unsplash-lightbox-image" alt="" data-unsplash-lightbox-image>
+                <figcaption class="unsplash-lightbox-meta">
+                  <strong data-unsplash-lightbox-title>Photo title placeholder</strong>
+                  <span data-unsplash-lightbox-detail>Location placeholder · 2026</span>
+                  <a class="unsplash-external-link" href="#" data-unsplash-lightbox-link>
+                    <span>View on Unsplash</span>
+                    <img class="unsplash-external-logo" src="../assets/icon-profile.svg" alt="" aria-hidden="true">
+                  </a>
+                </figcaption>
+              </figure>
+            </div>
+            <!-- Elsewhere / Unsplash Carousel - VS Code Edit Area End -->
           </section>
         </div>
       </section>
