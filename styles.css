@@ -1711,6 +1711,7 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 
 .calmato-value {
   min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1719,7 +1720,18 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 }
 
 .calmato-value + .calmato-value {
-  border-left: 1px solid var(--line);
+  /* VS Code Edit: adjust top/bottom to change the divider length. */
+  position: relative;
+}
+
+.calmato-value + .calmato-value::before {
+  content: "";
+  position: absolute;
+  top: clamp(18px, 2.4svh, 28px);
+  bottom: clamp(18px, 2.4svh, 28px);
+  left: 0;
+  width: 1px;
+  background: var(--line);
 }
 
 .calmato-value-icon {
@@ -1872,17 +1884,9 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   line-height: 1.1;
 }
 
-.calmato-value-dot {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 auto;
-  margin-top: clamp(18px, 2.6svh, 30px);
-  border-radius: 50%;
-  background: var(--foreground-muted);
-}
-
 .calmato-value p {
-  margin: clamp(20px, 3svh, 36px) 0 0;
+  /* VS Code Edit: this is the title-to-description spacing after the dot removal. */
+  margin: clamp(16px, 2.2svh, 26px) 0 0;
   color: var(--foreground-soft);
   font-size: 15px;
   font-weight: 400;
@@ -1963,12 +1967,14 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
     padding-left: 8px;
   }
 
-  .calmato-value + .calmato-value {
-    border-left: 0;
+  .calmato-value + .calmato-value::before {
+    display: none;
   }
 
-  .calmato-value:nth-child(even) {
-    border-left: 1px solid var(--line);
+  .calmato-value:nth-child(even)::before {
+    display: block;
+    top: 32px;
+    bottom: 32px;
   }
 
   .calmato-value:nth-child(n + 3) {
@@ -1981,14 +1987,8 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
     font-size: 15px;
   }
 
-  .calmato-value-dot {
-    width: 6px;
-    height: 6px;
-    margin-top: 14px;
-  }
-
   .calmato-value p {
-    margin-top: 14px;
+    margin-top: 10px;
     font-size: 12px;
     line-height: 1.6;
   }
