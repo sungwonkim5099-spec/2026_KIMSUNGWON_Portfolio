@@ -944,7 +944,32 @@ html[data-theme="dark"] .footer-mark {
   transform-style: preserve-3d;
   cursor: grab;
   touch-action: pan-y;
+  -webkit-user-select: none;
   user-select: none;
+}
+.unsplash-carousel img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.unsplash-carousel::before,
+.unsplash-carousel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(clamp(60px, 8vw, 140px) + (100vw - var(--unsplash-stage-width)) / 2);
+  z-index: 20;
+  pointer-events: none;
+}
+.unsplash-carousel::before {
+  left: calc((100vw - var(--unsplash-stage-width)) / -2);
+  background: linear-gradient(to right, rgba(17,17,17,0.65) 0%, rgba(17,17,17,0.22) 55%, transparent 100%);
+}
+.unsplash-carousel::after {
+  right: calc((100vw - var(--unsplash-stage-width)) / -2);
+  background: linear-gradient(to left, rgba(17,17,17,0.65) 0%, rgba(17,17,17,0.22) 55%, transparent 100%);
 }
 
 html[data-theme="dark"] .unsplash-carousel {
@@ -1257,6 +1282,10 @@ body.is-unsplash-lightbox-open .elsewhere-main {
 
 @media (max-width: 833px) {
   .unsplash-gallery {
+    /* Mobile only: 가운데 카드는 크게, 좌우 카드는 화면 밖에서 절반만 보이게 합니다. */
+    --unsplash-card-width: clamp(180px, 48vw, 320px);
+    --unsplash-card-step: 50vw;
+    --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
     padding-top: calc(var(--header-height) + 92px);
     padding-bottom: 44px;
   }

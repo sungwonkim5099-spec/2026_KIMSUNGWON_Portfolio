@@ -492,6 +492,7 @@ if (calmatoTypewriter) {
     let unsplashMotionTimer = 0;
     let unsplashSwitcherRevealTimer = 0;
     let unsplashReboundTimer = 0;
+    const unsplashMobileQuery = window.matchMedia("(max-width: 833px)");
 
     const isUnsplashPanelActive = () => unsplashPanel?.classList.contains("is-active");
 
@@ -584,11 +585,13 @@ if (calmatoTypewriter) {
       const depthNear = getUnsplashMotionValue(motionStyle, "--unsplash-depth-near", -24);
       const depthFar = getUnsplashMotionValue(motionStyle, "--unsplash-depth-far", -58);
 
+      const isMobile = unsplashMobileQuery.matches;
+      const visibleLimit = isMobile ? 1.5 : 2.5;
       [...unsplashTrack.children].forEach((card, index) => {
         const baseOffset = getUnsplashOffset(index);
         const offset = baseOffset + dragProgress;
         const distance = Math.abs(offset);
-        const isVisible = distance <= 2.5;
+        const isVisible = distance <= visibleLimit;
         const isActive = Math.abs(offset) < 0.5;
         const xPosition = offset;
         const clampedDistance = Math.min(distance, 2);
@@ -596,7 +599,7 @@ if (calmatoTypewriter) {
         const farMix = Math.max(clampedDistance - 1, 0);
         const yPosition = clampedDistance <= 1 ? arcNearY * nearMix : arcNearY + (arcFarY - arcNearY) * farMix;
         const cardScale = clampedDistance <= 1 ? 1 + (scaleNear - 1) * nearMix : scaleNear + (scaleFar - scaleNear) * farMix;
-        const cardOpacity = clampedDistance <= 1 ? 1 + (opacityNear - 1) * nearMix : opacityNear + (opacityFar - opacityNear) * farMix;
+        const cardOpacity = isVisible ? (clampedDistance <= 1 ? 1 + (opacityNear - 1) * nearMix : opacityNear + (opacityFar - opacityNear) * farMix) : 0;
         const cardTilt = isVisible ? offset * tiltStep : 0;
         const cardRotate = isVisible ? offset * rotateYStep : 0;
         const cardDepth = clampedDistance <= 1 ? depthNear * nearMix : depthNear + (depthFar - depthNear) * farMix;
@@ -613,38 +616,81 @@ if (calmatoTypewriter) {
         card.style.setProperty("--unsplash-card-rotate", `${cardRotate}deg`);
         card.style.setProperty("--unsplash-card-depth", `${cardDepth}px`);
         card.style.setProperty("--unsplash-card-order", cardOrder);
-        card.style.transitionDuration = immediate || unsplashPointerIsDown || prefersReducedMotion ? "0ms" : transitionDuration;
+        card.style.transitionDuration = immediate || unsplashPointerIsDown ? "0ms" : transitionDuration;
       });
 
       if (!unsplashPointerIsDown && syncMeta) updateUnsplashMeta(unsplashItems[unsplashActiveIndex], immediate);
     };
 
     const stopUnsplashRebound = () => {
-      window.clearTimeout(unsplashReboundTimer);
+
+  if (unsplashReboundTimer) cancelAnimationFrame(unsplashReboundTimer);
+
+  unsplashReboundTimer = 0;
+
+};
+
+const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
+
+  stopUnsplashRebound();
+
+  if (!releaseDirection) {
+
+    updateUnsplashCards(false, 0, syncMeta);
+
+    return;
+
+  }
+
+  const direction = Math.sign(releaseDirection);
+
+  const amplitude = Math.min(0.34, Math.max(0.18, Math.abs(releaseDirection) * 0.22));
+
+  const duration = 900;
+
+  const startTime = performance.now();
+
+  const animate = (now) => {
+
+    const t = Math.min((now - startTime) / duration, 1);
+
+    const decay = Math.exp(-3.5 * t);
+
+    const wave = Math.cos(t * Math.PI * 3.2);
+
+    const reboundProgress = direction * amplitude * decay * wave;
+
+    updateUnsplashCards(true, reboundProgress, false);
+
+    if (t < 1) {
+
+      unsplashReboundTimer = requestAnimationFrame(animate);
+
+    } else {
+
       unsplashReboundTimer = 0;
-    };
 
-    const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
+      updateUnsplashCards(true, 0, syncMeta);
+
+    }
+
+  };
+
+  unsplashReboundTimer = requestAnimationFrame(animate);
+
+};
+
+    const syncUnsplashBreakpoint = () => {
+      if (!unsplashTrack) return;
       stopUnsplashRebound();
-
-      if (prefersReducedMotion || !releaseDirection) {
-        updateUnsplashCards(false, 0, syncMeta);
-        return;
-      }
-
-      const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
-      const reboundMax = Math.max(0, getUnsplashMotionValue(motionStyle, "--unsplash-rebound-distance", 0.16));
-      const reboundDelay = Math.max(0, getUnsplashMotionValue(motionStyle, "--unsplash-rebound-delay", 180));
-      const settleDuration = Math.max(0, getUnsplashMotionValue(motionStyle, "--unsplash-rebound-settle-duration", 460));
-      const reboundMagnitude = Math.min(reboundMax, Math.max(reboundMax * 0.45, Math.abs(releaseDirection) * 0.16));
-      const reboundProgress = Math.sign(releaseDirection) * reboundMagnitude;
-
-      updateUnsplashCards(false, reboundProgress, syncMeta, `${reboundDelay}ms`);
-      unsplashReboundTimer = window.setTimeout(() => {
-        unsplashReboundTimer = 0;
-        updateUnsplashCards(false, 0, false, `${settleDuration}ms`);
-      }, reboundDelay);
+      updateUnsplashCards(true);
     };
+
+    if (typeof unsplashMobileQuery.addEventListener === "function") {
+      unsplashMobileQuery.addEventListener("change", syncUnsplashBreakpoint);
+    } else {
+      unsplashMobileQuery.addListener(syncUnsplashBreakpoint);
+    }
 
     const setUnsplashActiveIndex = (nextIndex, immediate = false, reboundDirection = 0) => {
       if (unsplashItems.length === 0 || unsplashLightboxOpen) return;
@@ -781,24 +827,37 @@ if (calmatoTypewriter) {
       updateUnsplashCards(true);
       startUnsplashMotion();
 
-      unsplashCarousel.addEventListener(
-        "wheel",
-        (event) => {
-          if (!isUnsplashPanelActive() || unsplashLightboxOpen) return;
-          const primaryDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-          if (Math.abs(primaryDelta) < 18) return;
+      unsplashCarousel.addEventListener("wheel", (event) => {
 
-          event.preventDefault();
-          if (unsplashWheelTimer) return;
-          stopUnsplashMotion();
-          moveUnsplashCarousel(primaryDelta > 0 ? 1 : -1);
-          startUnsplashMotion();
-          unsplashWheelTimer = window.setTimeout(() => {
-            unsplashWheelTimer = 0;
-          }, prefersReducedMotion ? 120 : 640);
-        },
-        { passive: false }
-      );
+  if (!isUnsplashPanelActive() || unsplashLightboxOpen) return;
+
+  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+
+  if (Math.abs(delta) < 6) return;
+
+  event.preventDefault();
+
+  stopUnsplashMotion();
+
+  stopUnsplashRebound();
+
+  const direction = delta > 0 ? 1 : -1;
+
+  if (!unsplashWheelTimer) {
+
+    moveUnsplashCarousel(direction);
+
+    unsplashWheelTimer = window.setTimeout(() => {
+
+      unsplashWheelTimer = 0;
+
+    }, 180);
+
+  }
+
+  startUnsplashMotion();
+
+}, { passive: false });
       unsplashCarousel.addEventListener("dragstart", (event) => {
         event.preventDefault();
       });
