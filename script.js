@@ -41,84 +41,6 @@
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
     const links = [...document.querySelectorAll("[data-snap-link]")];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
-// Calmato Hero Typewriter
-
-const calmatoTypewriter = document.querySelector(
-  "[data-calmato-typewriter]"
-);
-
-console.log("Calmato Typewriter:", calmatoTypewriter);
-
-if (calmatoTypewriter) {
-
-  const lines = [
-
-    "일상의 끝에 잠시 머물 수 있는 순간을 전하는 음악 콘텐츠 채널입니다.",
-
-    "콘텐츠의 기획부터 비주얼, 영상과 사운드까지 하나의 방향성으로 설계하며,",
-
-    "누군가의 하루가 조금 더 차분하고 평온하게 마무리될 수 있는 콘텐츠를 제작하고 있습니다."
-
-  ];
-
-  const speed = 30;
-
-  const lineDelay = 100;
-
-  const startTypewriter = () => {
-
-    if (calmatoTypewriter.dataset.typed === "true") return;
-
-    calmatoTypewriter.dataset.typed = "true";
-
-    calmatoTypewriter.innerHTML = "";
-
-    let lineIndex = 0;
-
-    let charIndex = 0;
-
-    const typeLine = () => {
-
-      if (lineIndex >= lines.length) return;
-
-      if (charIndex < lines[lineIndex].length) {
-
-        calmatoTypewriter.append(
-
-          document.createTextNode(lines[lineIndex][charIndex])
-
-        );
-
-        charIndex++;
-
-        window.setTimeout(typeLine, speed);
-
-        return;
-
-      }
-
-      lineIndex++;
-
-      charIndex = 0;
-
-      if (lineIndex < lines.length) {
-
-        calmatoTypewriter.append(document.createElement("br"));
-
-        window.setTimeout(typeLine, lineDelay);
-
-      }
-
-    };
-
-    typeLine();
-
-  };
-
-  window.setTimeout(startTypewriter, 300);
-
-}
     const ensureThemeToggle = () => {
       const existingToggle = document.querySelector("[data-theme-toggle]");
       if (existingToggle) return existingToggle;
@@ -199,56 +121,65 @@ if (calmatoTypewriter) {
 
     renderProjectCards();
 
-    // Elsewhere switcher
+    // Elsewhere channel navigation
     const elsewhere = document.querySelector("[data-elsewhere]");
-    const elsewhereSwitcher = document.querySelector("[data-elsewhere-switcher]");
+    const elsewhereSubnavs = [...document.querySelectorAll("[data-elsewhere-subnav]")];
     const elsewherePanelStage = document.querySelector("[data-elsewhere-panel-stage]");
     const elsewhereTabs = [...document.querySelectorAll("[data-elsewhere-tab]")];
     const elsewherePanels = [...document.querySelectorAll("[data-elsewhere-panel]")];
     const elsewhereSnapNav = document.querySelector("[data-elsewhere-snap-nav]");
+    const elsewhereNavItem = document.querySelector("[data-elsewhere-nav-item]");
+    const elsewhereNavTrigger = elsewhereNavItem?.querySelector("[data-elsewhere-nav-trigger]");
     let elsewhereActivePanel = "calmato";
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
-    let elsewhereSlideTimer = 0;
 
-    const animateElsewhereIndicator = (nextPanel) => {
-      const indicator = elsewhereSwitcher?.querySelector(".elsewhere-switcher-indicator");
-      if (!indicator || typeof indicator.animate !== "function") return;
-
-      const fromIndex = elsewhereActivePanel === "unsplash" ? 1 : 0;
-      const toIndex = nextPanel === "unsplash" ? 1 : 0;
-      const travel = indicator.offsetWidth;
-      const fromX = fromIndex * travel;
-      const toX = toIndex * travel;
-
-      indicator.getAnimations().forEach((animation) => animation.cancel());
-      indicator.animate(
-        [
-          { transform: `translate3d(${fromX}px, 0, 0) scaleX(1)` },
-          { transform: `translate3d(${(fromX + toX) / 2}px, 0, 0) scaleX(1.08)`, offset: 0.52 },
-          { transform: `translate3d(${toX}px, 0, 0) scaleX(1)` },
-        ],
-        {
-          duration: 520,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-          fill: "both",
-        }
-      );
+    const setElsewhereDropdownOpen = (isOpen) => {
+      if (!elsewhereNavItem || !elsewhereNavTrigger) return;
+      elsewhereNavItem.classList.toggle("is-open", isOpen);
+      elsewhereNavTrigger.setAttribute("aria-expanded", String(isOpen));
     };
 
+    elsewhereNavTrigger?.addEventListener("click", (event) => {
+      if (!window.matchMedia("(min-width: 834px)").matches) return;
+      event.preventDefault();
+      setElsewhereDropdownOpen(!elsewhereNavItem.classList.contains("is-open"));
+    });
+
+    elsewhereNavItem?.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "mouse") setElsewhereDropdownOpen(true);
+    });
+
+    elsewhereNavItem?.addEventListener("pointerleave", (event) => {
+      if (event.pointerType !== "mouse" || elsewhereNavItem.contains(document.activeElement)) return;
+      setElsewhereDropdownOpen(false);
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (!elsewhereNavItem?.contains(event.target)) setElsewhereDropdownOpen(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setElsewhereDropdownOpen(false);
+    });
+
+    window.addEventListener("resize", () => {
+      if (!window.matchMedia("(min-width: 834px)").matches) setElsewhereDropdownOpen(false);
+    }, { passive: true });
+
+    const setElsewhereSubnavHidden = (hidden) => {
+      elsewhereSubnavs.forEach((subnav) => subnav.classList.toggle("is-hidden", hidden));
+    };
+
+    const isElsewhereSubnavHidden = () =>
+      elsewhereSubnavs.some((subnav) => subnav.classList.contains("is-hidden"));
+
     const setElsewherePanel = (nextPanel) => {
-      if (!elsewhereSwitcher || !elsewhereTabs.length || !elsewherePanels.length) return;
+      if (!elsewhereTabs.length || !elsewherePanels.length) return;
       if (!["calmato", "unsplash"].includes(nextPanel) || nextPanel === elsewhereActivePanel) return;
 
       const isMovingToRight = nextPanel === "unsplash";
-      elsewhereSwitcher.dataset.slideDirection = isMovingToRight ? "right" : "left";
-      elsewhereSwitcher.classList.add("is-sliding");
-      animateElsewhereIndicator(nextPanel);
-      window.clearTimeout(elsewhereSlideTimer);
-      elsewhereSlideTimer = window.setTimeout(() => {
-        elsewhereSwitcher.classList.remove("is-sliding");
-      }, 520);
 
       if (elsewherePanelStage) {
         elsewherePanelStage.style.minHeight = `${elsewherePanelStage.offsetHeight}px`;
@@ -259,7 +190,6 @@ if (calmatoTypewriter) {
       }
 
       elsewhereActivePanel = nextPanel;
-      elsewhereSwitcher.dataset.active = nextPanel;
 
       elsewhereTabs.forEach((tab) => {
         const isActive = tab.dataset.elsewhereTab === nextPanel;
@@ -280,6 +210,7 @@ if (calmatoTypewriter) {
     elsewhereTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         setElsewherePanel(tab.dataset.elsewhereTab || "calmato");
+        if (tab.closest(".mobile-menu")) closeMenu();
       });
 
       tab.addEventListener("keydown", (event) => {
@@ -287,7 +218,9 @@ if (calmatoTypewriter) {
         event.preventDefault();
         const nextPanel = event.key === "ArrowRight" ? "unsplash" : "calmato";
         setElsewherePanel(nextPanel);
-        document.querySelector(`[data-elsewhere-tab="${nextPanel}"]`)?.focus();
+        tab.closest("[data-elsewhere-subnav]")
+          ?.querySelector(`[data-elsewhere-tab="${nextPanel}"]`)
+          ?.focus();
       });
     });
 
@@ -460,6 +393,7 @@ if (calmatoTypewriter) {
       },
     ];
 
+    const unsplashHeader = document.querySelector("[data-nav]");
     const unsplashPanel = document.querySelector('[data-elsewhere-panel="unsplash"]');
     const unsplashGallery = document.querySelector("[data-unsplash-gallery]");
     const unsplashCarousel = document.querySelector("[data-unsplash-carousel]");
@@ -471,10 +405,15 @@ if (calmatoTypewriter) {
     const unsplashLink = document.querySelector("[data-unsplash-link]");
     const unsplashLightbox = document.querySelector("[data-unsplash-lightbox]");
     const unsplashLightboxImage = document.querySelector("[data-unsplash-lightbox-image]");
+    const unsplashLightboxMeta = document.querySelector(".unsplash-lightbox-meta");
+    const unsplashLightboxPrevious = document.querySelector('[data-unsplash-lightbox-adjacent-button="previous"]');
+    const unsplashLightboxNext = document.querySelector('[data-unsplash-lightbox-adjacent-button="next"]');
+    const unsplashLightboxAdjacentButtons = [unsplashLightboxPrevious, unsplashLightboxNext].filter(Boolean);
     const unsplashLightboxTitle = document.querySelector("[data-unsplash-lightbox-title]");
     const unsplashLightboxDetail = document.querySelector("[data-unsplash-lightbox-detail]");
     const unsplashLightboxLink = document.querySelector("[data-unsplash-lightbox-link]");
     const unsplashLightboxCloseTargets = [...document.querySelectorAll("[data-unsplash-lightbox-close]")];
+    const unsplashLightboxClose = unsplashLightboxCloseTargets.find((target) => target.matches("button"));
     let unsplashActiveIndex = 0;
     let unsplashMetaTimer = 0;
     let unsplashWheelTimer = 0;
@@ -485,12 +424,20 @@ if (calmatoTypewriter) {
     let unsplashPointerLastTime = 0;
     let unsplashPointerVelocityX = 0;
     let unsplashPointerCardStep = 1;
+    let unsplashCurrentProgress = 0;
     let unsplashPointerMoved = false;
     let unsplashPointerIsDown = false;
     let unsplashLightboxOpen = false;
+    let unsplashLightboxClosing = false;
+    let unsplashLightboxCloseTimer = 0;
+    let unsplashLightboxTransitioning = false;
+    let unsplashLightboxTransitionTimer = 0;
+    let unsplashLightboxTransitionImage = null;
+    let unsplashLightboxCloseAfterTransition = false;
+    let unsplashSubnavWasHidden = false;
+    let unsplashLightboxScrollTop = 0;
     let unsplashPreviousFocus = null;
     let unsplashMotionTimer = 0;
-    let unsplashSwitcherRevealTimer = 0;
     let unsplashReboundTimer = 0;
     const unsplashMobileQuery = window.matchMedia("(max-width: 833px)");
 
@@ -509,6 +456,14 @@ if (calmatoTypewriter) {
       return offset;
     };
 
+    const getUnsplashIndexDelta = (fromIndex, toIndex) => {
+      const itemCount = unsplashItems.length;
+      let delta = toIndex - fromIndex;
+      if (delta > itemCount / 2) delta -= itemCount;
+      if (delta < itemCount / -2) delta += itemCount;
+      return delta;
+    };
+
     const getUnsplashItemDetail = (item) => {
       return [item.location, item.year].filter(Boolean).join(" · ") || "Metadata placeholder";
     };
@@ -517,6 +472,62 @@ if (calmatoTypewriter) {
       const value = Number.parseFloat(style.getPropertyValue(property));
       return Number.isFinite(value) ? value : fallback;
     };
+
+    const syncUnsplashLightboxClosePosition = (imageRect = null) => {
+      if (!unsplashLightboxClose) return;
+
+      const rect = imageRect || unsplashLightboxImage?.getBoundingClientRect();
+      if (!rect?.width || !rect?.height) return;
+
+      const closeSize = unsplashLightboxClose.getBoundingClientRect().width || 42;
+      const inset = 14;
+      const headerBottom = unsplashHeader?.getBoundingClientRect()?.bottom || 0;
+      const top = Math.min(
+        Math.max(rect.top + inset, headerBottom + 8),
+        window.innerHeight - closeSize - 8
+      );
+      const left = Math.min(
+        Math.max(rect.right - closeSize - inset, 8),
+        window.innerWidth - closeSize - 8
+      );
+
+      unsplashLightboxClose.style.setProperty("--unsplash-lightbox-close-top", `${top}px`);
+      unsplashLightboxClose.style.setProperty("--unsplash-lightbox-close-left", `${left}px`);
+      unsplashLightboxClose.style.setProperty("--unsplash-lightbox-close-right", "auto");
+    };
+
+    const syncUnsplashLightboxSafeArea = () => {
+      if (!unsplashLightbox) return;
+
+      const headerRect = unsplashHeader?.getBoundingClientRect();
+      const cssHeaderHeight = Number.parseFloat(
+        window.getComputedStyle(document.documentElement).getPropertyValue("--header-height")
+      );
+      const headerHeight = headerRect?.height || cssHeaderHeight || 0;
+      unsplashLightbox.style.setProperty(
+        "--unsplash-lightbox-top-safe-area",
+        `${Math.max(headerHeight, 0)}px`
+      );
+      if (unsplashLightboxOpen) syncUnsplashLightboxClosePosition();
+    };
+
+    const restoreUnsplashLightboxScroll = () => {
+      if (elsewhere) elsewhere.scrollTop = unsplashLightboxScrollTop;
+    };
+
+    const restoreUnsplashLightboxScrollAfterFocus = () => {
+      restoreUnsplashLightboxScroll();
+      window.requestAnimationFrame(() => {
+        restoreUnsplashLightboxScroll();
+        if (unsplashLightboxOpen) setElsewhereSubnavHidden(true);
+      });
+    };
+
+    syncUnsplashLightboxSafeArea();
+    window.addEventListener("resize", syncUnsplashLightboxSafeArea, { passive: true });
+    if (unsplashHeader && typeof ResizeObserver === "function") {
+      new ResizeObserver(syncUnsplashLightboxSafeArea).observe(unsplashHeader);
+    }
 
     const getUnsplashCardStep = () => {
       if (!unsplashTrack) return 1;
@@ -572,6 +583,9 @@ if (calmatoTypewriter) {
 
     const updateUnsplashCards = (immediate = false, dragProgress = 0, syncMeta = true, transitionDuration = "") => {
       if (!unsplashTrack || unsplashItems.length === 0) return;
+
+      // Keep the rendered position so a new index can continue from the current drag/wheel frame.
+      unsplashCurrentProgress = dragProgress;
 
       const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
       const arcNearY = getUnsplashMotionValue(motionStyle, "--unsplash-arc-y-near", 42);
@@ -630,11 +644,13 @@ if (calmatoTypewriter) {
 
 };
 
-const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
+const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgress = null) => {
 
   stopUnsplashRebound();
 
-  if (!releaseDirection) {
+  const hasInitialProgress = Number.isFinite(initialProgress);
+
+  if (!releaseDirection && !hasInitialProgress) {
 
     updateUnsplashCards(false, 0, syncMeta);
 
@@ -642,11 +658,14 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
 
   }
 
-  const direction = Math.sign(releaseDirection);
-
-  const amplitude = Math.min(0.34, Math.max(0.18, Math.abs(releaseDirection) * 0.22));
-
-  const duration = 900;
+  const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
+  const startProgress = hasInitialProgress
+    ? initialProgress
+    : Math.sign(releaseDirection) * Math.min(0.34, Math.max(0.18, Math.abs(releaseDirection) * 0.22));
+  const duration = Math.max(
+    360,
+    getUnsplashMotionValue(motionStyle, "--unsplash-rebound-settle-duration", 760)
+  );
 
   const startTime = performance.now();
 
@@ -654,11 +673,9 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
 
     const t = Math.min((now - startTime) / duration, 1);
 
-    const decay = Math.exp(-3.5 * t);
-
-    const wave = Math.cos(t * Math.PI * 3.2);
-
-    const reboundProgress = direction * amplitude * decay * wave;
+    const decay = Math.exp(-4.4 * t);
+    const wave = Math.cos(t * Math.PI * 2.4);
+    const reboundProgress = startProgress * decay * wave;
 
     updateUnsplashCards(true, reboundProgress, false);
 
@@ -692,11 +709,19 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
       unsplashMobileQuery.addListener(syncUnsplashBreakpoint);
     }
 
-    const setUnsplashActiveIndex = (nextIndex, immediate = false, reboundDirection = 0) => {
-      if (unsplashItems.length === 0 || unsplashLightboxOpen) return;
-      unsplashActiveIndex = normalizeUnsplashIndex(nextIndex);
+    const setUnsplashActiveIndex = (nextIndex, immediate = false, reboundDirection = 0, allowLightbox = false) => {
+      if (
+        unsplashItems.length === 0 ||
+        unsplashLightboxClosing ||
+        (unsplashLightboxOpen && !allowLightbox)
+      ) return;
+      const previousIndex = unsplashActiveIndex;
+      const previousProgress = unsplashCurrentProgress;
+      const normalizedIndex = normalizeUnsplashIndex(nextIndex);
+      const indexDelta = getUnsplashIndexDelta(previousIndex, normalizedIndex);
+      unsplashActiveIndex = normalizedIndex;
       if (!immediate && reboundDirection) {
-        playUnsplashRebound(reboundDirection);
+        playUnsplashRebound(reboundDirection, true, previousProgress + indexDelta);
       } else {
         stopUnsplashRebound();
         updateUnsplashCards(immediate);
@@ -717,10 +742,10 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
       const unsplashMotionDelay = 2600;
 
       stopUnsplashMotion();
-      if (prefersReducedMotion || !isUnsplashPanelActive() || unsplashLightboxOpen || unsplashPointerIsDown) return;
+      if (prefersReducedMotion || !isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing || unsplashPointerIsDown) return;
 
       unsplashMotionTimer = window.setTimeout(() => {
-        if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashPointerIsDown) return;
+        if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing || unsplashPointerIsDown) return;
         moveUnsplashCarousel(1);
         startUnsplashMotion();
       }, unsplashMotionDelay);
@@ -737,41 +762,312 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
       return true;
     };
 
-    const openUnsplashLightbox = (item) => {
+    const setUnsplashLightboxAdjacent = () => {
+      const adjacentItems = [
+        { button: unsplashLightboxPrevious, index: normalizeUnsplashIndex(unsplashActiveIndex - 1), label: "이전 사진" },
+        { button: unsplashLightboxNext, index: normalizeUnsplashIndex(unsplashActiveIndex + 1), label: "다음 사진" },
+      ];
+
+      adjacentItems.forEach(({ button, index, label }) => {
+        if (!button) return;
+
+        const item = unsplashItems[index];
+        const image = button.querySelector("img");
+        if (!item || !image) {
+          button.hidden = true;
+          return;
+        }
+
+        button.hidden = false;
+        button.dataset.unsplashIndex = String(index);
+        button.setAttribute("aria-label", `${label}: ${item.title}`);
+        image.src = item.src || "";
+        image.alt = item.alt || item.title;
+      });
+    };
+
+    const getUnsplashLightboxFlip = (sourceRect, targetRect) => {
+      if (!sourceRect || !targetRect || !sourceRect.width || !sourceRect.height) return null;
+
+      const sourceCenterX = sourceRect.left + sourceRect.width / 2;
+      const sourceCenterY = sourceRect.top + sourceRect.height / 2;
+      const targetCenterX = targetRect.left + targetRect.width / 2;
+      const targetCenterY = targetRect.top + targetRect.height / 2;
+      const scale = Math.max(
+        0.01,
+        Math.min(targetRect.width / sourceRect.width, targetRect.height / sourceRect.height)
+      );
+
+      return {
+        x: targetCenterX - sourceCenterX,
+        y: targetCenterY - sourceCenterY,
+        scale,
+        css: `translate3d(${targetCenterX - sourceCenterX}px, ${targetCenterY - sourceCenterY}px, 0) scale(${scale})`,
+      };
+    };
+
+    const getUnsplashLightboxDuration = () => {
+      return getUnsplashMotionValue(
+        window.getComputedStyle(unsplashLightbox),
+        "--unsplash-lightbox-duration",
+        520
+      );
+    };
+
+    const removeUnsplashLightboxTransitionImage = () => {
+      window.clearTimeout(unsplashLightboxTransitionTimer);
+      unsplashLightboxTransitionTimer = 0;
+      unsplashLightboxTransitionImage?.remove();
+      unsplashLightboxTransitionImage = null;
+      unsplashLightboxAdjacentButtons.forEach((button) => {
+        button.style.removeProperty("visibility");
+      });
+    };
+
+    const setUnsplashLightboxOrigin = (sourceRect, targetRect) => {
+      if (!unsplashLightboxImage || !sourceRect || !targetRect) return;
+
+      const sourceCenterX = sourceRect.left + sourceRect.width / 2;
+      const sourceCenterY = sourceRect.top + sourceRect.height / 2;
+      const targetCenterX = targetRect.left + targetRect.width / 2;
+      const targetCenterY = targetRect.top + targetRect.height / 2;
+      const widthScale = targetRect.width ? sourceRect.width / targetRect.width : 1;
+      const heightScale = targetRect.height ? sourceRect.height / targetRect.height : 1;
+      const originScale = Math.max(0.01, Math.min(widthScale, heightScale));
+      const originX = sourceCenterX - targetCenterX;
+      const originY = sourceCenterY - targetCenterY;
+
+      unsplashLightboxImage.style.setProperty("--unsplash-lightbox-origin-x", `${originX}px`);
+      unsplashLightboxImage.style.setProperty("--unsplash-lightbox-origin-y", `${originY}px`);
+      unsplashLightboxImage.style.setProperty("--unsplash-lightbox-origin-scale", originScale);
+
+      return { x: originX, y: originY, scale: originScale };
+    };
+
+    const openUnsplashLightbox = (item, sourceCard = null) => {
       if (!unsplashLightbox || !setUnsplashLightboxContent(item)) return;
 
+      window.clearTimeout(unsplashLightboxCloseTimer);
+      unsplashLightboxCloseTimer = 0;
+      removeUnsplashLightboxTransitionImage();
+      unsplashLightboxTransitioning = false;
+      unsplashLightboxCloseAfterTransition = false;
+      unsplashLightboxClosing = false;
+      syncUnsplashLightboxSafeArea();
+      unsplashSubnavWasHidden = isElsewhereSubnavHidden();
+      setElsewhereSubnavHidden(true);
+      const sourceImage = sourceCard?.querySelector("img");
+      const sourceRect = (sourceImage || sourceCard)?.getBoundingClientRect?.();
+
+      unsplashLightbox.classList.remove("is-open");
+      unsplashLightbox.setAttribute("aria-hidden", "true");
+      unsplashLightboxImage?.style.setProperty("--unsplash-lightbox-origin-x", "0px");
+      unsplashLightboxImage?.style.setProperty("--unsplash-lightbox-origin-y", "0px");
+      unsplashLightboxImage?.style.setProperty("--unsplash-lightbox-origin-scale", "1");
+      unsplashLightboxImage?.style.removeProperty("transition");
+      unsplashLightboxImage?.style.removeProperty("transform");
+      unsplashLightboxClose?.style.removeProperty("--unsplash-lightbox-close-top");
+      unsplashLightboxClose?.style.removeProperty("--unsplash-lightbox-close-left");
+      unsplashLightboxClose?.style.removeProperty("--unsplash-lightbox-close-right");
+
+      unsplashLightboxScrollTop = elsewhere?.scrollTop ?? 0;
       stopUnsplashMotion();
       stopUnsplashRebound();
       unsplashLightboxOpen = true;
+      setUnsplashLightboxAdjacent();
       unsplashPreviousFocus = document.activeElement;
       unsplashLightbox.hidden = false;
       document.body.classList.add("is-unsplash-lightbox-open");
+      restoreUnsplashLightboxScroll();
 
-      window.requestAnimationFrame(() => {
-        unsplashLightbox.classList.add("is-open");
-        unsplashLightbox.setAttribute("aria-hidden", "false");
-        unsplashLightboxCloseTargets.find((target) => target.matches("button"))?.focus();
-      });
+      const revealUnsplashLightbox = () => {
+        if (!unsplashLightboxOpen) return;
+
+        const targetRect = unsplashLightboxImage?.getBoundingClientRect();
+        const origin = setUnsplashLightboxOrigin(sourceRect, targetRect);
+        if (!origin || !unsplashLightboxImage) return;
+        syncUnsplashLightboxClosePosition(targetRect);
+
+        unsplashLightboxImage.style.transition = "none";
+        unsplashLightboxImage.style.transform = `translate3d(${origin.x}px, ${origin.y}px, 0) scale(${origin.scale})`;
+        // Commit the card-sized start state before the open transition begins.
+        unsplashLightboxImage?.getBoundingClientRect();
+
+        window.requestAnimationFrame(() => {
+          if (!unsplashLightboxOpen) return;
+          unsplashLightbox.classList.add("is-open");
+          unsplashLightboxImage.style.removeProperty("transition");
+          unsplashLightboxImage.style.transform = "translate3d(0, 0, 0) scale(1)";
+          unsplashLightbox.setAttribute("aria-hidden", "false");
+          unsplashLightboxCloseTargets.find((target) => target.matches("button"))?.focus({ preventScroll: true });
+          restoreUnsplashLightboxScrollAfterFocus();
+        });
+      };
+
+      if (unsplashLightboxImage?.complete && unsplashLightboxImage.naturalWidth > 0) {
+        revealUnsplashLightbox();
+      } else {
+        unsplashLightboxImage?.addEventListener("load", revealUnsplashLightbox, { once: true });
+        unsplashLightboxImage?.addEventListener("error", revealUnsplashLightbox, { once: true });
+      }
     };
 
     const closeUnsplashLightbox = () => {
       if (!unsplashLightbox || !unsplashLightboxOpen) return;
+      if (unsplashLightboxTransitioning) {
+        unsplashLightboxCloseAfterTransition = true;
+        return;
+      }
 
+      const activeCard = unsplashTrack?.querySelector(`.unsplash-card[data-unsplash-index="${unsplashActiveIndex}"]`);
+      const activeSource = activeCard?.querySelector("img") || activeCard;
+      const closeSourceRect = activeSource?.getBoundingClientRect?.();
       unsplashLightboxOpen = false;
+      unsplashLightboxClosing = true;
+      unsplashLightboxImage?.style.removeProperty("transition");
+      unsplashLightboxImage?.style.removeProperty("transform");
+      syncUnsplashLightboxClosePosition(closeSourceRect);
       unsplashLightbox.classList.remove("is-open");
       unsplashLightbox.setAttribute("aria-hidden", "true");
-      document.body.classList.remove("is-unsplash-lightbox-open");
 
-      window.setTimeout(() => {
+      const closeDuration = getUnsplashLightboxDuration();
+
+      unsplashLightboxCloseTimer = window.setTimeout(() => {
+        unsplashLightboxCloseTimer = 0;
         if (!unsplashLightboxOpen) {
           unsplashLightbox.hidden = true;
-          unsplashPreviousFocus?.focus?.();
+          unsplashLightboxClosing = false;
+          restoreUnsplashLightboxScroll();
+          document.body.classList.remove("is-unsplash-lightbox-open");
+          if (!unsplashSubnavWasHidden) setElsewhereSubnavHidden(false);
+          unsplashPreviousFocus?.focus?.({ preventScroll: true });
+          restoreUnsplashLightboxScrollAfterFocus();
           startUnsplashMotion();
         }
-      }, prefersReducedMotion ? 0 : 360);
+      }, prefersReducedMotion ? 0 : closeDuration);
     };
 
+    const switchUnsplashLightbox = (direction) => {
+      if (!unsplashLightboxOpen || unsplashLightboxTransitioning || unsplashItems.length < 2) return;
+
+      const step = Math.sign(direction);
+      const nextIndex = normalizeUnsplashIndex(unsplashActiveIndex + step);
+      const nextItem = unsplashItems[nextIndex];
+      const incomingButton = step > 0 ? unsplashLightboxNext : unsplashLightboxPrevious;
+      const outgoingButton = step > 0 ? unsplashLightboxPrevious : unsplashLightboxNext;
+      const incomingImage = incomingButton?.querySelector("img");
+      const outgoingImage = outgoingButton?.querySelector("img");
+      const currentRect = unsplashLightboxImage?.getBoundingClientRect();
+      const incomingRect = incomingImage?.getBoundingClientRect() || incomingButton?.getBoundingClientRect();
+      const outgoingRect = outgoingImage?.getBoundingClientRect() || outgoingButton?.getBoundingClientRect();
+      const incomingFlip = getUnsplashLightboxFlip(incomingRect, currentRect);
+      const outgoingFlip = getUnsplashLightboxFlip(currentRect, outgoingRect);
+
+      if (!nextItem?.src || !incomingRect || !outgoingRect || !incomingFlip || !outgoingFlip) return;
+
+      const transitionImage = document.createElement("img");
+      const duration = prefersReducedMotion ? 0 : getUnsplashLightboxDuration();
+      transitionImage.className = "unsplash-lightbox-transition-image";
+      transitionImage.src = nextItem.src;
+      transitionImage.alt = nextItem.alt || nextItem.title;
+      transitionImage.style.left = `${incomingRect.left}px`;
+      transitionImage.style.top = `${incomingRect.top}px`;
+      transitionImage.style.width = `${incomingRect.width}px`;
+      transitionImage.style.height = `${incomingRect.height}px`;
+      transitionImage.style.transform = "translate3d(0, 0, 0) scale(1)";
+      transitionImage.style.transition = "none";
+      unsplashLightbox.append(transitionImage);
+
+      incomingButton.style.visibility = "hidden";
+      unsplashLightboxTransitionImage = transitionImage;
+      unsplashLightboxTransitioning = true;
+      unsplashLightboxMeta?.classList.add("is-changing");
+      setUnsplashActiveIndex(nextIndex, false, 0, true);
+      // The page carousel is hidden underneath the lightbox; settle it now so close returns to the selected card.
+      updateUnsplashCards(true, 0, false);
+      unsplashLightboxImage.style.transform = outgoingFlip.css;
+      transitionImage.getBoundingClientRect();
+
+      window.requestAnimationFrame(() => {
+        if (!unsplashLightboxOpen || unsplashLightboxTransitionImage !== transitionImage) return;
+
+        transitionImage.style.transition = `transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+        transitionImage.style.transform = incomingFlip.css;
+      });
+
+      const finishTransition = () => {
+        unsplashLightboxTransitionTimer = 0;
+        if (!unsplashLightboxOpen) return;
+
+        unsplashLightboxImage.style.transition = "none";
+        unsplashLightboxImage.style.transform = "none";
+        setUnsplashLightboxContent(nextItem);
+        setUnsplashLightboxAdjacent();
+
+        let contentCommitted = false;
+        const commitContent = () => {
+          if (contentCommitted) return;
+          contentCommitted = true;
+          const activeCard = unsplashTrack?.querySelector(`.unsplash-card[data-unsplash-index="${nextIndex}"]`);
+          const activeSource = activeCard?.querySelector("img") || activeCard;
+          const targetRect = unsplashLightboxImage.getBoundingClientRect();
+          syncUnsplashLightboxClosePosition(targetRect);
+          if (activeSource && targetRect.width && targetRect.height) {
+            setUnsplashLightboxOrigin(activeSource.getBoundingClientRect(), targetRect);
+          }
+
+          window.requestAnimationFrame(() => {
+            if (!unsplashLightboxOpen) return;
+
+            removeUnsplashLightboxTransitionImage();
+            unsplashLightboxImage.style.removeProperty("transition");
+            unsplashLightboxImage.style.removeProperty("transform");
+            unsplashLightboxMeta?.classList.remove("is-changing");
+            unsplashLightboxTransitioning = false;
+
+            if (unsplashLightboxCloseAfterTransition) {
+              unsplashLightboxCloseAfterTransition = false;
+              closeUnsplashLightbox();
+            }
+          });
+        };
+
+        if (unsplashLightboxImage.complete && unsplashLightboxImage.naturalWidth > 0) {
+          commitContent();
+        } else {
+          unsplashLightboxImage.addEventListener("load", commitContent, { once: true });
+          unsplashLightboxImage.addEventListener("error", commitContent, { once: true });
+        }
+      };
+
+      unsplashLightboxTransitionTimer = window.setTimeout(finishTransition, duration);
+    };
+
+    unsplashLightboxPrevious?.addEventListener("click", () => {
+      switchUnsplashLightbox(-1);
+    });
+
+    unsplashLightboxNext?.addEventListener("click", () => {
+      switchUnsplashLightbox(1);
+    });
+
     if (unsplashTrack && unsplashCarousel && unsplashItems.length > 0) {
+      const activateUnsplashCard = (card) => {
+        if (!card || unsplashPointerMoved || unsplashLightboxOpen || unsplashLightboxClosing) return;
+
+        const index = Number(card.dataset.unsplashIndex);
+        if (!Number.isInteger(index) || !unsplashItems[index]) return;
+
+        if (index !== unsplashActiveIndex) {
+          stopUnsplashMotion();
+          setUnsplashActiveIndex(index);
+          startUnsplashMotion();
+          return;
+        }
+
+        openUnsplashLightbox(unsplashItems[unsplashActiveIndex], card);
+      };
+
       const fragment = document.createDocumentFragment();
 
       unsplashItems.forEach((item, index) => {
@@ -795,14 +1091,7 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
         }
 
         card.addEventListener("click", () => {
-          if (unsplashPointerMoved) return;
-          if (index !== unsplashActiveIndex) {
-            stopUnsplashMotion();
-            setUnsplashActiveIndex(index);
-            startUnsplashMotion();
-            return;
-          }
-          openUnsplashLightbox(unsplashItems[unsplashActiveIndex]);
+          activateUnsplashCard(card);
         });
 
         card.addEventListener("keydown", (event) => {
@@ -829,7 +1118,7 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
 
       unsplashCarousel.addEventListener("wheel", (event) => {
 
-  if (!isUnsplashPanelActive() || unsplashLightboxOpen) return;
+  if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing) return;
 
   const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
 
@@ -861,8 +1150,15 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
       unsplashCarousel.addEventListener("dragstart", (event) => {
         event.preventDefault();
       });
+      // Pointer capture can retarget a simple click to the carousel wrapper.
+      unsplashCarousel.addEventListener("click", (event) => {
+        if (event.target.closest?.(".unsplash-card")) return;
+
+        const card = document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".unsplash-card");
+        if (card && unsplashCarousel.contains(card)) activateUnsplashCard(card);
+      });
       unsplashCarousel.addEventListener("pointerdown", (event) => {
-        if (!isUnsplashPanelActive() || unsplashLightboxOpen || event.button > 0) return;
+        if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing || event.button > 0) return;
         stopUnsplashMotion();
         unsplashPointerIsDown = true;
         unsplashPointerMoved = false;
@@ -874,10 +1170,6 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
         unsplashPointerVelocityX = 0;
         unsplashPointerCardStep = getUnsplashCardStep();
         unsplashCarousel.classList.add("is-dragging");
-        window.clearTimeout(unsplashSwitcherRevealTimer);
-        if (elsewhereActivePanel === "unsplash") {
-          elsewhereSwitcher?.classList.add("is-hidden");
-        }
         unsplashCarousel.setPointerCapture?.(event.pointerId);
       });
 
@@ -919,20 +1211,17 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
         unsplashPointerIsDown = false;
         unsplashCarousel.classList.remove("is-dragging");
         unsplashCarousel.releasePointerCapture?.(event.pointerId);
-        if (elsewhereActivePanel === "unsplash") {
-          window.clearTimeout(unsplashSwitcherRevealTimer);
-          unsplashSwitcherRevealTimer = window.setTimeout(() => {
-            elsewhereSwitcher?.classList.remove("is-hidden");
-          }, 1000);
-        }
-
         if (isHorizontalDrag && shouldAdvance) {
           const releaseDirection = projectedDistance || dragDistance;
           const jumpCount = Math.min(2, Math.max(1, Math.round(Math.abs(releaseDirection))));
           const nextDirection = (releaseDirection > 0 ? -1 : 1) * jumpCount;
           setUnsplashActiveIndex(unsplashActiveIndex + nextDirection, false, releaseDirection);
         } else {
-          playUnsplashRebound(isHorizontalDrag ? -dragDistance : 0);
+          playUnsplashRebound(
+            isHorizontalDrag ? -dragDistance : 0,
+            true,
+            isHorizontalDrag ? dragDistance : null
+          );
         }
 
         startUnsplashMotion();
@@ -1197,17 +1486,6 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
       return footerRect.top < window.innerHeight && footerRect.bottom > 0;
     };
 
-    const syncElsewhereSwitcherVisibility = (snapIndex) => {
-      if (!elsewhereSwitcher || !elsewhereSnapScroller) return;
-
-      const isAtFirstSnapTop =
-        snapIndex === 0 &&
-        elsewhereSnapScroller.scrollTop <= 8 &&
-        !isElsewhereFooterVisible();
-
-      elsewhereSwitcher.classList.toggle("is-hidden", !isAtFirstSnapTop);
-    };
-
     const setElsewhereSnapIndex = (nextIndex) => {
       elsewhereSnapDots.forEach((dot, index) => {
         const isActive = index === nextIndex;
@@ -1222,7 +1500,6 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
         );
       });
 
-      syncElsewhereSwitcherVisibility(nextIndex);
     };
 
     const updateElsewhereSnapState = () => {
@@ -1300,10 +1577,6 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true) => {
       elsewhereSnapScroller.addEventListener(
         "scroll",
         () => {
-          if (elsewhereSnapScroller.scrollTop > 8) {
-            elsewhereSwitcher?.classList.add("is-hidden");
-          }
-
           updateElsewhereFooterSnap();
           requestElsewhereSnapState();
         },

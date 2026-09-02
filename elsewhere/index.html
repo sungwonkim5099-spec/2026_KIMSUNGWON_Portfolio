@@ -19,7 +19,36 @@
         <div class="nav-group nav-primary">
           <a href="../works/">works</a>
           <a href="../#about">About</a>
-          <a href="./" aria-current="page">Elsewhere</a>
+          <div class="elsewhere-nav-item" data-elsewhere-nav-item>
+            <a
+              href="./"
+              aria-current="page"
+              aria-expanded="false"
+              aria-haspopup="true"
+              data-elsewhere-nav-trigger
+            >Elsewhere</a>
+
+            <nav class="elsewhere-subnav" role="tablist" aria-label="Elsewhere channels" data-elsewhere-subnav>
+              <button
+                class="elsewhere-subnav-link is-active"
+                type="button"
+                role="tab"
+                id="elsewhere-tab-calmato"
+                aria-selected="true"
+                aria-controls="elsewhere-panel-calmato"
+                data-elsewhere-tab="calmato"
+              >Youtube</button>
+              <button
+                class="elsewhere-subnav-link"
+                type="button"
+                role="tab"
+                id="elsewhere-tab-unsplash"
+                aria-selected="false"
+                aria-controls="elsewhere-panel-unsplash"
+                data-elsewhere-tab="unsplash"
+              >Unsplash</button>
+            </nav>
+          </div>
         </div>
 
         <a class="nav-logo" href="../" aria-label="Kim SungWon home">
@@ -57,35 +86,30 @@
         <a href="../works/">works</a>
         <a href="../#about">About</a>
         <a href="./" aria-current="page">Elsewhere</a>
+        <nav class="elsewhere-subnav elsewhere-subnav-mobile" role="tablist" aria-label="Elsewhere channels" data-elsewhere-subnav>
+          <button
+            class="elsewhere-subnav-link is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="elsewhere-panel-calmato"
+            data-elsewhere-tab="calmato"
+          >Youtube</button>
+          <button
+            class="elsewhere-subnav-link"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="elsewhere-panel-unsplash"
+            data-elsewhere-tab="unsplash"
+          >Unsplash</button>
+        </nav>
       </div>
     </header>
 
     <main class="elsewhere-main" data-elsewhere>
       <section class="elsewhere-content" aria-labelledby="elsewhere-page-title">
         <h1 class="sr-only" id="elsewhere-page-title">Elsewhere</h1>
-
-        <!-- Elsewhere - Switcher -->
-        <div class="elsewhere-switcher" data-elsewhere-switcher data-active="calmato" role="tablist" aria-label="Elsewhere channels">
-          <span class="elsewhere-switcher-indicator" aria-hidden="true"></span>
-          <button
-            class="elsewhere-tab is-active"
-            type="button"
-            role="tab"
-            id="elsewhere-tab-calmato"
-            aria-selected="true"
-            aria-controls="elsewhere-panel-calmato"
-            data-elsewhere-tab="calmato"
-          >Calmato</button>
-          <button
-            class="elsewhere-tab"
-            type="button"
-            role="tab"
-            id="elsewhere-tab-unsplash"
-            aria-selected="false"
-            aria-controls="elsewhere-panel-unsplash"
-            data-elsewhere-tab="unsplash"
-          >Unsplash</button>
-        </div>
 
         <div class="elsewhere-panel-stage" data-elsewhere-panel-stage>
           <!-- Elsewhere - Snap Indicator -->
@@ -120,7 +144,6 @@
 
                   <p
                     class="calmato-hero-description"
-                    data-calmato-typewriter
                   >
                     일상의 끝에 잠시 머물 수 있는 순간을 전하는 음악 콘텐츠 채널입니다.<br>
                     콘텐츠의 기획부터 비주얼, 영상과 사운드까지 하나의 방향성으로 설계하며,<br>
@@ -312,33 +335,53 @@
               </div>
             </div>
 
-            <div
-              class="unsplash-lightbox"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Unsplash photo preview"
-              aria-hidden="true"
-              hidden
-              data-unsplash-lightbox
-            >
-              <div class="unsplash-lightbox-backdrop" data-unsplash-lightbox-close></div>
-              <button class="unsplash-lightbox-close" type="button" aria-label="사진 크게 보기 닫기" data-unsplash-lightbox-close>×</button>
-              <figure class="unsplash-lightbox-content">
-                <img class="unsplash-lightbox-image" alt="" data-unsplash-lightbox-image>
-                <figcaption class="unsplash-lightbox-meta">
-                  <strong data-unsplash-lightbox-title>Photo title placeholder</strong>
-                  <span data-unsplash-lightbox-detail>Location placeholder · 2026</span>
-                  <a class="unsplash-external-link" href="#" data-unsplash-lightbox-link>
-                    <span>View on Unsplash</span>
-                    <img class="unsplash-external-logo" src="../assets/icon-profile.svg" alt="" aria-hidden="true">
-                  </a>
-                </figcaption>
-              </figure>
-            </div>
             <!-- Elsewhere / Unsplash Carousel - VS Code Edit Area End -->
           </section>
         </div>
       </section>
+
+      <!-- Kept outside the sliding panel so position: fixed uses the viewport as its containing block. -->
+      <div
+        class="unsplash-lightbox"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Unsplash photo preview"
+        aria-hidden="true"
+        hidden
+        data-unsplash-lightbox
+      >
+        <div class="unsplash-lightbox-backdrop" data-unsplash-lightbox-close></div>
+        <div class="unsplash-lightbox-adjacent" aria-label="Adjacent Unsplash photos" data-unsplash-lightbox-adjacent>
+          <button
+            class="unsplash-lightbox-adjacent-card is-previous"
+            type="button"
+            aria-label="이전 사진"
+            data-unsplash-lightbox-adjacent-button="previous"
+          >
+            <img class="unsplash-lightbox-adjacent-image" alt="" aria-hidden="true" data-unsplash-lightbox-adjacent-image="previous">
+          </button>
+          <button
+            class="unsplash-lightbox-adjacent-card is-next"
+            type="button"
+            aria-label="다음 사진"
+            data-unsplash-lightbox-adjacent-button="next"
+          >
+            <img class="unsplash-lightbox-adjacent-image" alt="" aria-hidden="true" data-unsplash-lightbox-adjacent-image="next">
+          </button>
+        </div>
+        <button class="unsplash-lightbox-close" type="button" aria-label="사진 크게 보기 닫기" data-unsplash-lightbox-close>×</button>
+        <figure class="unsplash-lightbox-content">
+          <img class="unsplash-lightbox-image" alt="" data-unsplash-lightbox-image>
+          <figcaption class="unsplash-lightbox-meta">
+            <strong data-unsplash-lightbox-title>Photo title placeholder</strong>
+            <span data-unsplash-lightbox-detail>Location placeholder · 2026</span>
+            <a class="unsplash-external-link" href="#" data-unsplash-lightbox-link>
+              <span>View on Unsplash</span>
+              <img class="unsplash-external-logo" src="../assets/icon-profile.svg" alt="" aria-hidden="true">
+            </a>
+          </figcaption>
+        </figure>
+      </div>
 
       <!-- Elsewhere - Footer -->
       <section class="footer-panel elsewhere-footer" aria-labelledby="elsewhere-footer-title" data-elsewhere-footer>

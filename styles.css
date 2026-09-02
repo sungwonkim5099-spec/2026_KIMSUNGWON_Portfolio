@@ -706,7 +706,7 @@ html[data-theme="dark"] .footer-mark {
   padding-bottom: 100px;
 }
 
-/* Elsewhere - Switcher */
+/* Elsewhere - Channel navigation */
 .elsewhere-main {
   height: 100svh;
   overflow-x: hidden;
@@ -730,104 +730,105 @@ html[data-theme="dark"] .footer-mark {
   padding: 0;
 }
 
-.elsewhere-switcher {
-  --elsewhere-slide-scale: 1;
-  --elsewhere-switcher-y: 0px;
-  position: fixed;
-  z-index: 19;
-  top: calc(var(--header-height) + 64px);
-  left: 50vw;
-  width: 320px;
-  max-width: calc(100vw - (var(--panel-x) * 2));
-  min-height: 44px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
-  padding: 3px;
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: var(--nav-material);
-  opacity: 1;
-  visibility: visible;
-  transform: translate3d(-50%, var(--elsewhere-switcher-y), 0);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition:
-    opacity 340ms ease,
-    transform 340ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 0s;
-  will-change: opacity, transform;
+.elsewhere-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
-.elsewhere-switcher.is-hidden {
-  --elsewhere-switcher-y: -12px;
+.elsewhere-subnav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 36px;
+  color: var(--foreground);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.elsewhere-nav-item > .elsewhere-subnav {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: -12px;
+  min-width: 124px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--nav-material);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transform: translateY(-8px);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
   transition:
-    opacity 320ms ease,
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 320ms;
+    opacity 180ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 180ms;
 }
 
-.elsewhere-switcher.is-sliding {
-  --elsewhere-slide-scale: 1.04;
+.elsewhere-nav-item:hover > .elsewhere-subnav,
+.elsewhere-nav-item:focus-within > .elsewhere-subnav,
+.elsewhere-nav-item.is-open > .elsewhere-subnav {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
 }
 
-.elsewhere-switcher[data-slide-direction="left"] .elsewhere-switcher-indicator {
-  transform-origin: left center;
+.elsewhere-subnav-mobile {
+  display: none;
 }
 
-.elsewhere-switcher[data-slide-direction="right"] .elsewhere-switcher-indicator {
-  transform-origin: right center;
+.elsewhere-subnav.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px);
 }
 
-.elsewhere-switcher-indicator {
-  position: absolute;
-  z-index: 0;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  width: calc((100% - 6px) / 2);
-  border-radius: 999px;
-  background: var(--accent);
-  transform: translate3d(0, 0, 0) scaleX(var(--elsewhere-slide-scale));
-  transition: transform 440ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+.elsewhere-nav-item > .elsewhere-subnav.is-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-8px) !important;
 }
 
-.elsewhere-switcher[data-active="unsplash"] .elsewhere-switcher-indicator {
-  transform: translate3d(100%, 0, 0) scaleX(var(--elsewhere-slide-scale));
-}
-
-
-.elsewhere-tab {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  min-height: 38px;
-  padding: 0 14px;
-  border-radius: 999px;
+.elsewhere-subnav-link {
+  min-height: 32px;
+  padding: 0;
   color: var(--foreground-muted);
   cursor: pointer;
   font-size: 13px;
   font-weight: 590;
   line-height: 1;
-  transition: color 260ms ease, opacity 180ms ease;
+  text-transform: capitalize;
+  transition: color 180ms ease, opacity 180ms ease;
 }
 
-.elsewhere-tab:hover {
-  opacity: 0.72;
+.elsewhere-subnav-link:hover {
+  opacity: 0.62;
 }
 
-.elsewhere-tab.is-active {
-  color: #ffffff;
+.elsewhere-subnav-link.is-active {
+  color: var(--accent);
   opacity: 1;
 }
 
-.elsewhere-tab:focus-visible,
+.elsewhere-nav-item > .elsewhere-subnav .elsewhere-subnav-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.elsewhere-subnav-link:focus-visible,
 .calmato-channel-link:focus-visible,
 .calmato-video-control:focus-visible,
 .elsewhere-snap-dot:focus-visible {
@@ -886,7 +887,7 @@ html[data-theme="dark"] .footer-mark {
   /* VS Code Edit: 드래그/자동 전환 후 반동 강도와 settle 속도는 아래 3개 값을 조정하세요. */
   --unsplash-rebound-distance: 0.16;
   --unsplash-rebound-delay: 180;
-  --unsplash-rebound-settle-duration: 460;
+  --unsplash-rebound-settle-duration: 760;
   --unsplash-arc-y-near: 28;
   --unsplash-arc-y-far: 52;
   --unsplash-scale-near: 0.95;
@@ -904,7 +905,7 @@ html[data-theme="dark"] .footer-mark {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--header-height) + 104px) var(--panel-x) 64px;
+  padding: calc(var(--header-height) + 52px) var(--panel-x) 64px;
   overflow: hidden;
   text-align: center;
 }
@@ -965,11 +966,21 @@ html[data-theme="dark"] .footer-mark {
 }
 .unsplash-carousel::before {
   left: calc((100vw - var(--unsplash-stage-width)) / -2);
-  background: linear-gradient(to right, rgba(17,17,17,0.65) 0%, rgba(17,17,17,0.22) 55%, transparent 100%);
+  background: linear-gradient(
+    to right,
+    var(--background) 0%,
+    color-mix(in srgb, var(--background) 22%, transparent) 55%,
+    transparent 100%
+  );
 }
 .unsplash-carousel::after {
   right: calc((100vw - var(--unsplash-stage-width)) / -2);
-  background: linear-gradient(to left, rgba(17,17,17,0.65) 0%, rgba(17,17,17,0.22) 55%, transparent 100%);
+  background: linear-gradient(
+    to left,
+    var(--background) 0%,
+    color-mix(in srgb, var(--background) 22%, transparent) 55%,
+    transparent 100%
+  );
 }
 
 html[data-theme="dark"] .unsplash-carousel {
@@ -1140,18 +1151,28 @@ html[data-theme="dark"] .unsplash-external-logo {
 
 body.is-unsplash-lightbox-open .elsewhere-main {
   overflow: hidden;
+  scroll-snap-type: none;
 }
 
 .unsplash-lightbox {
+  /* VS Code Edit: Lightbox 확대/축소 속도 */
+  --unsplash-lightbox-duration: 520ms;
+  --unsplash-lightbox-top-safe-area: var(--header-height);
+  --unsplash-lightbox-meta-reserve: 96px;
+  --unsplash-lightbox-adjacent-width: clamp(96px, 11vw, 164px);
   position: fixed;
-  inset: 0;
+  top: var(--unsplash-lightbox-top-safe-area);
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 2600;
   display: grid;
   place-items: center;
-  padding: 72px var(--panel-x) 44px;
+  padding: 24px var(--panel-x) 24px;
+  overflow: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 340ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity var(--unsplash-lightbox-duration) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .unsplash-lightbox[hidden] {
@@ -1166,16 +1187,68 @@ body.is-unsplash-lightbox-open .elsewhere-main {
 .unsplash-lightbox-backdrop {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: rgba(0, 0, 0, 0.58);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
+.unsplash-lightbox-adjacent {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.unsplash-lightbox-adjacent-card {
+  position: absolute;
+  top: 50%;
+  width: clamp(96px, 11vw, 164px);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--line);
+  opacity: 0;
+  pointer-events: auto;
+  transform: translateY(-50%) translateY(18px) scale(0.78);
+  transition:
+    opacity var(--unsplash-lightbox-duration) cubic-bezier(0.16, 1, 0.3, 1),
+    transform var(--unsplash-lightbox-duration) cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.unsplash-lightbox-adjacent-card.is-previous {
+  left: clamp(16px, 5vw, 80px);
+  transform: translateY(-50%) translateY(18px) rotateZ(-2deg) scale(0.78);
+}
+
+.unsplash-lightbox-adjacent-card.is-next {
+  right: clamp(16px, 5vw, 80px);
+  transform: translateY(-50%) translateY(18px) rotateZ(2deg) scale(0.78);
+}
+
+.unsplash-lightbox.is-open .unsplash-lightbox-adjacent-card {
+  opacity: 0.8;
+}
+
+.unsplash-lightbox-adjacent-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.unsplash-lightbox-adjacent-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+}
+
 .unsplash-lightbox-close {
   position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 2;
+  top: var(--unsplash-lightbox-close-top, calc(var(--unsplash-lightbox-top-safe-area) + 24px));
+  right: var(--unsplash-lightbox-close-right, 24px);
+  left: var(--unsplash-lightbox-close-left, auto);
+  z-index: 4;
   width: 42px;
   height: 42px;
   display: grid;
@@ -1183,12 +1256,15 @@ body.is-unsplash-lightbox-open .elsewhere-main {
   border-radius: 50%;
   color: #ffffff;
   cursor: pointer;
+  pointer-events: auto;
   font-size: 28px;
   font-weight: 300;
   line-height: 1;
   transition:
     opacity 180ms ease,
-    transform 180ms ease;
+    transform 180ms ease,
+    top var(--unsplash-lightbox-duration) cubic-bezier(0.16, 1, 0.3, 1),
+    left var(--unsplash-lightbox-duration) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .unsplash-lightbox-close:hover {
@@ -1203,31 +1279,60 @@ body.is-unsplash-lightbox-open .elsewhere-main {
 
 .unsplash-lightbox-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  width: min(100%, 1400px);
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 18px;
   margin: 0;
+  pointer-events: none;
   opacity: 0;
-  transform: scale(0.96);
-  transition:
-    opacity 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: none;
+  transition: opacity var(--unsplash-lightbox-duration) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .unsplash-lightbox.is-open .unsplash-lightbox-content {
   opacity: 1;
-  transform: scale(1);
 }
 
 .unsplash-lightbox-image {
   max-width: min(88vw, 1400px);
-  max-height: 82vh;
+  max-height: min(82vh, calc(100% - var(--unsplash-lightbox-meta-reserve)));
   width: auto;
   height: auto;
   object-fit: contain;
   border-radius: 8px;
+  pointer-events: auto;
+  transform-origin: center center;
+  transform:
+    translate3d(
+      var(--unsplash-lightbox-origin-x, 0px),
+      var(--unsplash-lightbox-origin-y, 0px),
+      0
+    )
+    scale(var(--unsplash-lightbox-origin-scale, 1));
+  transition: transform var(--unsplash-lightbox-duration) cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.unsplash-lightbox.is-open .unsplash-lightbox-image {
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.unsplash-lightbox-transition-image {
+  position: fixed;
+  z-index: 3;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 8px;
+  pointer-events: none;
+  transform-origin: center center;
+  will-change: transform;
 }
 
 .unsplash-lightbox-meta {
@@ -1236,7 +1341,16 @@ body.is-unsplash-lightbox-open .elsewhere-main {
   align-items: center;
   gap: 6px;
   color: #ffffff;
+  pointer-events: auto;
   text-align: center;
+  transition:
+    opacity 180ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.unsplash-lightbox-meta.is-changing {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .unsplash-lightbox-meta strong {
@@ -1262,7 +1376,7 @@ body.is-unsplash-lightbox-open .elsewhere-main {
 
 @media (max-width: 1099px) {
   .unsplash-gallery {
-    padding-top: calc(var(--header-height) + 96px);
+    padding-top: calc(var(--header-height) + 48px);
     padding-bottom: 56px;
   }
 
@@ -1275,18 +1389,18 @@ body.is-unsplash-lightbox-open .elsewhere-main {
   }
 
   .unsplash-lightbox {
-    padding-top: 64px;
-    padding-bottom: 40px;
+    --unsplash-lightbox-meta-reserve: 92px;
+    padding: 20px var(--panel-x) 20px;
   }
 }
 
 @media (max-width: 833px) {
   .unsplash-gallery {
     /* Mobile only: 가운데 카드는 크게, 좌우 카드는 화면 밖에서 절반만 보이게 합니다. */
-    --unsplash-card-width: clamp(180px, 48vw, 320px);
-    --unsplash-card-step: 50vw;
+    --unsplash-card-width: clamp(168px, 44vw, 300px);
+    --unsplash-card-step: 52vw;
     --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
-    padding-top: calc(var(--header-height) + 92px);
+    padding-top: calc(var(--header-height) + 44px);
     padding-bottom: 44px;
   }
 
@@ -1318,17 +1432,40 @@ body.is-unsplash-lightbox-open .elsewhere-main {
   }
 
   .unsplash-lightbox {
-    padding: 64px 20px 32px;
+    --unsplash-lightbox-meta-reserve: 88px;
+    --unsplash-lightbox-adjacent-width: clamp(72px, 20vw, 96px);
+    padding: 16px 20px 20px;
+  }
+
+  .unsplash-lightbox-adjacent-card {
+    width: var(--unsplash-lightbox-adjacent-width);
+  }
+
+  .unsplash-lightbox-adjacent {
+    /* Mobile only: keep both adjacent photo targets visible beside the large image. */
+    z-index: 3;
+  }
+
+  .unsplash-lightbox-adjacent-card.is-previous {
+    left: -40px;
+  }
+
+  .unsplash-lightbox-adjacent-card.is-next {
+    right: -40px;
   }
 
   .unsplash-lightbox-close {
-    top: 16px;
-    right: 16px;
+    --unsplash-lightbox-close-top: calc(var(--unsplash-lightbox-top-safe-area) + 16px);
+    --unsplash-lightbox-close-right: 16px;
   }
 
   .unsplash-lightbox-image {
-    max-width: 92vw;
-    max-height: 78vh;
+    max-width: min(
+      72vw,
+      calc(100vw - var(--unsplash-lightbox-adjacent-width) - var(--unsplash-lightbox-adjacent-width) + 72px),
+      480px
+    );
+    max-height: min(78vh, calc(100% - var(--unsplash-lightbox-meta-reserve)));
   }
 }
 
@@ -1353,11 +1490,11 @@ body.is-unsplash-lightbox-open .elsewhere-main {
   scroll-snap-stop: always;
 }
 
-body:has(.elsewhere-switcher[data-active="unsplash"]) .elsewhere-snap-root {
+body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-root {
   scroll-snap-type: none !important;
 }
 
-body:has(.elsewhere-switcher[data-active="unsplash"]) .elsewhere-snap-panel {
+body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-panel {
   scroll-snap-align: none;
   scroll-snap-stop: normal;
 }
@@ -1413,6 +1550,39 @@ body:has(.elsewhere-switcher[data-active="unsplash"]) .elsewhere-snap-panel {
   margin: 0 auto;
   text-align: center;
   transform: translateY(40px);
+}
+
+/* Calmato 01 intro reveal: staggered fade and lift, without changing the snap layout. */
+@keyframes calmatoIntroReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calmato-hero .calmato-hero-label,
+.calmato-hero .calmato-hero-content h2 > span,
+.calmato-hero .calmato-hero-description,
+.calmato-hero .calmato-channel-link {
+  animation: calmatoIntroReveal 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+.calmato-hero .calmato-hero-content h2 > span:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.calmato-hero .calmato-hero-description {
+  animation-delay: 300ms;
+}
+
+.calmato-hero .calmato-channel-link {
+  animation-delay: 500ms;
 }
 
 .calmato-hero-label {
@@ -2269,10 +2439,6 @@ html[data-theme="dark"] .calmato-video-controls {
     padding-top: 0;
   }
 
-  .elsewhere-switcher {
-    top: calc(var(--header-height) + 56px);
-  }
-
   .calmato-hero-content {
     width: min(760px, 100%);
     gap: 24px;
@@ -2383,7 +2549,57 @@ html[data-theme="dark"] .calmato-video-controls {
     justify-content: flex-end;
     padding: 0;
     font-size: 18px;
-    text-transform: uppercase;
+    text-transform: capitalize;
+  }
+
+  .nav-primary > .elsewhere-nav-item > .elsewhere-subnav {
+    display: none;
+  }
+
+  .mobile-menu .elsewhere-subnav-mobile {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    min-height: 0;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    transform: none;
+  }
+
+  .mobile-menu .elsewhere-subnav-mobile .elsewhere-subnav-link {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 16px;
+    text-align: right;
+    text-transform: capitalize;
+  }
+
+  /* Elsewhere mobile menu: keep the shared header alignment and extend the material with its submenu. */
+  .elsewhere-page .nav-shell {
+    height: var(--header-height);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--panel-x);
+  }
+
+  .elsewhere-page .mobile-menu-button {
+    display: grid;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+  }
+
+  .elsewhere-page .mobile-menu {
+    background: var(--nav-open-material) !important;
+    backdrop-filter: saturate(180%) blur(16px) !important;
+    -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
   }
 
   .visual-panel {
@@ -2587,19 +2803,6 @@ html[data-theme="dark"] .calmato-video-controls {
 
   .elsewhere-content {
     padding-top: 0;
-  }
-
-  .elsewhere-switcher {
-    top: calc(var(--header-height) + 34px);
-    width: 286px;
-    max-width: calc(100vw - (var(--panel-x) * 2));
-    min-height: 40px;
-  }
-
-  .elsewhere-tab {
-    min-height: 34px;
-    padding: 0 10px;
-    font-size: 13px;
   }
 
   .elsewhere-snap-panel {
@@ -3057,7 +3260,11 @@ html[data-theme="dark"] .theme-toggle {
   .unsplash-card,
   .unsplash-meta,
   .unsplash-lightbox,
-  .unsplash-lightbox-content {
+  .unsplash-lightbox-content,
+  .unsplash-lightbox-image,
+  .unsplash-lightbox-adjacent-card,
+  .unsplash-lightbox-transition-image,
+  .unsplash-lightbox-meta {
     transition-duration: 0.01ms !important;
   }
 
@@ -3071,6 +3278,16 @@ html[data-theme="dark"] .theme-toggle {
   .calmato-featured-video:nth-child(2) {
     transform: translateY(0);
   }
+
+  .calmato-hero .calmato-hero-label,
+  .calmato-hero .calmato-hero-content h2 > span,
+  .calmato-hero .calmato-hero-description,
+  .calmato-hero .calmato-channel-link {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
 }
 /* =========================
    Elsewhere Scrollbar Gutter Fix
@@ -3079,4 +3296,11 @@ html[data-theme="dark"] .theme-toggle {
 html:has(body.elsewhere-page),
 body.elsewhere-page {
   scrollbar-gutter: auto;
+}
+
+/* Keep Elsewhere's mobile header aligned with the shared page gutter. */
+@media (max-width: 833px) {
+  html:has(body.elsewhere-page) {
+    scrollbar-gutter: stable;
+  }
 }
