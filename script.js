@@ -134,6 +134,8 @@
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
+    // Run the Calmato 01 intro only after that panel is first recognized as active.
+    let calmatoIntroPlayed = false;
 
     const setElsewhereDropdownOpen = (isOpen) => {
       if (!elsewhereNavItem || !elsewhereNavTrigger) return;
@@ -1499,6 +1501,13 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
           Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex
         );
       });
+
+      if (nextIndex === 0 && !calmatoIntroPlayed) {
+        elsewhereSnapPanels
+          .find((panel) => Number(panel.dataset.elsewhereSnapPanel || 0) === 0)
+          ?.classList.add("is-intro-visible");
+        calmatoIntroPlayed = true;
+      }
 
     };
 

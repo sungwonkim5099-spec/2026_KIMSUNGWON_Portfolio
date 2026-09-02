@@ -1565,24 +1565,24 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   }
 }
 
-.calmato-hero .calmato-hero-label,
-.calmato-hero .calmato-hero-content h2 > span,
-.calmato-hero .calmato-hero-description,
-.calmato-hero .calmato-channel-link {
-  animation: calmatoIntroReveal 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+.calmato-hero.is-intro-visible .calmato-hero-label,
+.calmato-hero.is-intro-visible .calmato-hero-content h2 > span,
+.calmato-hero.is-intro-visible .calmato-hero-description,
+.calmato-hero.is-intro-visible .calmato-channel-link {
+  animation: calmatoIntroReveal 3500ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity, transform;
 }
 
-.calmato-hero .calmato-hero-content h2 > span:nth-child(2) {
-  animation-delay: 100ms;
+.calmato-hero.is-intro-visible .calmato-hero-content h2 > span:nth-child(2) {
+  animation-delay: 200ms;
 }
 
-.calmato-hero .calmato-hero-description {
-  animation-delay: 300ms;
+.calmato-hero.is-intro-visible .calmato-hero-description {
+  animation-delay: 400ms;
 }
 
-.calmato-hero .calmato-channel-link {
-  animation-delay: 500ms;
+.calmato-hero.is-intro-visible .calmato-channel-link {
+  animation-delay: 600ms;
 }
 
 .calmato-hero-label {
@@ -1643,6 +1643,360 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 .calmato-channel-link:hover {
   opacity: 0.58;
   transform: translateX(2px);
+}
+
+/* =========================
+   Calmato / Page 02 - Core Values
+========================= */
+.calmato-about {
+  --calmato-value-icon-size: clamp(118px, 12vw, 184px);
+  position: relative;
+  overflow: hidden;
+  padding: 0 var(--panel-x);
+  color: var(--foreground);
+  background: var(--background);
+}
+
+.calmato-about-content {
+  width: min(1480px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(72px, 10svh, 124px);
+  margin: 0 auto;
+  text-align: center;
+  transform: translateY(20px);
+}
+
+.calmato-about-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 2.4svh, 26px);
+}
+
+.calmato-about-label {
+  margin: 0;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 590;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.calmato-about-intro h2 {
+  max-width: 100%;
+  margin: 0;
+  color: var(--foreground);
+  font-size: clamp(30px, 3.2vw, 52px);
+  font-weight: 400;
+  line-height: 1.12;
+  text-transform: uppercase;
+}
+
+.calmato-about-description {
+  max-width: 720px;
+  margin: 0;
+  color: var(--foreground-soft);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.calmato-value-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.calmato-value {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 clamp(18px, 2.8vw, 48px);
+  text-align: center;
+}
+
+.calmato-value + .calmato-value {
+  border-left: 1px solid var(--line);
+}
+
+.calmato-value-icon {
+  position: relative;
+  width: var(--calmato-value-icon-size);
+  height: var(--calmato-value-icon-size);
+  display: block;
+  flex: 0 0 auto;
+  color: var(--foreground);
+}
+
+.calmato-value-icon-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.calmato-value-icon-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.calmato-value-icon-point {
+  fill: var(--accent);
+}
+
+.calmato-value-icon--immersion .calmato-value-icon-svg {
+  animation: calmatoValueOrbit 7800ms ease-in-out infinite;
+}
+
+.calmato-value-icon--empathy .calmato-value-icon-arc {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.calmato-value-icon--empathy .calmato-value-icon-arc-left {
+  animation: calmatoValueEmpathyLeft 6200ms ease-in-out infinite;
+}
+
+.calmato-value-icon--empathy .calmato-value-icon-arc-right {
+  animation: calmatoValueEmpathyRight 6200ms ease-in-out infinite;
+  animation-delay: -1300ms;
+}
+
+.calmato-value-icon--rest .calmato-value-icon-rest-arc,
+.calmato-value-icon--rest .calmato-value-icon-rest-floor {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.calmato-value-icon--rest .calmato-value-icon-rest-arc {
+  animation: calmatoValueRestArc 8400ms ease-in-out infinite;
+}
+
+.calmato-value-icon--rest .calmato-value-icon-rest-floor {
+  animation: calmatoValueRestFloor 8400ms ease-in-out infinite;
+  animation-delay: -2200ms;
+}
+
+.calmato-value-icon--comfort .calmato-value-icon-star {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: calmatoValueComfort 7000ms ease-in-out infinite;
+}
+
+@keyframes calmatoValueOrbit {
+  0%,
+  100% {
+    transform: rotate(-4deg) scale(0.96);
+  }
+
+  50% {
+    transform: rotate(4deg) scale(1.03);
+  }
+}
+
+@keyframes calmatoValueEmpathyLeft {
+  0%,
+  100% {
+    transform: translateX(2px);
+  }
+
+  50% {
+    transform: translateX(-3px);
+  }
+}
+
+@keyframes calmatoValueEmpathyRight {
+  0%,
+  100% {
+    transform: translateX(-2px);
+  }
+
+  50% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes calmatoValueRestArc {
+  0%,
+  100% {
+    transform: translateY(2px);
+    opacity: 0.74;
+  }
+
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes calmatoValueRestFloor {
+  0%,
+  100% {
+    transform: scaleX(0.86);
+    opacity: 0.58;
+  }
+
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes calmatoValueComfort {
+  0%,
+  100% {
+    transform: rotate(-3deg) scale(0.94);
+    opacity: 0.76;
+  }
+
+  50% {
+    transform: rotate(3deg) scale(1.04);
+    opacity: 1;
+  }
+}
+
+.calmato-value h3 {
+  margin: clamp(34px, 4.8svh, 58px) 0 0;
+  color: var(--foreground);
+  font-size: clamp(18px, 1.8vw, 28px);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.calmato-value-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  margin-top: clamp(18px, 2.6svh, 30px);
+  border-radius: 50%;
+  background: var(--foreground-muted);
+}
+
+.calmato-value p {
+  margin: clamp(20px, 3svh, 36px) 0 0;
+  color: var(--foreground-soft);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.75;
+}
+
+@media (max-width: 1099px) {
+  .calmato-about {
+    --calmato-value-icon-size: clamp(104px, 13vw, 156px);
+  }
+
+  .calmato-about-content {
+    gap: clamp(56px, 8svh, 96px);
+  }
+
+  .calmato-about-intro h2 {
+    font-size: clamp(28px, 4vw, 44px);
+  }
+
+  .calmato-about-description {
+    font-size: 15px;
+  }
+
+  .calmato-value {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .calmato-value h3 {
+    margin-top: 32px;
+    font-size: clamp(17px, 2.2vw, 24px);
+  }
+
+  .calmato-value p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 833px) {
+  .calmato-about {
+    --calmato-value-icon-size: clamp(82px, 22vw, 112px);
+    padding-right: var(--panel-x);
+    padding-left: var(--panel-x);
+  }
+
+  .calmato-about-content {
+    gap: 38px;
+    transform: translateY(10px);
+  }
+
+  .calmato-about-intro {
+    gap: 14px;
+  }
+
+  .calmato-about-label {
+    font-size: 11px;
+  }
+
+  .calmato-about-intro h2 {
+    max-width: 340px;
+    font-size: clamp(22px, 7.5vw, 32px);
+    line-height: 1.08;
+  }
+
+  .calmato-about-description {
+    max-width: 320px;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .calmato-value-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 32px;
+  }
+
+  .calmato-value {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .calmato-value + .calmato-value {
+    border-left: 0;
+  }
+
+  .calmato-value:nth-child(even) {
+    border-left: 1px solid var(--line);
+  }
+
+  .calmato-value:nth-child(n + 3) {
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+  }
+
+  .calmato-value h3 {
+    margin-top: 24px;
+    font-size: 15px;
+  }
+
+  .calmato-value-dot {
+    width: 6px;
+    height: 6px;
+    margin-top: 14px;
+  }
+
+  .calmato-value p {
+    margin-top: 14px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .calmato-value-icon-dot {
+    width: 11px;
+    height: 11px;
+  }
 }
 
 /* Elsewhere - Calmato Featured Content */
@@ -3279,15 +3633,6 @@ html[data-theme="dark"] .theme-toggle {
     transform: translateY(0);
   }
 
-  .calmato-hero .calmato-hero-label,
-  .calmato-hero .calmato-hero-content h2 > span,
-  .calmato-hero .calmato-hero-description,
-  .calmato-hero .calmato-channel-link {
-    animation: none;
-    opacity: 1;
-    transform: none;
-    will-change: auto;
-  }
 }
 /* =========================
    Elsewhere Scrollbar Gutter Fix
