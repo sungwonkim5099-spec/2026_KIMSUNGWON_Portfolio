@@ -207,6 +207,13 @@
       });
 
       elsewhereSnapNav?.classList.toggle("is-hidden", nextPanel !== "calmato");
+
+      // Unsplash is a single viewport. Reset a retained Calmato scroll position
+      // so the gallery is not rendered above the currently visible area.
+      if (nextPanel === "unsplash" && elsewhere) {
+        elsewhere.classList.remove("is-footer-free");
+        elsewhere.scrollTop = 0;
+      }
     };
 
     elsewhereTabs.forEach((tab) => {
