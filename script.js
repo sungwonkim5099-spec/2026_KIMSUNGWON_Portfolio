@@ -1276,6 +1276,44 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
     const elsewhereSnapScroller = elsewhere || elsewhereSnapRoot;
     let elsewhereSnapStateFrame = 0;
 
+    // Calmato 02 core-value icons reveal once when their snap panel enters view.
+    const calmatoValueIcons = [...document.querySelectorAll(".calmato-value-icon")];
+    const revealCalmatoValueIcon = (icon) => {
+      icon.classList.add("is-revealed");
+
+      // Start SVG path motion at the same moment as the existing icon reveal.
+      icon.querySelectorAll("[data-calmato-value-motion], [data-calmato-value-motion-opacity]").forEach((motion) => {
+        if (typeof motion.beginElement === "function") motion.beginElement();
+      });
+    };
+
+    calmatoValueIcons.forEach((icon, index) => {
+      icon.style.setProperty("--calmato-value-reveal-delay", `${index * 90}ms`);
+    });
+
+    if (calmatoValueIcons.length > 0) {
+      if (!("IntersectionObserver" in window)) {
+        calmatoValueIcons.forEach(revealCalmatoValueIcon);
+      } else {
+        const calmatoValueIconObserver = new IntersectionObserver(
+          (entries, observer) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              revealCalmatoValueIcon(entry.target);
+              observer.unobserve(entry.target);
+            });
+          },
+          {
+            root: elsewhereSnapScroller instanceof Element ? elsewhereSnapScroller : null,
+            rootMargin: "0px 0px -10% 0px",
+            threshold: 0.25,
+          }
+        );
+
+        calmatoValueIcons.forEach((icon) => calmatoValueIconObserver.observe(icon));
+      }
+    }
+
     const getElsewhereYouTubeId = (url) => {
       if (!url) return "";
 

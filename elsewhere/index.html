@@ -179,10 +179,15 @@
                     <article class="calmato-value">
                       <span class="calmato-value-icon calmato-value-icon--immersion" aria-hidden="true">
                         <svg class="calmato-value-icon-svg" viewBox="0 0 120 120" aria-hidden="true">
-                          <ellipse class="calmato-value-icon-line calmato-value-icon-orbit-a" cx="60" cy="60" rx="42" ry="23" transform="rotate(-28 60 60)"></ellipse>
-                          <ellipse class="calmato-value-icon-line calmato-value-icon-orbit-b" cx="60" cy="60" rx="42" ry="23" transform="rotate(28 60 60)"></ellipse>
-                          <circle class="calmato-value-icon-line" cx="60" cy="60" r="22"></circle>
-                          <circle class="calmato-value-icon-point" cx="60" cy="60" r="6"></circle>
+                          <circle class="calmato-value-icon-line calmato-value-icon-immersion-sphere" cx="60" cy="60" r="31"></circle>
+                          <!-- The visible orbit is also the exact path used by the moving point. -->
+                          <path id="calmato-immersion-orbit-path" class="calmato-value-icon-line calmato-value-icon-immersion-orbit" d="M104.166 43.925A47 16 -20 1 1 15.834 76.075A47 16 -20 1 1 104.166 43.925"></path>
+                          <circle class="calmato-value-icon-point calmato-value-icon-immersion-point" cx="0" cy="0" r="2">
+                            <animateMotion id="calmato-immersion-point-motion" data-calmato-value-motion begin="indefinite" dur="16s" repeatCount="indefinite" calcMode="linear">
+                              <mpath href="#calmato-immersion-orbit-path"></mpath>
+                            </animateMotion>
+                            <animate data-calmato-value-motion-opacity attributeName="opacity" begin="indefinite" dur="16s" repeatCount="indefinite" values="0.42;0.46;0.74;0.94;1;0.74;0.52;0.45;0.42" keyTimes="0;0.125;0.25;0.375;0.5;0.625;0.75;0.875;1"></animate>
+                          </circle>
                         </svg>
                       </span>
                       <h3>IMMERSION</h3>
@@ -193,10 +198,8 @@
                     <article class="calmato-value">
                       <span class="calmato-value-icon calmato-value-icon--empathy" aria-hidden="true">
                         <svg class="calmato-value-icon-svg" viewBox="0 0 120 120" aria-hidden="true">
-                          <path class="calmato-value-icon-line calmato-value-icon-arc calmato-value-icon-arc-left" d="M43 18C16 30 16 90 43 102"></path>
-                          <path class="calmato-value-icon-line calmato-value-icon-arc calmato-value-icon-arc-right" d="M77 18C104 30 104 90 77 102"></path>
-                          <path class="calmato-value-icon-line" d="M44 60H76" stroke-dasharray="2 7"></path>
-                          <circle class="calmato-value-icon-point" cx="60" cy="60" r="6"></circle>
+                          <circle class="calmato-value-icon-line calmato-value-icon-empathy-circle calmato-value-icon-empathy-circle-left" cx="46" cy="60" r="27"></circle>
+                          <circle class="calmato-value-icon-line calmato-value-icon-empathy-circle calmato-value-icon-empathy-circle-right" cx="74" cy="60" r="27"></circle>
                         </svg>
                       </span>
                       <h3>EMPATHY</h3>
@@ -207,9 +210,15 @@
                     <article class="calmato-value">
                       <span class="calmato-value-icon calmato-value-icon--rest" aria-hidden="true">
                         <svg class="calmato-value-icon-svg" viewBox="0 0 120 120" aria-hidden="true">
-                          <path class="calmato-value-icon-line calmato-value-icon-rest-arc" d="M18 57C18 34 37 17 60 17C83 17 102 34 102 57"></path>
-                          <path class="calmato-value-icon-line calmato-value-icon-rest-floor" d="M28 73C45 68 75 68 92 73"></path>
-                          <circle class="calmato-value-icon-point" cx="60" cy="91" r="6"></circle>
+                          <g class="calmato-value-icon-rest-sun">
+                            <path class="calmato-value-icon-line calmato-value-icon-rest-sun-arc" d="M31 61A29 29 0 0 1 89 61"></path>
+                          </g>
+                          <path class="calmato-value-icon-line calmato-value-icon-rest-horizon" d="M20 62H100"></path>
+                          <g class="calmato-value-icon-rest-ripples">
+                            <path class="calmato-value-icon-line calmato-value-icon-rest-ripple calmato-value-icon-rest-ripple-1" d="M37 76H83"></path>
+                            <path class="calmato-value-icon-line calmato-value-icon-rest-ripple calmato-value-icon-rest-ripple-2" d="M45 87H75"></path>
+                            <path class="calmato-value-icon-line calmato-value-icon-rest-ripple calmato-value-icon-rest-ripple-3" d="M52 98H68"></path>
+                          </g>
                         </svg>
                       </span>
                       <h3>REST</h3>
@@ -220,8 +229,14 @@
                     <article class="calmato-value">
                       <span class="calmato-value-icon calmato-value-icon--comfort" aria-hidden="true">
                         <svg class="calmato-value-icon-svg" viewBox="0 0 120 120" aria-hidden="true">
-                          <path class="calmato-value-icon-line calmato-value-icon-star" d="M60 12C65 43 77 55 108 60C77 65 65 77 60 108C55 77 43 65 12 60C43 55 55 43 60 12Z"></path>
-                          <circle class="calmato-value-icon-point" cx="60" cy="60" r="6"></circle>
+                          <!-- The visible wave is also the exact path used by the moving point. -->
+                          <path id="calmato-comfort-motion-path" class="calmato-value-icon-line calmato-value-icon-comfort-wave" d="M13 71C27 45 42 49 57 67C71 83 88 79 107 56"></path>
+                          <circle class="calmato-value-icon-point calmato-value-icon-comfort-point" cx="0" cy="0" r="3.4">
+                            <animateMotion id="calmato-comfort-point-motion" data-calmato-value-motion begin="indefinite" dur="9.2s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0.84;1;1;1" keyTimes="0;0.84;0.9;0.96;1">
+                              <mpath href="#calmato-comfort-motion-path"></mpath>
+                            </animateMotion>
+                            <animate data-calmato-value-motion-opacity attributeName="opacity" begin="indefinite" dur="9.2s" repeatCount="indefinite" values="0;0.7;0.82;0.9;0.96;1;0.8;0;0" keyTimes="0;0.06;0.22;0.42;0.62;0.86;0.91;0.96;1"></animate>
+                          </circle>
                         </svg>
                       </span>
                       <h3>COMFORT</h3>
