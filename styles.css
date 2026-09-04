@@ -3807,3 +3807,81 @@ body.elsewhere-page {
     scrollbar-gutter: stable;
   }
 }
+
+/* =========================
+   Elsewhere / Small Mobile Sizing
+   Portrait phones with a short visual viewport (for example, iPhone 12
+   with browser controls visible) need a denser Core Values composition.
+   These values only tune size and spacing; the desktop/tablet design stays untouched.
+========================= */
+@media (max-width: 833px) {
+  /* Keep the off-canvas panel transition from widening the mobile scroll area. */
+  .elsewhere-page .elsewhere-panel-stage {
+    overflow-x: clip;
+  }
+
+  /* Match the menu backdrop to the full expanded navigation height. */
+  .elsewhere-page .site-header:has(.mobile-menu[aria-hidden="false"])::before {
+    height: min(100svh, calc(var(--header-height) + 320px));
+  }
+}
+
+@media (max-width: 833px) and (max-height: 760px) {
+  .elsewhere-page .calmato-about {
+    /* VS Code Edit: compact Core Values icon size for short mobile screens. */
+    --calmato-value-icon-size: clamp(72px, 20vw, 80px);
+  }
+
+  .elsewhere-page .calmato-about-content {
+    /* Keeps the Core Values heading clear of the fixed mobile header. */
+    gap: 24px;
+    transform: translateY(18px);
+  }
+
+  .elsewhere-page .calmato-about-intro {
+    gap: 10px;
+  }
+
+  .elsewhere-page .calmato-about-label {
+    font-size: 10px;
+  }
+
+  .elsewhere-page .calmato-about-intro h2 {
+    max-width: 300px;
+    font-size: 34px;
+    line-height: 1.04;
+  }
+
+  .elsewhere-page .calmato-about-description {
+    max-width: 310px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .elsewhere-page .calmato-value-grid {
+    row-gap: 18px;
+  }
+
+  .elsewhere-page .calmato-value:nth-child(even)::before {
+    top: 16px;
+    bottom: 24px;
+  }
+
+  .elsewhere-page .calmato-value:nth-child(n + 3) {
+    padding-top: 18px;
+  }
+
+  .elsewhere-page .calmato-value-icon {
+    margin-top: 20px;
+  }
+
+  .elsewhere-page .calmato-value h3 {
+    font-size: 14px;
+  }
+
+  .elsewhere-page .calmato-value p {
+    margin-top: 12px;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+}
