@@ -3838,7 +3838,7 @@ body.elsewhere-page {
   }
 
   .elsewhere-page .calmato-about-content {
-    gap: clamp(24px, 4svh, 34px);
+    gap: clamp(36px, 5.5svh, 46px);
   }
 
   .elsewhere-page .calmato-value-grid {
@@ -3855,11 +3855,11 @@ body.elsewhere-page {
   }
 
   .elsewhere-page .calmato-value-icon {
-    margin-top: clamp(24px, 3.8svh, 34px);
+    margin-top: clamp(18px, 2.8svh, 24px);
   }
 
   .elsewhere-page .calmato-value p {
-    margin-top: clamp(12px, 2svh, 16px);
+    margin-top: clamp(8px, 1.75svh, 14px);
   }
 }
 
@@ -3871,7 +3871,7 @@ body.elsewhere-page {
 
   .elsewhere-page .calmato-about-content {
     /* Keeps the Core Values heading clear of the fixed mobile header. */
-    gap: 24px;
+    gap: 28px;
     transform: translateY(18px);
   }
 
@@ -3909,7 +3909,7 @@ body.elsewhere-page {
   }
 
   .elsewhere-page .calmato-value-icon {
-    margin-top: 20px;
+    margin-top: 16px;
   }
 
   .elsewhere-page .calmato-value h3 {
@@ -3917,7 +3917,7 @@ body.elsewhere-page {
   }
 
   .elsewhere-page .calmato-value p {
-    margin-top: 12px;
+    margin-top: 10px;
     font-size: 11px;
     line-height: 1.55;
   }
