@@ -352,54 +352,6 @@
         year: "2026",
         url: "#",
       },
-      {
-        src: "../assets/elsewhere_unsplash/11_unsplash.jpg",
-        alt: "Unsplash photo 10 image path placeholder",
-        title: "Photo 10 Placeholder",
-        location: "Location placeholder",
-        year: "2026",
-        url: "#",
-      },
-      {
-        src: "../assets/elsewhere_unsplash/12_unsplash.jpg",
-        alt: "Unsplash photo 10 image path placeholder",
-        title: "Photo 10 Placeholder",
-        location: "Location placeholder",
-        year: "2026",
-        url: "#",
-      },
-      {
-        src: "../assets/elsewhere_unsplash/13_unsplash.jpg",
-        alt: "Unsplash photo 10 image path placeholder",
-        title: "Photo 10 Placeholder",
-        location: "Location placeholder",
-        year: "2026",
-        url: "#",
-      },
-      {
-        src: "../assets/elsewhere_unsplash/13_unsplash.jpg",
-        alt: "Unsplash photo 10 image path placeholder",
-        title: "Photo 10 Placeholder",
-        location: "Location placeholder",
-        year: "2026",
-        url: "#",
-      },
-      {
-        src: "../assets/elsewhere_unsplash/14_unsplash.jpg",
-        alt: "Unsplash photo 10 image path placeholder",
-        title: "Photo 10 Placeholder",
-        location: "Location placeholder",
-        year: "2026",
-        url: "#",
-      },
-      {
-        src: "../assets/elsewhere_unsplash/15_unsplash.jpg",
-        alt: "Unsplash photo 10 image path placeholder",
-        title: "Photo 10 Placeholder",
-        location: "Location placeholder",
-        year: "2026",
-        url: "#",
-      },
     ];
 
     const unsplashHeader = document.querySelector("[data-nav]");
@@ -631,6 +583,7 @@
         card.classList.toggle("is-active", isActive);
         card.classList.toggle("is-hidden", !isVisible);
         card.setAttribute("aria-hidden", String(!isVisible));
+        card.tabIndex = isVisible ? 0 : -1;
         card.style.setProperty("--unsplash-card-x", `calc(var(--unsplash-card-step) * ${xPosition})`);
         card.style.setProperty("--unsplash-card-y", `${yPosition}px`);
         card.style.setProperty("--unsplash-card-scale", cardScale);
@@ -1866,11 +1819,6 @@ snapDots.forEach((dot, index) => {
 
 });
 
-links.forEach((link) => {
-
-  link.classList.toggle("is-active", link.getAttribute("href") === `#${current.target.id}`);
-
-});
           links.forEach((link) => {
             link.classList.toggle("is-active", link.getAttribute("href") === `#${current.target.id}`);
           });
