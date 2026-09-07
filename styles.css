@@ -1766,8 +1766,8 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   height: var(--calmato-value-icon-size);
   display: block;
   flex: 0 0 auto;
-  order: 2;
-  margin-top: clamp(36px, 4.8svh, 58px);
+  order: 1;
+  margin-top: 0;
   color: var(--core-icon-primary);
   opacity: 0;
   transform: translateY(6px);
@@ -1829,7 +1829,6 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   will-change: transform, opacity;
 }
 
-.calmato-value-icon-empathy-circle,
 .calmato-value-icon-rest-sun,
 .calmato-value-icon-rest-ripple,
 .calmato-value-icon-comfort-wave {
@@ -1838,15 +1837,15 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   will-change: transform, opacity;
 }
 
-.calmato-value-icon--empathy {
-  --calmato-empathy-left-edge: -2px;
-  --calmato-empathy-left-center: 1px;
-  --calmato-empathy-right-edge: 2px;
-  --calmato-empathy-right-center: -1px;
+.calmato-value-icon--harmony .calmato-value-icon-harmony-wave {
+  opacity: 0.72;
+  stroke-width: 1.4;
+  will-change: d, opacity;
 }
 
-.calmato-value-icon--empathy .calmato-value-icon-empathy-circle {
-  opacity: 0.78;
+.calmato-value-icon--harmony .calmato-value-icon-harmony-node {
+  opacity: 0.72;
+  will-change: opacity;
 }
 
 .calmato-value-icon--rest .calmato-value-icon-rest-sun,
@@ -1883,17 +1882,6 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   opacity: 0.76;
 }
 
-/* Tune these durations and delays to change each value's motion character. */
-.calmato-value-icon--empathy.is-revealed .calmato-value-icon-empathy-circle-left {
-  animation: calmatoValueEmpathyLeftAmbient 7.2s ease-in-out infinite;
-  animation-delay: calc(var(--calmato-value-reveal-delay, 0ms) - 1.5s);
-}
-
-.calmato-value-icon--empathy.is-revealed .calmato-value-icon-empathy-circle-right {
-  animation: calmatoValueEmpathyRightAmbient 7.2s ease-in-out infinite;
-  animation-delay: calc(var(--calmato-value-reveal-delay, 0ms) - 1.5s);
-}
-
 .calmato-value-icon--rest.is-revealed .calmato-value-icon-rest-sun {
   animation: calmatoValueRestSun 10s ease-in-out infinite;
   animation-delay: calc(var(--calmato-value-reveal-delay, 0ms) - 3s);
@@ -1915,52 +1903,6 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 .calmato-value-icon--comfort.is-revealed .calmato-value-icon-comfort-wave {
   animation: calmatoValueComfortWave 9.6s ease-in-out infinite;
   animation-delay: calc(var(--calmato-value-reveal-delay, 0ms) - 5.4s);
-}
-
-@keyframes calmatoValueEmpathyLeftAmbient {
-  0%,
-  100% {
-    opacity: 0.78;
-    transform: translateX(var(--calmato-empathy-left-edge, -2px));
-  }
-
-  35% {
-    opacity: 0.82;
-    transform: translateX(-0.5px);
-  }
-
-  43% {
-    opacity: 0.92;
-    transform: translateX(var(--calmato-empathy-left-center, 1px));
-  }
-
-  57% {
-    opacity: 0.85;
-    transform: translateX(0.55px);
-  }
-}
-
-@keyframes calmatoValueEmpathyRightAmbient {
-  0%,
-  100% {
-    opacity: 0.78;
-    transform: translateX(var(--calmato-empathy-right-edge, 2px));
-  }
-
-  39% {
-    opacity: 0.78;
-    transform: translateX(var(--calmato-empathy-right-edge, 2px));
-  }
-
-  46% {
-    opacity: 0.92;
-    transform: translateX(var(--calmato-empathy-right-center, -1px));
-  }
-
-  60% {
-    opacity: 0.85;
-    transform: translateX(-0.55px);
-  }
 }
 
 @keyframes calmatoValueRestSun {
@@ -2009,13 +1951,6 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .calmato-value:nth-child(2):hover .calmato-value-icon-empathy-circle {
-    --calmato-empathy-left-edge: -3px;
-    --calmato-empathy-left-center: 1.5px;
-    --calmato-empathy-right-edge: 3px;
-    --calmato-empathy-right-center: -1.5px;
-  }
-
   .calmato-value:nth-child(3):hover .calmato-value-icon-rest-ripple {
     --calmato-rest-ripple-peak-opacity: 0.84;
   }
@@ -2028,9 +1963,8 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 
 
 .calmato-value h3 {
-  /* VS Code Edit: reference order is title -> icon -> description. */
-  order: 1;
-  margin: 0;
+  order: 2;
+  margin: clamp(22px, 2.8svh, 34px) 0 0;
   color: var(--foreground);
   font-size: clamp(18px, 1.8vw, 28px);
   font-weight: 400;
@@ -2038,9 +1972,8 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 }
 
 .calmato-value p {
-  /* VS Code Edit: adjust this value to change the icon-to-description spacing. */
   order: 3;
-  margin: clamp(30px, 4svh, 46px) 0 0;
+  margin: clamp(22px, 3svh, 34px) 0 0;
   color: var(--foreground-soft);
   font-size: 15px;
   font-weight: 400;
@@ -2070,7 +2003,7 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   }
 
   .calmato-value h3 {
-    margin-top: 0;
+    margin-top: clamp(18px, 2.4svh, 24px);
     font-size: clamp(17px, 2.2vw, 24px);
   }
 
@@ -2145,7 +2078,7 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   }
 
   .calmato-value h3 {
-    margin-top: 0;
+    margin-top: 16px;
     font-size: 15px;
   }
 
@@ -3855,11 +3788,15 @@ body.elsewhere-page {
   }
 
   .elsewhere-page .calmato-value-icon {
-    margin-top: clamp(18px, 2.8svh, 24px);
+    margin-top: 0;
+  }
+
+  .elsewhere-page .calmato-value h3 {
+    margin-top: clamp(14px, 2.2svh, 20px);
   }
 
   .elsewhere-page .calmato-value p {
-    margin-top: clamp(8px, 1.75svh, 14px);
+    margin-top: clamp(12px, 2svh, 16px);
   }
 }
 
@@ -3909,15 +3846,16 @@ body.elsewhere-page {
   }
 
   .elsewhere-page .calmato-value-icon {
-    margin-top: 16px;
+    margin-top: 0;
   }
 
   .elsewhere-page .calmato-value h3 {
+    margin-top: 12px;
     font-size: 14px;
   }
 
   .elsewhere-page .calmato-value p {
-    margin-top: 10px;
+    margin-top: 12px;
     font-size: 11px;
     line-height: 1.55;
   }
