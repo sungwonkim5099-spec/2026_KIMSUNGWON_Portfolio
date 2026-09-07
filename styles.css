@@ -149,14 +149,20 @@ img {
   font-weight: 590;
   line-height: 17px;
   text-transform: capitalize;
-  transition: opacity 180ms ease;
+  transition: color 180ms ease, opacity 180ms ease;
 }
 
 .nav-primary a:hover,
-.nav-primary a.is-active,
-.mobile-menu a:hover,
-.mobile-menu a.is-active {
+.mobile-menu a:hover {
   opacity: 0.5;
+}
+
+.nav-primary a.is-active,
+.nav-primary a[aria-current],
+.mobile-menu a.is-active,
+.mobile-menu a[aria-current] {
+  color: var(--accent);
+  opacity: 1;
 }
 
 .nav-logo {
@@ -827,7 +833,7 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .elsewhere-subnav-link.is-active {
-  color: var(--accent);
+  color: var(--foreground);
   opacity: 1;
 }
 
