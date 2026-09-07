@@ -3860,3 +3860,57 @@ body.elsewhere-page {
     line-height: 1.55;
   }
 }
+
+/* =========================
+   Elsewhere / Mobile Snap Balance
+   These controls are intentionally mobile-only. Keep each snap panel inside
+   one visual viewport so adjacent panel content cannot bleed into it.
+========================= */
+@media (max-width: 833px) {
+  .elsewhere-page {
+    /* VS Code Edit: tune the Calmato hero without affecting desktop/tablet. */
+    --calmato-mobile-hero-title-size: 36px;
+    --calmato-mobile-hero-description-size: 13px;
+    --calmato-mobile-hero-gap: 18px;
+    --calmato-mobile-hero-offset-y: 0px;
+    --calmato-mobile-about-offset-y: 0px;
+  }
+
+  .elsewhere-page .elsewhere-main {
+    scroll-snap-type: y mandatory;
+    scroll-padding-block: 0;
+  }
+
+  .elsewhere-page .elsewhere-panel-stage,
+  .elsewhere-page .elsewhere-snap-root,
+  .elsewhere-page .elsewhere-snap-panel {
+    overflow-x: clip;
+    overflow-y: clip;
+  }
+
+  .elsewhere-page .elsewhere-snap-panel {
+    block-size: 100svh;
+    min-block-size: 100svh;
+    max-block-size: 100svh;
+    scroll-snap-align: center;
+  }
+
+  .elsewhere-page .calmato-hero-content {
+    gap: var(--calmato-mobile-hero-gap);
+    transform: translateY(var(--calmato-mobile-hero-offset-y));
+  }
+
+  .elsewhere-page .calmato-hero-content h2 {
+    font-size: var(--calmato-mobile-hero-title-size);
+    line-height: 1.05;
+  }
+
+  .elsewhere-page .calmato-hero-description {
+    font-size: var(--calmato-mobile-hero-description-size);
+    line-height: 1.65;
+  }
+
+  .elsewhere-page .calmato-about-content {
+    transform: translateY(var(--calmato-mobile-about-offset-y));
+  }
+}
