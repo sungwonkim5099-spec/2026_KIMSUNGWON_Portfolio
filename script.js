@@ -370,7 +370,6 @@
     const unsplashLightboxClose = unsplashLightboxCloseTargets.find((target) => target.matches("button"));
     let unsplashActiveIndex = 0;
     let unsplashMetaTimer = 0;
-    let unsplashWheelTimer = 0;
     let unsplashPointerStartX = 0;
     let unsplashPointerStartY = 0;
     let unsplashPointerCurrentX = 0;
@@ -378,9 +377,26 @@
     let unsplashPointerLastTime = 0;
     let unsplashPointerVelocityX = 0;
     let unsplashPointerCardStep = 1;
+    let unsplashPointerCard = null;
+    let unsplashPointerStartProgress = 0;
     let unsplashCurrentProgress = 0;
+    let unsplashTargetProgress = 0;
+    let unsplashSettleTargetProgress = 0;
+    let unsplashSettleTargetIndex = null;
+    let unsplashWheelMomentum = 0;
+    let unsplashWheelGestureProgress = 0;
+    let unsplashWheelStartIndex = null;
+    let unsplashWheelGestureTimer = 0;
+    let unsplashInertiaVelocity = 0;
+    let unsplashMotionFrame = 0;
+    let unsplashLastMotionFrameTime = 0;
+    let unsplashIsSettling = false;
+    let unsplashMotionConfig = null;
     let unsplashPointerMoved = false;
     let unsplashPointerIsDown = false;
+    let unsplashPointerStartIndex = 0;
+    let unsplashIgnoredCardClick = null;
+    let unsplashIgnoredCardClickTimer = 0;
     let unsplashLightboxOpen = false;
     let unsplashLightboxClosing = false;
     let unsplashLightboxCloseTimer = 0;
@@ -392,7 +408,6 @@
     let unsplashLightboxScrollTop = 0;
     let unsplashPreviousFocus = null;
     let unsplashMotionTimer = 0;
-    let unsplashReboundTimer = 0;
     const unsplashMobileQuery = window.matchMedia("(max-width: 833px)");
 
     const isUnsplashPanelActive = () => unsplashPanel?.classList.contains("is-active");
@@ -425,6 +440,61 @@
     const getUnsplashMotionValue = (style, property, fallback) => {
       const value = Number.parseFloat(style.getPropertyValue(property));
       return Number.isFinite(value) ? value : fallback;
+    };
+
+    const clampUnsplashProgress = (progress) => {
+      const maxOffset = unsplashMotionConfig?.maxTemporaryOffset || 1.35;
+      return Math.max(-maxOffset, Math.min(maxOffset, progress));
+    };
+
+    const getUnsplashNearestIndexDelta = (progress) => {
+      return Math.round(-progress);
+    };
+
+    const getUnsplashDirectionalSnapIndexDelta = (progress) => {
+      const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
+      const magnitude = Math.abs(progress);
+      if (magnitude < motionConfig.snapThreshold) return 0;
+
+      const cardCount = Math.min(2, Math.max(1, Math.round(magnitude)));
+      return (progress > 0 ? -1 : 1) * cardCount;
+    };
+
+    const getUnsplashSettleProgress = (targetIndex) => {
+      return clampUnsplashProgress(-getUnsplashIndexDelta(unsplashActiveIndex, targetIndex));
+    };
+
+    const readUnsplashMotionConfig = () => {
+      const style = window.getComputedStyle(unsplashGallery || unsplashCarousel);
+      unsplashMotionConfig = {
+        arcNearY: getUnsplashMotionValue(style, "--unsplash-arc-y-near", 42),
+        arcFarY: getUnsplashMotionValue(style, "--unsplash-arc-y-far", 78),
+        scaleCenter: getUnsplashMotionValue(style, "--unsplash-scale-center", 1),
+        scaleNear: getUnsplashMotionValue(style, "--unsplash-scale-near", 0.9),
+        scaleFar: getUnsplashMotionValue(style, "--unsplash-scale-far", 0.8),
+        opacityNear: getUnsplashMotionValue(style, "--unsplash-opacity-near", 0.98),
+        opacityFar: getUnsplashMotionValue(style, "--unsplash-opacity-far", 0.88),
+        tiltStep: getUnsplashMotionValue(style, "--unsplash-tilt-step", 1.8),
+        rotateYStep: getUnsplashMotionValue(style, "--unsplash-rotate-y-step", -3),
+        depthNear: getUnsplashMotionValue(style, "--unsplash-depth-near", -24),
+        depthFar: getUnsplashMotionValue(style, "--unsplash-depth-far", -58),
+        dragSensitivity: getUnsplashMotionValue(style, "--unsplash-drag-sensitivity", 0.88),
+        wheelSensitivity: getUnsplashMotionValue(style, "--unsplash-wheel-sensitivity", 0.7),
+        wheelNoiseThreshold: getUnsplashMotionValue(style, "--unsplash-wheel-noise-threshold", 2),
+        smoothingFactor: getUnsplashMotionValue(style, "--unsplash-smoothing-factor", 0.18),
+        settleStrength: getUnsplashMotionValue(style, "--unsplash-settle-strength", 0.26),
+        pointerVelocityInfluence: getUnsplashMotionValue(style, "--unsplash-pointer-velocity-influence", 140),
+        inertiaStrength: getUnsplashMotionValue(style, "--unsplash-inertia-strength", 0.18),
+        inertiaDecay: getUnsplashMotionValue(style, "--unsplash-inertia-decay", 0.86),
+        snapThreshold: getUnsplashMotionValue(style, "--unsplash-snap-threshold", 0.18),
+        settleEpsilon: getUnsplashMotionValue(style, "--unsplash-settle-epsilon", 0.002),
+        maxTemporaryOffset: getUnsplashMotionValue(style, "--unsplash-max-temporary-offset", 1.35),
+        metadataCenterSwitchThreshold: getUnsplashMotionValue(style, "--unsplash-metadata-center-switch-threshold", 0.5),
+        clickDragThreshold: getUnsplashMotionValue(style, "--unsplash-click-drag-threshold", 8),
+        wheelMaxCards: getUnsplashMotionValue(style, "--unsplash-wheel-max-cards", 1),
+        autoResumeDelay: getUnsplashMotionValue(style, "--unsplash-auto-resume-delay", 2600),
+      };
+      return unsplashMotionConfig;
     };
 
     const syncUnsplashLightboxClosePosition = (imageRect = null) => {
@@ -541,18 +611,20 @@
       // Keep the rendered position so a new index can continue from the current drag/wheel frame.
       unsplashCurrentProgress = dragProgress;
 
-      const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
-      const arcNearY = getUnsplashMotionValue(motionStyle, "--unsplash-arc-y-near", 42);
-      const arcFarY = getUnsplashMotionValue(motionStyle, "--unsplash-arc-y-far", 78);
-      const scaleCenter = getUnsplashMotionValue(motionStyle, "--unsplash-scale-center", 1);
-      const scaleNear = getUnsplashMotionValue(motionStyle, "--unsplash-scale-near", 0.9);
-      const scaleFar = getUnsplashMotionValue(motionStyle, "--unsplash-scale-far", 0.8);
-      const opacityNear = getUnsplashMotionValue(motionStyle, "--unsplash-opacity-near", 0.98);
-      const opacityFar = getUnsplashMotionValue(motionStyle, "--unsplash-opacity-far", 0.88);
-      const tiltStep = getUnsplashMotionValue(motionStyle, "--unsplash-tilt-step", 1.8);
-      const rotateYStep = getUnsplashMotionValue(motionStyle, "--unsplash-rotate-y-step", -3);
-      const depthNear = getUnsplashMotionValue(motionStyle, "--unsplash-depth-near", -24);
-      const depthFar = getUnsplashMotionValue(motionStyle, "--unsplash-depth-far", -58);
+      const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
+      const {
+        arcNearY,
+        arcFarY,
+        scaleCenter,
+        scaleNear,
+        scaleFar,
+        opacityNear,
+        opacityFar,
+        tiltStep,
+        rotateYStep,
+        depthNear,
+        depthFar,
+      } = motionConfig;
 
       const isMobile = unsplashMobileQuery.matches;
       const visibleLimit = isMobile ? 1.5 : 2.5;
@@ -592,71 +664,111 @@
       if (!unsplashPointerIsDown && syncMeta) updateUnsplashMeta(unsplashItems[unsplashActiveIndex], immediate);
     };
 
-    const stopUnsplashRebound = () => {
+    const stopUnsplashMotionFrame = () => {
+      if (unsplashMotionFrame) cancelAnimationFrame(unsplashMotionFrame);
+      unsplashMotionFrame = 0;
+      unsplashLastMotionFrameTime = 0;
+    };
 
-  if (unsplashReboundTimer) cancelAnimationFrame(unsplashReboundTimer);
+    const rebaseUnsplashProgress = () => {
+      const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
+      if (Math.abs(unsplashCurrentProgress) < motionConfig.metadataCenterSwitchThreshold) return false;
 
-  unsplashReboundTimer = 0;
+      const indexDelta = Math.round(-unsplashCurrentProgress);
+      if (!indexDelta) return false;
 
-};
+      unsplashActiveIndex = normalizeUnsplashIndex(unsplashActiveIndex + indexDelta);
+      unsplashCurrentProgress += indexDelta;
+      if (!unsplashIsSettling) unsplashTargetProgress += indexDelta;
+      updateUnsplashMeta(unsplashItems[unsplashActiveIndex]);
+      return true;
+    };
 
-const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgress = null) => {
+    const beginUnsplashSettle = (nextIndex = null) => {
+      if (unsplashPointerIsDown) return;
 
-  stopUnsplashRebound();
+      const targetIndex = nextIndex === null
+        ? normalizeUnsplashIndex(unsplashActiveIndex + getUnsplashNearestIndexDelta(unsplashCurrentProgress))
+        : normalizeUnsplashIndex(nextIndex);
 
-  const hasInitialProgress = Number.isFinite(initialProgress);
+      unsplashSettleTargetIndex = targetIndex;
+      unsplashSettleTargetProgress = getUnsplashSettleProgress(targetIndex);
+      unsplashTargetProgress = unsplashSettleTargetProgress;
+      unsplashWheelMomentum = 0;
+      unsplashInertiaVelocity = 0;
+      unsplashIsSettling = true;
+      requestUnsplashMotionFrame();
+    };
 
-  if (!releaseDirection && !hasInitialProgress) {
+    const animateUnsplashMotion = (now) => {
+      const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
+      const elapsed = unsplashLastMotionFrameTime
+        ? Math.min(Math.max(now - unsplashLastMotionFrameTime, 1), 32)
+        : 16.67;
+      const frameRatio = elapsed / 16.67;
+      unsplashLastMotionFrameTime = now;
 
-    updateUnsplashCards(false, 0, syncMeta);
+      if (!unsplashPointerIsDown && unsplashIsSettling && unsplashSettleTargetIndex !== null) {
+        unsplashSettleTargetProgress = getUnsplashSettleProgress(unsplashSettleTargetIndex);
+        unsplashTargetProgress = unsplashSettleTargetProgress;
+      }
 
-    return;
+      const smoothingFactor = unsplashIsSettling
+        ? motionConfig.settleStrength
+        : motionConfig.smoothingFactor;
+      const frameSmoothing = 1 - Math.pow(
+        1 - Math.max(0.001, Math.min(smoothingFactor, 0.99)),
+        frameRatio
+      );
+      unsplashCurrentProgress += (unsplashTargetProgress - unsplashCurrentProgress) * frameSmoothing;
 
-  }
+      if (!unsplashPointerIsDown) rebaseUnsplashProgress();
+      updateUnsplashCards(true, unsplashCurrentProgress, false);
 
-  const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
-  const startProgress = hasInitialProgress
-    ? initialProgress
-    : Math.sign(releaseDirection) * Math.min(0.34, Math.max(0.18, Math.abs(releaseDirection) * 0.22));
-  const duration = Math.max(
-    360,
-    getUnsplashMotionValue(motionStyle, "--unsplash-rebound-settle-duration", 760)
-  );
+      if (!unsplashPointerIsDown && !unsplashIsSettling &&
+        Math.abs(unsplashTargetProgress - unsplashCurrentProgress) <= motionConfig.settleEpsilon) {
+        beginUnsplashSettle();
+      }
 
-  const startTime = performance.now();
+      if (
+        unsplashIsSettling &&
+        unsplashSettleTargetIndex === unsplashActiveIndex &&
+        Math.abs(unsplashCurrentProgress) <= motionConfig.settleEpsilon
+      ) {
+        unsplashCurrentProgress = 0;
+        unsplashTargetProgress = 0;
+        unsplashSettleTargetProgress = 0;
+        unsplashSettleTargetIndex = null;
+        unsplashIsSettling = false;
+        updateUnsplashCards(true, 0, false);
+        updateUnsplashMeta(unsplashItems[unsplashActiveIndex], true);
+        startUnsplashMotion();
+      }
 
-  const animate = (now) => {
+      const needsFrame = unsplashPointerIsDown
+        || Math.abs(unsplashTargetProgress - unsplashCurrentProgress) > 0.001
+        || unsplashIsSettling;
 
-    const t = Math.min((now - startTime) / duration, 1);
+      if (needsFrame) {
+        unsplashMotionFrame = requestAnimationFrame(animateUnsplashMotion);
+      } else {
+        unsplashMotionFrame = 0;
+        unsplashLastMotionFrameTime = 0;
+      }
+    };
 
-    const decay = Math.exp(-4.4 * t);
-    const wave = Math.cos(t * Math.PI * 2.4);
-    const reboundProgress = startProgress * decay * wave;
-
-    updateUnsplashCards(true, reboundProgress, false);
-
-    if (t < 1) {
-
-      unsplashReboundTimer = requestAnimationFrame(animate);
-
-    } else {
-
-      unsplashReboundTimer = 0;
-
-      updateUnsplashCards(true, 0, syncMeta);
-
-    }
-
-  };
-
-  unsplashReboundTimer = requestAnimationFrame(animate);
-
-};
+    const requestUnsplashMotionFrame = () => {
+      if (unsplashMotionFrame) return;
+      unsplashLastMotionFrameTime = performance.now();
+      unsplashMotionFrame = requestAnimationFrame(animateUnsplashMotion);
+    };
 
     const syncUnsplashBreakpoint = () => {
       if (!unsplashTrack) return;
-      stopUnsplashRebound();
-      updateUnsplashCards(true);
+      stopUnsplashMotionFrame();
+      readUnsplashMotionConfig();
+      updateUnsplashCards(true, unsplashCurrentProgress, false);
+      unsplashPointerCardStep = getUnsplashCardStep();
     };
 
     if (typeof unsplashMobileQuery.addEventListener === "function") {
@@ -671,17 +783,22 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
         unsplashLightboxClosing ||
         (unsplashLightboxOpen && !allowLightbox)
       ) return;
-      const previousIndex = unsplashActiveIndex;
-      const previousProgress = unsplashCurrentProgress;
       const normalizedIndex = normalizeUnsplashIndex(nextIndex);
-      const indexDelta = getUnsplashIndexDelta(previousIndex, normalizedIndex);
-      unsplashActiveIndex = normalizedIndex;
-      if (!immediate && reboundDirection) {
-        playUnsplashRebound(reboundDirection, true, previousProgress + indexDelta);
-      } else {
-        stopUnsplashRebound();
-        updateUnsplashCards(immediate);
+      if (immediate || allowLightbox) {
+        stopUnsplashMotionFrame();
+        unsplashActiveIndex = normalizedIndex;
+        unsplashCurrentProgress = 0;
+        unsplashTargetProgress = 0;
+        unsplashSettleTargetProgress = 0;
+        unsplashSettleTargetIndex = null;
+        unsplashWheelMomentum = 0;
+        unsplashInertiaVelocity = 0;
+        unsplashIsSettling = false;
+        updateUnsplashCards(true, 0, true);
+        return;
       }
+
+      beginUnsplashSettle(normalizedIndex);
     };
 
     const moveUnsplashCarousel = (direction) => {
@@ -694,11 +811,19 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
     };
 
     const startUnsplashMotion = () => {
-      // VS Code Edit: 자동 캐러셀 모션 속도는 아래 delay 값을 조정하세요.
-      const unsplashMotionDelay = 2600;
+      const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
+      const unsplashMotionDelay = motionConfig.autoResumeDelay;
 
       stopUnsplashMotion();
-      if (prefersReducedMotion || !isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing || unsplashPointerIsDown) return;
+      if (
+        prefersReducedMotion ||
+        !isUnsplashPanelActive() ||
+        unsplashLightboxOpen ||
+        unsplashLightboxClosing ||
+        unsplashPointerIsDown ||
+        unsplashIsSettling ||
+        Math.abs(unsplashTargetProgress - unsplashCurrentProgress) > (unsplashMotionConfig?.settleEpsilon || 0.002)
+      ) return;
 
       unsplashMotionTimer = window.setTimeout(() => {
         if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing || unsplashPointerIsDown) return;
@@ -828,7 +953,7 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
 
       unsplashLightboxScrollTop = elsewhere?.scrollTop ?? 0;
       stopUnsplashMotion();
-      stopUnsplashRebound();
+      stopUnsplashMotionFrame();
       unsplashLightboxOpen = true;
       setUnsplashLightboxAdjacent();
       unsplashPreviousFocus = document.activeElement;
@@ -1047,6 +1172,12 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
         }
 
         card.addEventListener("click", () => {
+          if (unsplashIgnoredCardClick === card) {
+            unsplashIgnoredCardClick = null;
+            window.clearTimeout(unsplashIgnoredCardClickTimer);
+            unsplashIgnoredCardClickTimer = 0;
+            return;
+          }
           activateUnsplashCard(card);
         });
 
@@ -1069,40 +1200,69 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
       });
 
       unsplashTrack.replaceChildren(fragment);
-      updateUnsplashCards(true);
+      readUnsplashMotionConfig();
+      updateUnsplashCards(true, 0, true);
+      unsplashPointerCardStep = getUnsplashCardStep();
       startUnsplashMotion();
 
       unsplashCarousel.addEventListener("wheel", (event) => {
+        if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing) return;
 
-  if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing) return;
+        const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
+        const dominantDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY;
+        const deltaModeScale = event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? window.innerHeight
+            : 1;
+        const normalizedDelta = dominantDelta * deltaModeScale;
 
-  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+        if (Math.abs(normalizedDelta) < motionConfig.wheelNoiseThreshold) return;
 
-  if (Math.abs(delta) < 6) return;
+        event.preventDefault();
+        stopUnsplashMotion();
+        unsplashIsSettling = false;
+        unsplashSettleTargetIndex = null;
+        unsplashInertiaVelocity = 0;
+        unsplashWheelMomentum = 0;
 
-  event.preventDefault();
+        const cardStep = unsplashPointerCardStep || getUnsplashCardStep();
+        const wheelProgress = (normalizedDelta / cardStep) * motionConfig.wheelSensitivity;
+        const wheelMovement = -wheelProgress;
+        if (unsplashWheelStartIndex === null) {
+          unsplashWheelStartIndex = unsplashActiveIndex;
+        }
+        const wheelDirectionChanged = unsplashWheelGestureProgress !== 0
+          && Math.sign(unsplashWheelGestureProgress) !== Math.sign(wheelMovement);
+        if (wheelDirectionChanged) {
+          unsplashWheelGestureProgress = 0;
+          unsplashWheelStartIndex = unsplashActiveIndex;
+        }
 
-  stopUnsplashMotion();
+        const remainingWheelProgress = Math.max(
+          motionConfig.wheelMaxCards - Math.abs(unsplashWheelGestureProgress),
+          0
+        );
+        const acceptedWheelMovement = Math.sign(wheelMovement) * Math.min(
+          Math.abs(wheelMovement),
+          remainingWheelProgress
+        );
 
-  stopUnsplashRebound();
-
-  const direction = delta > 0 ? 1 : -1;
-
-  if (!unsplashWheelTimer) {
-
-    moveUnsplashCarousel(direction);
-
-    unsplashWheelTimer = window.setTimeout(() => {
-
-      unsplashWheelTimer = 0;
-
-    }, 180);
-
-  }
-
-  startUnsplashMotion();
-
-}, { passive: false });
+        unsplashWheelGestureProgress += acceptedWheelMovement;
+        unsplashTargetProgress = clampUnsplashProgress(unsplashTargetProgress + acceptedWheelMovement);
+        window.clearTimeout(unsplashWheelGestureTimer);
+        unsplashWheelGestureTimer = window.setTimeout(() => {
+          const indexDelta = getUnsplashDirectionalSnapIndexDelta(unsplashWheelGestureProgress);
+          const startIndex = unsplashWheelStartIndex ?? unsplashActiveIndex;
+          unsplashWheelGestureProgress = 0;
+          unsplashWheelStartIndex = null;
+          unsplashWheelGestureTimer = 0;
+          beginUnsplashSettle(startIndex + indexDelta);
+        }, 180);
+        requestUnsplashMotionFrame();
+      }, { passive: false });
       unsplashCarousel.addEventListener("dragstart", (event) => {
         event.preventDefault();
       });
@@ -1116,6 +1276,8 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
       unsplashCarousel.addEventListener("pointerdown", (event) => {
         if (!isUnsplashPanelActive() || unsplashLightboxOpen || unsplashLightboxClosing || event.button > 0) return;
         stopUnsplashMotion();
+        stopUnsplashMotionFrame();
+        rebaseUnsplashProgress();
         unsplashPointerIsDown = true;
         unsplashPointerMoved = false;
         unsplashPointerStartX = event.clientX;
@@ -1124,9 +1286,23 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
         unsplashPointerLastX = event.clientX;
         unsplashPointerLastTime = event.timeStamp;
         unsplashPointerVelocityX = 0;
+        unsplashPointerCard = event.target.closest?.(".unsplash-card") || null;
+        if (unsplashPointerCard && !unsplashCarousel.contains(unsplashPointerCard)) {
+          unsplashPointerCard = null;
+        }
+        unsplashPointerStartProgress = unsplashCurrentProgress;
+        unsplashPointerStartIndex = unsplashActiveIndex;
+        unsplashTargetProgress = unsplashCurrentProgress;
+        unsplashSettleTargetIndex = null;
+        unsplashWheelMomentum = 0;
+        window.clearTimeout(unsplashWheelGestureTimer);
+        unsplashWheelGestureTimer = 0;
+        unsplashWheelGestureProgress = 0;
+        unsplashWheelStartIndex = null;
+        unsplashInertiaVelocity = 0;
+        unsplashIsSettling = false;
         unsplashPointerCardStep = getUnsplashCardStep();
-        unsplashCarousel.classList.add("is-dragging");
-        unsplashCarousel.setPointerCapture?.(event.pointerId);
+        unsplashCarousel.classList.remove("is-dragging");
       });
 
       unsplashCarousel.addEventListener("pointermove", (event) => {
@@ -1142,45 +1318,84 @@ const playUnsplashRebound = (releaseDirection = 0, syncMeta = true, initialProgr
         unsplashPointerLastX = event.clientX;
         unsplashPointerLastTime = event.timeStamp;
 
-        if (Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
+        const pointerDistance = Math.hypot(deltaX, deltaY);
+        const isHorizontalMovement = Math.abs(deltaX) > Math.abs(deltaY);
+        if (pointerDistance > motionConfig.clickDragThreshold) {
           unsplashPointerMoved = true;
+          if (isHorizontalMovement) {
+            unsplashCarousel.classList.add("is-dragging");
+            if (!unsplashCarousel.hasPointerCapture?.(event.pointerId)) {
+              unsplashCarousel.setPointerCapture?.(event.pointerId);
+            }
+          }
         }
 
-        const dragProgress = deltaX / unsplashPointerCardStep;
-        updateUnsplashCards(false, dragProgress);
+        const dragProgress = deltaX / unsplashPointerCardStep * motionConfig.dragSensitivity;
+        unsplashTargetProgress = clampUnsplashProgress(unsplashPointerStartProgress + dragProgress);
+        requestUnsplashMotionFrame();
       });
 
       const endUnsplashPointer = (event) => {
         if (!unsplashPointerIsDown) return;
+        const motionConfig = unsplashMotionConfig || readUnsplashMotionConfig();
         const pointerEndX = event.type === "pointercancel" ? unsplashPointerCurrentX : event.clientX;
         const deltaX = pointerEndX - unsplashPointerStartX;
         const deltaY = event.clientY - unsplashPointerStartY;
-        const dragDistance = deltaX / unsplashPointerCardStep;
+        const dragDistance = deltaX / unsplashPointerCardStep * motionConfig.dragSensitivity;
         const velocityAge = event.timeStamp - unsplashPointerLastTime;
         const releaseVelocityX = velocityAge <= 90 ? unsplashPointerVelocityX : 0;
-        const velocityDistance = Math.max(-0.35, Math.min(0.35, (releaseVelocityX * 150) / unsplashPointerCardStep));
+        const velocityDistance = Math.max(
+          -0.35,
+          Math.min(
+            0.35,
+            releaseVelocityX * motionConfig.pointerVelocityInfluence * motionConfig.inertiaStrength
+          )
+        );
         const projectedDistance = dragDistance + velocityDistance;
-        const isHorizontalDrag = Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY);
-        const isFlick = Math.abs(dragDistance) >= 0.12 && Math.abs(releaseVelocityX) >= 0.55;
-        const shouldAdvance = Math.abs(dragDistance) >= 0.2 || isFlick;
+        const isHorizontalDrag = Math.abs(deltaX) > motionConfig.clickDragThreshold
+          && Math.abs(deltaX) > Math.abs(deltaY);
+        const snapIndexDelta = isHorizontalDrag
+          ? getUnsplashDirectionalSnapIndexDelta(projectedDistance)
+          : 0;
+        const shouldAdvance = snapIndexDelta !== 0;
+        const wasClick = !unsplashPointerMoved && event.type !== "pointercancel";
+        const pointerCard = unsplashPointerCard;
 
         unsplashPointerIsDown = false;
         unsplashCarousel.classList.remove("is-dragging");
-        unsplashCarousel.releasePointerCapture?.(event.pointerId);
-        if (isHorizontalDrag && shouldAdvance) {
-          const releaseDirection = projectedDistance || dragDistance;
-          const jumpCount = Math.min(2, Math.max(1, Math.round(Math.abs(releaseDirection))));
-          const nextDirection = (releaseDirection > 0 ? -1 : 1) * jumpCount;
-          setUnsplashActiveIndex(unsplashActiveIndex + nextDirection, false, releaseDirection);
-        } else {
-          playUnsplashRebound(
-            isHorizontalDrag ? -dragDistance : 0,
-            true,
-            isHorizontalDrag ? dragDistance : null
-          );
+        if (unsplashCarousel.hasPointerCapture?.(event.pointerId)) {
+          unsplashCarousel.releasePointerCapture?.(event.pointerId);
+        }
+        unsplashPointerCard = null;
+
+        if (wasClick) {
+          unsplashWheelMomentum = 0;
+          unsplashInertiaVelocity = 0;
+          unsplashIsSettling = false;
+
+          if (pointerCard) {
+            unsplashIgnoredCardClick = pointerCard;
+            window.clearTimeout(unsplashIgnoredCardClickTimer);
+            unsplashIgnoredCardClickTimer = window.setTimeout(() => {
+              unsplashIgnoredCardClick = null;
+              unsplashIgnoredCardClickTimer = 0;
+            }, 0);
+            activateUnsplashCard(pointerCard);
+          } else {
+            beginUnsplashSettle();
+          }
+
+          window.setTimeout(() => {
+            unsplashPointerMoved = false;
+          }, 0);
+          return;
         }
 
-        startUnsplashMotion();
+        const nextDirection = shouldAdvance ? snapIndexDelta : 0;
+        unsplashWheelMomentum = 0;
+        unsplashInertiaVelocity = 0;
+        beginUnsplashSettle(unsplashPointerStartIndex + nextDirection);
 
         window.setTimeout(() => {
           unsplashPointerMoved = false;

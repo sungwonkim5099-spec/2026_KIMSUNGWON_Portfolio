@@ -911,10 +911,22 @@ html[data-theme="dark"] .footer-mark {
   --unsplash-meta-offset-y: 0px;
   --unsplash-carousel-duration: 680ms;
   --unsplash-carousel-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  /* VS Code Edit: 드래그/자동 전환 후 반동 강도와 settle 속도는 아래 3개 값을 조정하세요. */
-  --unsplash-rebound-distance: 0.16;
-  --unsplash-rebound-delay: 180;
-  --unsplash-rebound-settle-duration: 760;
+  /* Unsplash interaction tuning: movement only, not visual styling. */
+  --unsplash-drag-sensitivity: 0.88;
+  --unsplash-wheel-sensitivity: 0.42;
+  --unsplash-wheel-noise-threshold: 2;
+  --unsplash-smoothing-factor: 0.18;
+  --unsplash-settle-strength: 0.26;
+  --unsplash-pointer-velocity-influence: 140;
+  --unsplash-inertia-strength: 0.12;
+  --unsplash-inertia-decay: 0.78;
+  --unsplash-snap-threshold: 0.44;
+  --unsplash-settle-epsilon: 0.002;
+  --unsplash-max-temporary-offset: 1.15;
+  --unsplash-metadata-center-switch-threshold: 0.5;
+  --unsplash-click-drag-threshold: 8px;
+  --unsplash-wheel-max-cards: 1;
+  --unsplash-auto-resume-delay: 2600ms;
   --unsplash-arc-y-near: 28;
   --unsplash-arc-y-far: 52;
   --unsplash-scale-center: 1;
@@ -1022,6 +1034,10 @@ html[data-theme="dark"] .unsplash-carousel {
   cursor: grabbing;
 }
 
+.unsplash-carousel.is-dragging .unsplash-card {
+  cursor: grabbing;
+}
+
 .unsplash-carousel-track {
   position: absolute;
   inset: 0;
@@ -1051,9 +1067,9 @@ html[data-theme="dark"] .unsplash-carousel {
     rotateY(var(--unsplash-card-rotate, 0deg))
     scale(var(--unsplash-card-scale, 0.78));
   transform-style: preserve-3d;
+  cursor: zoom-in;
   transition:
-    opacity var(--unsplash-carousel-duration) var(--unsplash-carousel-ease),
-    transform var(--unsplash-carousel-duration) var(--unsplash-carousel-ease);
+    opacity var(--unsplash-carousel-duration) var(--unsplash-carousel-ease);
   will-change: transform, opacity;
 }
 
@@ -1445,11 +1461,18 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 
 @media (max-width: 833px) {
   .unsplash-gallery {
-    /* Mobile only: 가운데 카드는 크게, 좌우 카드는 화면 밖에서 절반만 보이게 합니다. */
-    --unsplash-card-width: clamp(168px, 44vw, 300px);
-    --unsplash-card-step: 44vw;
-    --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
-    --unsplash-meta-gap: 24px;
+    /* Mobile carousel controls. */
+    --unsplash-card-width: clamp(144px, 38vw, 255px);
+    --unsplash-card-aspect-ratio: 2 / 3;
+    --unsplash-scale-center: 1;
+    --unsplash-scale-near: 0.95;
+    --unsplash-scale-far: 0.88;
+    --unsplash-card-gap: 18px;
+    --unsplash-card-step: calc(var(--unsplash-card-width) + var(--unsplash-card-gap));
+    --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.55);
+    --unsplash-carousel-offset-x: 0px;
+    --unsplash-carousel-offset-y: 0px;
+    --unsplash-meta-gap: 16px;
     padding-top: calc(var(--header-height) + 44px);
     padding-bottom: 44px;
   }
