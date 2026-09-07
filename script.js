@@ -551,6 +551,7 @@
       const motionStyle = window.getComputedStyle(unsplashGallery || unsplashCarousel);
       const arcNearY = getUnsplashMotionValue(motionStyle, "--unsplash-arc-y-near", 42);
       const arcFarY = getUnsplashMotionValue(motionStyle, "--unsplash-arc-y-far", 78);
+      const scaleCenter = getUnsplashMotionValue(motionStyle, "--unsplash-scale-center", 1);
       const scaleNear = getUnsplashMotionValue(motionStyle, "--unsplash-scale-near", 0.9);
       const scaleFar = getUnsplashMotionValue(motionStyle, "--unsplash-scale-far", 0.8);
       const opacityNear = getUnsplashMotionValue(motionStyle, "--unsplash-opacity-near", 0.98);
@@ -573,7 +574,7 @@
         const nearMix = Math.min(clampedDistance, 1);
         const farMix = Math.max(clampedDistance - 1, 0);
         const yPosition = clampedDistance <= 1 ? arcNearY * nearMix : arcNearY + (arcFarY - arcNearY) * farMix;
-        const cardScale = clampedDistance <= 1 ? 1 + (scaleNear - 1) * nearMix : scaleNear + (scaleFar - scaleNear) * farMix;
+        const cardScale = clampedDistance <= 1 ? scaleCenter + (scaleNear - scaleCenter) * nearMix : scaleNear + (scaleFar - scaleNear) * farMix;
         const cardOpacity = isVisible ? (clampedDistance <= 1 ? 1 + (opacityNear - 1) * nearMix : opacityNear + (opacityFar - opacityNear) * farMix) : 0;
         const cardTilt = isVisible ? offset * tiltStep : 0;
         const cardRotate = isVisible ? offset * rotateYStep : 0;
