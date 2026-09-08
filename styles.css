@@ -904,7 +904,7 @@ html[data-theme="dark"] .footer-mark {
   --unsplash-carousel-offset-x: 0px;
   --unsplash-carousel-offset-y: 0px;
   --unsplash-carousel-perspective: 1400px;
-  --unsplash-edge-fade-width: clamp(48px, 7vw, 112px);
+  --unsplash-edge-fade-width: clamp(48px, 10vw, 112px);
   --unsplash-edge-fade-color: var(--background);
   --unsplash-meta-gap: clamp(24px, 3.2svh, 36px);
   --unsplash-meta-offset-x: 0px;
@@ -1465,7 +1465,7 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
     --unsplash-card-width: clamp(144px, 38vw, 255px);
     --unsplash-card-aspect-ratio: 2 / 3;
     --unsplash-scale-center: 1;
-    --unsplash-scale-near: 0.95;
+    --unsplash-scale-near: 0.76;
     --unsplash-scale-far: 0.88;
     --unsplash-card-gap: 18px;
     --unsplash-card-step: calc(var(--unsplash-card-width) + var(--unsplash-card-gap));
@@ -1479,6 +1479,20 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 
   .unsplash-gallery-header {
     display: none;
+  }
+
+  /* Keep the edge fades anchored to the mobile page gutters. */
+  .unsplash-carousel::before,
+  .unsplash-carousel::after {
+    width: calc(var(--unsplash-edge-fade-width) + var(--panel-x));
+  }
+
+  .unsplash-carousel::before {
+    left: calc(var(--panel-x) * -1);
+  }
+
+  .unsplash-carousel::after {
+    right: calc(var(--panel-x) * -1);
   }
 
   .unsplash-meta {
