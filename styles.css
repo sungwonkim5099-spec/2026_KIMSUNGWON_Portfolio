@@ -1636,7 +1636,7 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
   pointer-events: auto;
 }
 
-body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main {
+body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main:not(.is-footer-free) {
   scroll-snap-type: y mandatory;
 }
 
@@ -4107,6 +4107,10 @@ html:has(body.is-unsplash-lightbox-open) {
     scroll-padding-block: 0;
   }
 
+  .elsewhere-page .elsewhere-main.is-footer-free {
+    scroll-snap-type: none;
+  }
+
   .elsewhere-page .elsewhere-panel-stage,
   .elsewhere-page .elsewhere-snap-panel {
     overflow-x: clip;
@@ -4248,9 +4252,17 @@ html:has(body.is-unsplash-lightbox-open) {
 }
 
 @media (max-width: 833px) {
+  .elsewhere-page:not(.is-calmato-footer-swipe-ready) .calmato-dissolve-stage {
+    touch-action: pan-x;
+  }
+
+  .elsewhere-page.is-calmato-footer-swipe-ready .calmato-dissolve-stage {
+    touch-action: pan-y;
+  }
+
   .elsewhere-page .calmato-hero--cinematic {
     /* VS Code Edit: mobile portrait crop, centered composition, and spacing controls. */
-    --calmato-hero-background-position: 37% center;
+    --calmato-hero-background-position: 50% center;
     --calmato-hero-image-overlay: rgba(0, 0, 0, 0.3);
     --calmato-hero-padding-inline-start: var(--panel-x);
     --calmato-hero-padding-inline-end: var(--calmato-content-right-inset);
@@ -4280,12 +4292,12 @@ html:has(body.is-unsplash-lightbox-open) {
     white-space: normal;
   }
 
-  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu {
+  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu[aria-hidden="false"] {
     color: var(--calmato-hero-nav-color);
-    background: var(--calmato-hero-nav-background) !important;
-    border-color: transparent;
-    backdrop-filter: var(--calmato-hero-nav-backdrop-filter) !important;
-    -webkit-backdrop-filter: var(--calmato-hero-nav-backdrop-filter) !important;
+    background: var(--nav-open-material) !important;
+    border-color: var(--line);
+    backdrop-filter: saturate(180%) blur(16px) !important;
+    -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
   }
 
   body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button[aria-expanded="true"]::before,
@@ -4294,6 +4306,6 @@ html:has(body.is-unsplash-lightbox-open) {
   }
 
   body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .site-header:has(.mobile-menu[aria-hidden="false"])::before {
-    display: none;
+    display: block;
   }
 }

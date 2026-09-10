@@ -190,6 +190,10 @@
       }
 
       elsewhereActivePanel = nextPanel;
+      elsewhere?.classList.toggle(
+        "is-calmato-footer-swipe-ready",
+        nextPanel === "calmato" && calmatoDominantIndex === elsewhereSnapPanels.length - 1
+      );
 
       elsewhereTabs.forEach((tab) => {
         const isActive = tab.dataset.elsewhereTab === nextPanel;
@@ -259,6 +263,12 @@
         const deltaY = touch.clientY - elsewhereTouchStartY;
         const isHorizontalSwipe = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4;
         if (isHorizontalSwipe) {
+          if (
+            window.matchMedia("(max-width: 833px)").matches &&
+            elsewhereActivePanel === "calmato"
+          ) {
+            return;
+          }
           setElsewherePanel(deltaX < 0 ? "unsplash" : "calmato");
         }
       },
@@ -1743,6 +1753,11 @@
         );
       });
 
+      elsewhere?.classList.toggle(
+        "is-calmato-footer-swipe-ready",
+        elsewhereActivePanel === "calmato" && nextIndex === elsewhereSnapPanels.length - 1
+      );
+
       if (nextIndex === 1) revealCalmatoValueIconsOnce();
     };
 
@@ -1816,19 +1831,140 @@
       });
     };
 
+    const scrollToCalmatoPage = (targetIndex) => {
+      if (!elsewhereSnapScroller || elsewhereSnapPanels.length === 0) return;
+      const nextIndex = clampCalmatoDissolve(targetIndex, 0, elsewhereSnapPanels.length - 1);
+      elsewhereSnapScroller.classList.remove("is-footer-free");
+      syncCalmatoDissolveMetrics();
+      elsewhereSnapScroller.scrollTo({
+        top: calmatoDissolveRootTop + calmatoDissolveDistance * nextIndex,
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+    };
+
+    const scrollToCalmatoFooter = () => {
+      const footer = document.querySelector("[data-elsewhere-footer]");
+      if (!footer || !elsewhereSnapScroller) return;
+      const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      const targetTop = Math.min(
+        elsewhereSnapScroller.scrollHeight - elsewhereSnapScroller.clientHeight,
+        elsewhereSnapScroller.scrollTop + footerRect.top - scrollerRect.top
+      );
+
+      // The footer sits after the four snap pages, so release their mandatory snap
+      // before continuing the last mobile swipe into the normal document flow.
+      elsewhereSnapScroller.classList.add("is-footer-free");
+      window.requestAnimationFrame(() => {
+        elsewhereSnapScroller.scrollTo({
+          top: targetTop,
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+        });
+      });
+    };
+
     if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
       elsewhereSnapDots.forEach((dot) => {
         dot.addEventListener("click", () => {
           const targetIndex = Number(dot.dataset.elsewhereSnapDot || 0);
           if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= elsewhereSnapPanels.length) return;
 
-          syncCalmatoDissolveMetrics();
-          elsewhereSnapScroller.scrollTo({
-            top: calmatoDissolveRootTop + calmatoDissolveDistance * targetIndex,
-            behavior: prefersReducedMotion ? "auto" : "smooth",
-          });
+          scrollToCalmatoPage(targetIndex);
         });
       });
+
+      let calmatoMobileSwipe = null;
+      const calmatoMobileQuery = window.matchMedia("(max-width: 833px)");
+      const getCalmatoMobileSwipeIndex = () => {
+        if (calmatoDominantIndex >= 0) return calmatoDominantIndex;
+        const rawIndex = (elsewhereSnapScroller.scrollTop - calmatoDissolveRootTop) / calmatoDissolveDistance;
+        return clampCalmatoDissolve(Math.round(rawIndex), 0, elsewhereSnapPanels.length - 1);
+      };
+      const isCalmatoSwipeTarget = (target) =>
+        !target.closest("a, button, input, textarea, select, iframe, [data-youtube-frame]");
+
+      elsewhereSnapScroller.addEventListener(
+        "touchstart",
+        (event) => {
+          if (
+            !calmatoMobileQuery.matches ||
+            elsewhereActivePanel !== "calmato" ||
+            !isCalmatoSwipeTarget(event.target)
+          ) {
+            calmatoMobileSwipe = null;
+            return;
+          }
+
+          const touch = event.touches[0];
+          if (!touch) return;
+          calmatoMobileSwipe = {
+            startX: touch.clientX,
+            startY: touch.clientY,
+            startIndex: getCalmatoMobileSwipeIndex(),
+            axis: null,
+          };
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "touchmove",
+        (event) => {
+          if (!calmatoMobileSwipe) return;
+          const touch = event.touches[0];
+          if (!touch) return;
+
+          const deltaX = touch.clientX - calmatoMobileSwipe.startX;
+          const deltaY = touch.clientY - calmatoMobileSwipe.startY;
+          if (!calmatoMobileSwipe.axis && Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 12) {
+            calmatoMobileSwipe.axis = Math.abs(deltaX) > Math.abs(deltaY) ? "horizontal" : "vertical";
+          }
+
+          if (calmatoMobileSwipe.axis === "horizontal") {
+            event.preventDefault();
+            return;
+          }
+
+          const isLastPage = calmatoMobileSwipe.startIndex === elsewhereSnapPanels.length - 1;
+          if (!isLastPage || deltaY > 0) event.preventDefault();
+        },
+        { passive: false }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "touchend",
+        (event) => {
+          if (!calmatoMobileSwipe) return;
+          const touch = event.changedTouches[0];
+          const swipe = calmatoMobileSwipe;
+          calmatoMobileSwipe = null;
+          if (!touch) return;
+
+          if (
+            swipe.axis === "vertical" &&
+            swipe.startIndex === elsewhereSnapPanels.length - 1 &&
+            touch.clientY - swipe.startY < -56
+          ) {
+            scrollToCalmatoFooter();
+            return;
+          }
+
+          if (swipe.axis !== "horizontal") return;
+
+          const deltaX = touch.clientX - swipe.startX;
+          if (Math.abs(deltaX) < 56) return;
+          scrollToCalmatoPage(swipe.startIndex + (deltaX < 0 ? 1 : -1));
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "touchcancel",
+        () => {
+          calmatoMobileSwipe = null;
+        },
+        { passive: true }
+      );
 
       elsewhereSnapScroller.addEventListener(
         "scroll",
