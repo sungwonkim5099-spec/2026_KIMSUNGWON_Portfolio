@@ -134,8 +134,6 @@
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
-    // Run the Calmato 01 intro only after that panel is first recognized as active.
-    let calmatoIntroPlayed = false;
 
     const setElsewhereDropdownOpen = (isOpen) => {
       if (!elsewhereNavItem || !elsewhereNavTrigger) return;
@@ -213,6 +211,13 @@
       if (nextPanel === "unsplash" && elsewhere) {
         elsewhere.classList.remove("is-footer-free");
         elsewhere.scrollTop = 0;
+      }
+
+      if (nextPanel === "calmato") {
+        window.requestAnimationFrame(() => {
+          syncCalmatoDissolveMetrics();
+          requestCalmatoDissolve();
+        });
       }
     };
 
@@ -1441,12 +1446,13 @@
     const elsewhereSnapRoot = document.querySelector("[data-elsewhere-snap-root]");
     const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];
     const elsewhereSnapDots = [...document.querySelectorAll("[data-elsewhere-snap-dot]")];
-    const elsewhereFooter = document.querySelector("[data-elsewhere-footer]");
+    const elsewhereSnapPoints = [...document.querySelectorAll("[data-calmato-snap-point]")];
     const elsewhereSnapScroller = elsewhere || elsewhereSnapRoot;
-    let elsewhereSnapStateFrame = 0;
+    let elsewhereDissolveFrame = 0;
 
-    // Calmato 02 core-value icons reveal once when their snap panel enters view.
+    // Calmato 02 core-value icons reveal once when the page becomes dominant.
     const calmatoValueIcons = [...document.querySelectorAll(".calmato-value-icon")];
+    let calmatoValueIconsRevealed = false;
     const revealCalmatoValueIcon = (icon) => {
       icon.classList.add("is-revealed");
 
@@ -1460,28 +1466,11 @@
       icon.style.setProperty("--calmato-value-reveal-delay", `${index * 90}ms`);
     });
 
-    if (calmatoValueIcons.length > 0) {
-      if (!("IntersectionObserver" in window)) {
-        calmatoValueIcons.forEach(revealCalmatoValueIcon);
-      } else {
-        const calmatoValueIconObserver = new IntersectionObserver(
-          (entries, observer) => {
-            entries.forEach((entry) => {
-              if (!entry.isIntersecting) return;
-              revealCalmatoValueIcon(entry.target);
-              observer.unobserve(entry.target);
-            });
-          },
-          {
-            root: elsewhereSnapScroller instanceof Element ? elsewhereSnapScroller : null,
-            rootMargin: "0px 0px -10% 0px",
-            threshold: 0.25,
-          }
-        );
-
-        calmatoValueIcons.forEach((icon) => calmatoValueIconObserver.observe(icon));
-      }
-    }
+    const revealCalmatoValueIconsOnce = () => {
+      if (calmatoValueIconsRevealed) return;
+      calmatoValueIconsRevealed = true;
+      calmatoValueIcons.forEach(revealCalmatoValueIcon);
+    };
 
     const getElsewhereYouTubeId = (url) => {
       if (!url) return "";
@@ -1682,20 +1671,65 @@
       }
     }
 
-    const getElsewhereScrollTop = (target) => {
-      if (!elsewhereSnapScroller || !target) return 0;
+    const clampCalmatoDissolve = (value, min, max) => Math.min(Math.max(value, min), max);
+    let calmatoDissolveDistance = 0;
+    let calmatoDissolveRootTop = 0;
+    let calmatoDissolveProgressPower = 1;
+    let calmatoDissolveLeavingScale = 0;
+    let calmatoDissolveEnteringTranslateY = 0;
+    let calmatoIndicatorSwitchThreshold = 0.55;
+    let calmatoDominantIndex = -1;
+
+    const readCalmatoDissolveNumber = (propertyName, fallback) => {
+      if (!elsewhereSnapRoot) return fallback;
+      const value = Number.parseFloat(getComputedStyle(elsewhereSnapRoot).getPropertyValue(propertyName));
+      return Number.isFinite(value) ? value : fallback;
+    };
+
+    const syncCalmatoDissolveMetrics = () => {
+      if (!elsewhereSnapRoot || !elsewhereSnapScroller || elsewhereSnapPanels.length === 0) return;
+
+      const distanceMultiplier = Math.max(
+        readCalmatoDissolveNumber("--calmato-dissolve-scroll-distance", 1),
+        0.1
+      );
+
+      calmatoDissolveDistance = Math.max(elsewhereSnapScroller.clientHeight * distanceMultiplier, 1);
+      calmatoDissolveProgressPower = Math.max(
+        readCalmatoDissolveNumber("--calmato-dissolve-progress-power", 1),
+        0.1
+      );
+      calmatoDissolveLeavingScale = readCalmatoDissolveNumber("--calmato-dissolve-leaving-scale", 0);
+      calmatoDissolveEnteringTranslateY = readCalmatoDissolveNumber(
+        "--calmato-dissolve-entering-translate-y",
+        0
+      );
+      calmatoIndicatorSwitchThreshold = clampCalmatoDissolve(
+        readCalmatoDissolveNumber("--calmato-indicator-switch-threshold", 0.55),
+        0.5,
+        0.95
+      );
+
+      const trackHeight = calmatoDissolveDistance * elsewhereSnapPanels.length;
+      elsewhereSnapRoot.style.height = `${trackHeight}px`;
+      elsewhereSnapRoot.style.minHeight = `${trackHeight}px`;
+      elsewhereSnapPoints.forEach((point, index) => {
+        const pointIndex = Number(point.dataset.calmatoSnapPoint || index);
+        point.style.setProperty(
+          "--calmato-snap-point-offset",
+          `${calmatoDissolveDistance * pointIndex}px`
+        );
+      });
+
       const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();
-      const targetRect = target.getBoundingClientRect();
-      return elsewhereSnapScroller.scrollTop + targetRect.top - scrollerRect.top;
+      const rootRect = elsewhereSnapRoot.getBoundingClientRect();
+      calmatoDissolveRootTop = elsewhereSnapScroller.scrollTop + rootRect.top - scrollerRect.top;
     };
 
-    const isElsewhereFooterVisible = () => {
-      if (!elsewhereFooter) return false;
-      const footerRect = elsewhereFooter.getBoundingClientRect();
-      return footerRect.top < window.innerHeight && footerRect.bottom > 0;
-    };
+    const setCalmatoDominantIndex = (nextIndex) => {
+      if (nextIndex === calmatoDominantIndex) return;
+      calmatoDominantIndex = nextIndex;
 
-    const setElsewhereSnapIndex = (nextIndex) => {
       elsewhereSnapDots.forEach((dot, index) => {
         const isActive = index === nextIndex;
         dot.classList.toggle("is-active", isActive);
@@ -1709,82 +1743,88 @@
         );
       });
 
-      if (nextIndex === 0 && !calmatoIntroPlayed) {
-        elsewhereSnapPanels
-          .find((panel) => Number(panel.dataset.elsewhereSnapPanel || 0) === 0)
-          ?.classList.add("is-intro-visible");
-        calmatoIntroPlayed = true;
-      }
-
+      if (nextIndex === 1) revealCalmatoValueIconsOnce();
     };
 
-    const updateElsewhereSnapState = () => {
-      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length) return;
+    const getCalmatoDominantIndex = (fromIndex, toIndex, progress) => {
+      if (fromIndex === toIndex) return fromIndex;
+      if (calmatoDominantIndex === toIndex) {
+        return progress <= 1 - calmatoIndicatorSwitchThreshold ? fromIndex : toIndex;
+      }
+      if (calmatoDominantIndex === fromIndex) {
+        return progress >= calmatoIndicatorSwitchThreshold ? toIndex : fromIndex;
+      }
+      return progress >= 0.5 ? toIndex : fromIndex;
+    };
 
-      if (isElsewhereFooterVisible()) {
-        setElsewhereSnapIndex(-1);
+    const updateCalmatoDissolve = () => {
+      if (
+        elsewhereActivePanel !== "calmato" ||
+        !elsewhereSnapScroller ||
+        elsewhereSnapPanels.length === 0 ||
+        calmatoDissolveDistance <= 0
+      ) {
         return;
       }
 
-      const viewportCenter = elsewhereSnapScroller.scrollTop + elsewhereSnapScroller.clientHeight / 2;
-      const currentPanel = elsewhereSnapPanels
-        .map((panel, index) => {
-          const panelCenter = getElsewhereScrollTop(panel) + panel.offsetHeight / 2;
-          return { index, distance: Math.abs(viewportCenter - panelCenter) };
-        })
-        .sort((a, b) => a.distance - b.distance)[0];
+      const rawProgress = (elsewhereSnapScroller.scrollTop - calmatoDissolveRootTop) / calmatoDissolveDistance;
+      const panelCount = elsewhereSnapPanels.length;
 
-      setElsewhereSnapIndex(currentPanel?.index ?? 0);
-    };
-
-    const requestElsewhereSnapState = () => {
-      window.cancelAnimationFrame(elsewhereSnapStateFrame);
-      elsewhereSnapStateFrame = window.requestAnimationFrame(updateElsewhereSnapState);
-    };
-
-    const isElsewhereAtLastSnapPanel = () => {
-      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length) return false;
-      const lastSnapPanel = elsewhereSnapPanels[elsewhereSnapPanels.length - 1];
-      const lastPanelTop = getElsewhereScrollTop(lastSnapPanel);
-      return Math.abs(elsewhereSnapScroller.scrollTop - lastPanelTop) < 32;
-    };
-
-    const updateElsewhereFooterSnap = () => {
-      if (!elsewhereSnapScroller || !elsewhereSnapPanels.length) return;
-      const lastSnapPanel = elsewhereSnapPanels[elsewhereSnapPanels.length - 1];
-      const releasePoint = getElsewhereScrollTop(lastSnapPanel) + 8;
-      const isFooterFree = elsewhereSnapScroller.scrollTop > releasePoint || isElsewhereFooterVisible();
-      elsewhereSnapScroller.classList.toggle("is-footer-free", isFooterFree);
-    };
-
-    const releaseElsewhereFooterSnap = (scrollAmount = 0, behavior = "auto") => {
-      if (!elsewhereSnapScroller || elsewhereActivePanel !== "calmato") return;
-      if (!isElsewhereAtLastSnapPanel()) return;
-
-      elsewhereSnapScroller.classList.add("is-footer-free");
-      setElsewhereSnapIndex(-1);
-
-      if (scrollAmount > 0) {
-        elsewhereSnapScroller.scrollBy({
-          top: scrollAmount,
-          left: 0,
-          behavior,
-        });
+      if (rawProgress < 0 || rawProgress >= panelCount) {
+        setCalmatoDominantIndex(-1);
+        return;
       }
+
+      const sceneProgress = clampCalmatoDissolve(rawProgress, 0, panelCount - 1);
+      const fromIndex = Math.floor(sceneProgress);
+      const toIndex = Math.min(fromIndex + 1, panelCount - 1);
+      const dissolveProgress = Math.pow(sceneProgress - fromIndex, calmatoDissolveProgressPower);
+
+      elsewhereSnapPanels.forEach((panel, index) => {
+        let opacity = 0;
+        let translateY = 0;
+        let scale = 1;
+        let zIndex = 0;
+
+        if (index === fromIndex) {
+          opacity = 1;
+          scale += dissolveProgress * calmatoDissolveLeavingScale;
+          zIndex = 1;
+        }
+
+        if (index === toIndex && toIndex !== fromIndex) {
+          opacity = dissolveProgress;
+          translateY = (1 - dissolveProgress) * calmatoDissolveEnteringTranslateY;
+          zIndex = 2;
+        }
+
+        panel.style.setProperty("--calmato-dissolve-opacity", String(opacity));
+        panel.style.setProperty("--calmato-dissolve-translate-y", `${translateY}px`);
+        panel.style.setProperty("--calmato-dissolve-scale", String(scale));
+        panel.style.zIndex = String(zIndex);
+      });
+
+      setCalmatoDominantIndex(getCalmatoDominantIndex(fromIndex, toIndex, dissolveProgress));
+    };
+
+    const requestCalmatoDissolve = () => {
+      if (elsewhereDissolveFrame) return;
+
+      elsewhereDissolveFrame = window.requestAnimationFrame(() => {
+        elsewhereDissolveFrame = 0;
+        updateCalmatoDissolve();
+      });
     };
 
     if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
       elsewhereSnapDots.forEach((dot) => {
         dot.addEventListener("click", () => {
-          const targetPanel = elsewhereSnapPanels.find(
-            (panel) => panel.dataset.elsewhereSnapPanel === dot.dataset.elsewhereSnapDot
-          );
+          const targetIndex = Number(dot.dataset.elsewhereSnapDot || 0);
+          if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= elsewhereSnapPanels.length) return;
 
-          if (!targetPanel) return;
-          setElsewhereSnapIndex(Number(dot.dataset.elsewhereSnapDot || 0));
-          elsewhereSnapScroller.classList.remove("is-footer-free");
+          syncCalmatoDissolveMetrics();
           elsewhereSnapScroller.scrollTo({
-            top: getElsewhereScrollTop(targetPanel),
+            top: calmatoDissolveRootTop + calmatoDissolveDistance * targetIndex,
             behavior: prefersReducedMotion ? "auto" : "smooth",
           });
         });
@@ -1792,97 +1832,21 @@
 
       elsewhereSnapScroller.addEventListener(
         "scroll",
-        () => {
-          updateElsewhereFooterSnap();
-          requestElsewhereSnapState();
-        },
-        { passive: true }
-      );
-
-      elsewhereSnapScroller.addEventListener(
-        "touchmove",
-        (event) => {
-          const touch = event.touches[0];
-          if (!touch) return;
-
-          const deltaX = touch.clientX - elsewhereTouchStartX;
-          const deltaY = touch.clientY - elsewhereTouchStartY;
-          const isVerticalRelease = deltaY < -24 && Math.abs(deltaY) > Math.abs(deltaX) * 1.4;
-          if (isVerticalRelease) releaseElsewhereFooterSnap();
-        },
-        { passive: true }
-      );
-
-      elsewhereSnapScroller.addEventListener(
-        "touchend",
-        (event) => {
-          const touch = event.changedTouches[0];
-          if (!touch) return;
-
-          const deltaX = touch.clientX - elsewhereTouchStartX;
-          const deltaY = touch.clientY - elsewhereTouchStartY;
-          const isVerticalRelease = deltaY < -48 && Math.abs(deltaY) > Math.abs(deltaX) * 1.4;
-          if (!isVerticalRelease) return;
-
-          releaseElsewhereFooterSnap(Math.min(Math.max(Math.abs(deltaY) * 1.6, 140), 520));
-        },
-        { passive: true }
-      );
-
-      elsewhereSnapScroller.addEventListener(
-        "wheel",
-        (event) => {
-          if (event.deltaY > 0) releaseElsewhereFooterSnap();
-        },
+        requestCalmatoDissolve,
         { passive: true }
       );
 
       window.addEventListener(
-        "wheel",
-        (event) => {
-          if (event.ctrlKey || event.deltaY <= 0) return;
-          if (elsewhereActivePanel !== "calmato") return;
-          if (!isElsewhereAtLastSnapPanel()) return;
-
-          event.preventDefault();
-          releaseElsewhereFooterSnap(Math.max(event.deltaY, 140));
+        "resize",
+        () => {
+          syncCalmatoDissolveMetrics();
+          requestCalmatoDissolve();
         },
-        { capture: true, passive: false }
+        { passive: true }
       );
 
-      window.addEventListener("scroll", requestElsewhereSnapState, { passive: true });
-
-      if ("IntersectionObserver" in window) {
-        const observer = new IntersectionObserver(
-          requestElsewhereSnapState,
-          {
-            root: elsewhereSnapScroller,
-            threshold: [0, 0.5, 0.7, 0.9],
-          }
-        );
-
-        elsewhereSnapPanels.forEach((panel) => observer.observe(panel));
-      }
-
-      if (elsewhereFooter && "IntersectionObserver" in window) {
-        const footerObserver = new IntersectionObserver(
-          () => {
-            if (isElsewhereFooterVisible()) {
-              setElsewhereSnapIndex(-1);
-              return;
-            }
-
-            updateElsewhereSnapState();
-          },
-          {
-            threshold: [0, 0.05],
-          }
-        );
-
-        footerObserver.observe(elsewhereFooter);
-      }
-
-      updateElsewhereSnapState();
+      syncCalmatoDissolveMetrics();
+      updateCalmatoDissolve();
     }
 
     const closeMenu = () => {

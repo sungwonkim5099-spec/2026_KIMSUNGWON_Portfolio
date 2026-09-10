@@ -847,6 +847,7 @@ html[data-theme="dark"] .footer-mark {
 
 .elsewhere-subnav-link:focus-visible,
 .calmato-channel-link:focus-visible,
+.calmato-channel-identity:focus-visible,
 .calmato-video-control:focus-visible,
 .elsewhere-snap-dot:focus-visible {
   outline: 2px solid var(--accent);
@@ -1552,8 +1553,19 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
   }
 }
 
-/* Elsewhere - Calmato Snap */
-.elsewhere-snap-root {
+/* Elsewhere / Calmato scroll-driven cross-dissolve */
+.elsewhere-panel-stage {
+  /* VS Code Edit: Calmato dissolve and page-indicator controls. */
+  --calmato-dissolve-scroll-distance: 1;
+  --calmato-dissolve-progress-power: 1;
+  --calmato-dissolve-leaving-scale: 0;
+  --calmato-dissolve-entering-translate-y: 0px;
+  --calmato-indicator-switch-threshold: 0.55;
+  --calmato-indicator-bottom: 28px;
+  --calmato-indicator-gap: 14px;
+  --calmato-indicator-dot-size: 6px;
+  --calmato-indicator-inactive-opacity: 0.25;
+  --calmato-indicator-active-opacity: 1;
   --calmato-snap-indicator-inset: 24px;
   --calmato-snap-indicator-active-size: calc(6px * 1.35);
   --calmato-snap-indicator-text-gap: 2px;
@@ -1563,45 +1575,80 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
       var(--calmato-snap-indicator-inset) +
         var(--calmato-snap-indicator-active-size) +
         var(--calmato-snap-indicator-text-gap)
-    )
+      )
   );
+}
+
+.elsewhere-snap-root {
   position: relative;
-  min-height: 100svh;
+  height: 400svh;
+  min-height: 400svh;
+  overflow: visible;
   background: var(--background);
 }
 
-.elsewhere-snap-root::-webkit-scrollbar {
-  display: none;
+.calmato-dissolve-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
 }
 
-.elsewhere-snap-panel {
+.calmato-snap-point {
+  position: absolute;
+  inset-inline: 0;
+  top: var(--calmato-snap-point-offset, 0px);
+  height: 100svh;
+  pointer-events: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.calmato-dissolve-stage > .elsewhere-snap-panel {
+  position: absolute;
+  inset: 0;
   height: 100svh;
   min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
-
-body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-root {
-  scroll-snap-type: none !important;
-}
-
-body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-panel {
+  z-index: 0;
+  opacity: var(--calmato-dissolve-opacity, 0);
+  pointer-events: none;
+  transform: translateY(var(--calmato-dissolve-translate-y, 0px)) scale(var(--calmato-dissolve-scale, 1));
+  will-change: opacity, transform;
   scroll-snap-align: none;
   scroll-snap-stop: normal;
+  background: var(--background);
+}
+
+.calmato-dissolve-stage > #calmato-closing {
+  position: absolute;
+  inset: 0;
+}
+
+.elsewhere-snap-panel[data-elsewhere-snap-panel="0"] {
+  --calmato-dissolve-opacity: 1;
+  z-index: 1;
+}
+
+.elsewhere-snap-panel.is-visible {
+  pointer-events: auto;
+}
+
+body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main {
+  scroll-snap-type: y mandatory;
 }
 
 .elsewhere-snap-nav {
   position: fixed;
   z-index: 1500;
-  top: 50%;
-  right: 24px;
+  bottom: max(var(--calmato-indicator-bottom), env(safe-area-inset-bottom));
+  left: 50%;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  transform: translateY(-50%);
+  flex-direction: row;
+  gap: var(--calmato-indicator-gap);
+  transform: translateX(-50%);
   transition: opacity 0.25s ease;
 }
 
@@ -1611,13 +1658,13 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 }
 
 .elsewhere-snap-dot {
-  width: 6px;
-  height: 6px;
+  width: var(--calmato-indicator-dot-size);
+  height: var(--calmato-indicator-dot-size);
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: var(--foreground);
-  opacity: 0.25;
+  opacity: var(--calmato-indicator-inactive-opacity);
   cursor: pointer;
   transition:
     opacity 0.25s ease,
@@ -1625,60 +1672,126 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 }
 
 .elsewhere-snap-dot.is-active {
-  opacity: 1;
+  opacity: var(--calmato-indicator-active-opacity);
   transform: scale(1.35);
 }
 
-/* Elsewhere - Calmato Hero */
-.calmato-hero {
+/* Elsewhere / Calmato Page 01 - Cinematic Intro */
+.calmato-hero--cinematic {
+  /* VS Code Edit: Page 01 image and desktop layout controls. */
+  --calmato-hero-background-image: url("assets/elsewhere/elsewhere_calmato_background.jpg");
+  --calmato-hero-background-size: cover;
+  --calmato-hero-background-position: 60% center;
+  --calmato-hero-image-overlay: rgba(0, 0, 0, 0.2);
+  --calmato-hero-padding-inline-start: max(32px, calc(var(--panel-x) - 24px));
+  --calmato-hero-padding-inline-end: var(--calmato-content-right-inset);
+  --calmato-hero-content-width: min(760px, 56vw);
+  --calmato-hero-content-offset-x: 0px;
+  --calmato-hero-content-offset-y: 28px;
+  --calmato-hero-title-size: clamp(52px, 5vw, 74px);
+  --calmato-hero-title-line-height: 0.94;
+  --calmato-hero-title-to-copy-gap: 30px;
+  --calmato-hero-copy-width: 510px;
+  --calmato-hero-copy-size: 14px;
+  --calmato-hero-copy-line-height: 1.7;
+  --calmato-hero-copy-to-channel-gap: 26px;
+  --calmato-hero-channel-icon-size: 16px;
+  --calmato-hero-channel-gap: 8px;
   position: relative;
-  padding: 0 var(--calmato-content-right-inset) 0 var(--panel-x);
+  isolation: isolate;
+  overflow: hidden;
+  justify-content: flex-start;
+  padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-padding-inline-start);
+  color: #ffffff;
+  background: #111111;
 }
 
-.calmato-hero-content {
-  width: min(1040px, 100%);
+.calmato-hero--cinematic::before,
+.calmato-hero--cinematic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.calmato-hero--cinematic::before {
+  z-index: 0;
+  background-image: var(--calmato-hero-background-image);
+  background-position: var(--calmato-hero-background-position);
+  background-repeat: no-repeat;
+  background-size: var(--calmato-hero-background-size);
+}
+
+.calmato-hero--cinematic::after {
+  z-index: 1;
+  background: var(--calmato-hero-image-overlay);
+}
+
+.calmato-hero--cinematic .calmato-hero-content {
+  position: relative;
+  z-index: 2;
+  width: var(--calmato-hero-content-width);
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  margin: 0;
+  text-align: left;
+  transform: translate(
+    var(--calmato-hero-content-offset-x),
+    var(--calmato-hero-content-offset-y)
+  );
+}
+
+.calmato-hero--cinematic .calmato-hero-content h2 {
+  max-width: 100%;
+  margin: 0;
+  color: #ffffff;
+  font-family: Marion, "Iowan Old Style", Georgia, serif;
+  font-size: var(--calmato-hero-title-size);
+  font-weight: 400;
+  line-height: var(--calmato-hero-title-line-height);
+}
+
+.calmato-hero--cinematic .calmato-hero-content h2 span {
+  display: block;
+  white-space: nowrap;
+}
+
+.calmato-hero--cinematic .calmato-hero-description {
+  width: min(100%, var(--calmato-hero-copy-width));
+  margin: var(--calmato-hero-title-to-copy-gap) 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: var(--font-system);
+  font-size: var(--calmato-hero-copy-size);
+  font-weight: 400;
+  line-height: var(--calmato-hero-copy-line-height);
+}
+
+.calmato-channel-identity {
+  width: fit-content;
+  display: inline-flex;
   align-items: center;
-  gap: 24px;
-  margin: 0 auto;
-  text-align: center;
-  transform: translateY(40px);
+  gap: var(--calmato-hero-channel-gap);
+  margin-top: var(--calmato-hero-copy-to-channel-gap);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 590;
+  line-height: 1.2;
+  transition: opacity 180ms ease;
 }
 
-/* Calmato 01 intro reveal: staggered fade and lift, without changing the snap layout. */
-@keyframes calmatoIntroReveal {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.calmato-channel-identity img {
+  width: var(--calmato-hero-channel-icon-size);
+  height: var(--calmato-hero-channel-icon-size);
+  filter: invert(1);
 }
 
-.calmato-hero.is-intro-visible .calmato-hero-label,
-.calmato-hero.is-intro-visible .calmato-hero-content h2 > span,
-.calmato-hero.is-intro-visible .calmato-hero-description,
-.calmato-hero.is-intro-visible .calmato-channel-link {
-  animation: calmatoIntroReveal 3500ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  will-change: opacity, transform;
+.calmato-channel-identity:hover {
+  opacity: 0.6;
 }
 
-.calmato-hero.is-intro-visible .calmato-hero-content h2 > span:nth-child(2) {
-  animation-delay: 200ms;
-}
-
-.calmato-hero.is-intro-visible .calmato-hero-description {
-  animation-delay: 400ms;
-}
-
-.calmato-hero.is-intro-visible .calmato-channel-link {
-  animation-delay: 600ms;
-}
-
+/* Calmato section label is reused by the featured-content page. */
 .calmato-hero-label {
   margin: 0;
   color: var(--accent);
@@ -1688,55 +1801,51 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   text-transform: uppercase;
 }
 
-.calmato-hero-content h2 {
-  max-width: 1040px;
-  margin: 0;
-  color: var(--foreground);
-  font-size: clamp(50px, 5.2vw, 78px);
-  font-weight: 620;
-  line-height: 0.96;
+/* The header becomes image-led only while Calmato Page 01 is the visible snap panel. */
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) {
+  --calmato-hero-nav-background: transparent;
+  --calmato-hero-nav-backdrop-filter: none;
+  --calmato-hero-nav-color: #ffffff;
+  --calmato-hero-nav-icon-filter: invert(1);
 }
 
-.calmato-hero-content h2 span {
-  display: block;
-  white-space: nowrap;
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .site-header {
+  color: var(--calmato-hero-nav-color);
+  background: var(--calmato-hero-nav-background);
+  border: 0;
+  box-shadow: none;
 }
 
-.calmato-hero-content h2 .calmato-title-no-break {
-  display: inline-block;
-  white-space: nowrap;
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .nav-shell,
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-nav-item > .elsewhere-subnav {
+  background: var(--calmato-hero-nav-background);
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: var(--calmato-hero-nav-backdrop-filter);
+  -webkit-backdrop-filter: var(--calmato-hero-nav-backdrop-filter);
 }
 
-.calmato-hero-content h2 .calmato-closing-accent-dot {
-  display: inline;
-  white-space: nowrap;
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .nav-logo img,
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .icon-link img,
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button img {
+  filter: var(--calmato-hero-nav-icon-filter);
 }
 
-.calmato-hero-description {
-  max-width: 660px;
-  margin: 0;
-  color: var(--foreground-soft);
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.7;
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-subnav-link.is-active {
+  color: var(--calmato-hero-nav-color);
 }
 
-.calmato-channel-link {
-  width: fit-content;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--foreground);
-  font-size: 16px;
-  font-weight: 590;
-  line-height: 1.2;
-  transition: opacity 180ms ease, transform 180ms ease;
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-subnav-link:not(.is-active) {
+  color: rgba(255, 255, 255, 0.62);
 }
 
-.calmato-channel-link:hover {
-  opacity: 0.58;
-  transform: translateX(2px);
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-snap-dot {
+  background: var(--calmato-hero-nav-color);
+  opacity: 0.42;
+}
+
+body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-snap-dot.is-active {
+  opacity: 1;
 }
 
 /* =========================
@@ -3999,17 +4108,21 @@ html:has(body.is-unsplash-lightbox-open) {
   }
 
   .elsewhere-page .elsewhere-panel-stage,
-  .elsewhere-page .elsewhere-snap-root,
   .elsewhere-page .elsewhere-snap-panel {
     overflow-x: clip;
     overflow-y: clip;
+  }
+
+  .elsewhere-page .elsewhere-snap-root {
+    overflow: visible;
   }
 
   .elsewhere-page .elsewhere-snap-panel {
     block-size: 100svh;
     min-block-size: 100svh;
     max-block-size: 100svh;
-    scroll-snap-align: center;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
   }
 
   .elsewhere-page .calmato-hero-content {
@@ -4109,5 +4222,78 @@ html:has(body.is-unsplash-lightbox-open) {
 @media (max-width: 833px) and (max-height: 760px) {
   .elsewhere-page .calmato-value p {
     margin-top: 4px;
+  }
+}
+
+/* =========================
+   Elsewhere / Calmato Page 01 Responsive Controls
+   These values affect only the cinematic intro panel.
+========================= */
+@media (min-width: 834px) and (max-width: 1439px) {
+  /* Keep the inactive panel transition inside the viewport at the tablet boundary. */
+  .elsewhere-page .elsewhere-panel-stage {
+    overflow-x: clip;
+  }
+
+  .elsewhere-page .calmato-hero--cinematic {
+    /* VS Code Edit: tablet background crop and left-aligned content controls. */
+    --calmato-hero-background-position: 52% center;
+    --calmato-hero-content-width: min(620px, 60vw);
+    --calmato-hero-content-offset-y: 20px;
+    --calmato-hero-title-size: clamp(44px, 4.8vw, 60px);
+    --calmato-hero-title-to-copy-gap: 26px;
+    --calmato-hero-copy-width: 440px;
+    --calmato-hero-copy-size: 13px;
+  }
+}
+
+@media (max-width: 833px) {
+  .elsewhere-page .calmato-hero--cinematic {
+    /* VS Code Edit: mobile portrait crop, centered composition, and spacing controls. */
+    --calmato-hero-background-position: 37% center;
+    --calmato-hero-image-overlay: rgba(0, 0, 0, 0.3);
+    --calmato-hero-padding-inline-start: var(--panel-x);
+    --calmato-hero-padding-inline-end: var(--calmato-content-right-inset);
+    --calmato-hero-content-width: min(350px, 100%);
+    --calmato-hero-content-offset-x: 0px;
+    --calmato-hero-content-offset-y: 24px;
+    --calmato-hero-title-size: clamp(36px, 10.2vw, 46px);
+    --calmato-hero-title-line-height: 0.96;
+    --calmato-hero-title-to-copy-gap: 24px;
+    --calmato-hero-copy-width: 330px;
+    --calmato-hero-copy-size: 12px;
+    --calmato-hero-copy-line-height: 1.65;
+    --calmato-hero-copy-to-channel-gap: 22px;
+    --calmato-hero-channel-icon-size: 15px;
+    --calmato-hero-channel-gap: 7px;
+    justify-content: center;
+    padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-padding-inline-start);
+  }
+
+  .elsewhere-page .calmato-hero--cinematic .calmato-hero-content {
+    align-items: center;
+    gap: 0;
+    text-align: center;
+  }
+
+  .elsewhere-page .calmato-hero--cinematic .calmato-hero-content h2 span {
+    white-space: normal;
+  }
+
+  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu {
+    color: var(--calmato-hero-nav-color);
+    background: var(--calmato-hero-nav-background) !important;
+    border-color: transparent;
+    backdrop-filter: var(--calmato-hero-nav-backdrop-filter) !important;
+    -webkit-backdrop-filter: var(--calmato-hero-nav-backdrop-filter) !important;
+  }
+
+  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button[aria-expanded="true"]::before,
+  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button[aria-expanded="true"]::after {
+    background: var(--calmato-hero-nav-color);
+  }
+
+  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .site-header:has(.mobile-menu[aria-hidden="false"])::before {
+    display: none;
   }
 }
