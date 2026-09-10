@@ -1554,6 +1554,17 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 
 /* Elsewhere - Calmato Snap */
 .elsewhere-snap-root {
+  --calmato-snap-indicator-inset: 24px;
+  --calmato-snap-indicator-active-size: calc(6px * 1.35);
+  --calmato-snap-indicator-text-gap: 2px;
+  --calmato-content-right-inset: max(
+    var(--panel-x),
+    calc(
+      var(--calmato-snap-indicator-inset) +
+        var(--calmato-snap-indicator-active-size) +
+        var(--calmato-snap-indicator-text-gap)
+    )
+  );
   position: relative;
   min-height: 100svh;
   background: var(--background);
@@ -1621,7 +1632,7 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 /* Elsewhere - Calmato Hero */
 .calmato-hero {
   position: relative;
-  padding: 0 var(--panel-x);
+  padding: 0 var(--calmato-content-right-inset) 0 var(--panel-x);
 }
 
 .calmato-hero-content {
@@ -1735,7 +1746,7 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
   --calmato-value-icon-size: clamp(118px, 12vw, 184px);
   position: relative;
   overflow: hidden;
-  padding: 0 var(--panel-x);
+  padding: 0 var(--calmato-content-right-inset) 0 var(--panel-x);
   color: var(--foreground);
   background: var(--background);
 }
@@ -2099,7 +2110,7 @@ body:has([data-elsewhere-tab="unsplash"][aria-selected="true"]) .elsewhere-snap-
 @media (max-width: 833px) {
   .calmato-about {
     --calmato-value-icon-size: clamp(82px, 22vw, 112px);
-    padding-right: var(--panel-x);
+    padding-right: var(--calmato-content-right-inset);
     padding-left: var(--panel-x);
   }
 
@@ -2398,7 +2409,7 @@ html[data-theme="dark"] .calmato-video-controls {
 #calmato-closing {
   position: relative;
   overflow: hidden;
-  padding: 0 var(--panel-x);
+  padding: 0 var(--calmato-content-right-inset) 0 var(--panel-x);
   color: var(--foreground);
   background: var(--background);
   isolation: isolate;
@@ -3339,7 +3350,7 @@ html[data-theme="dark"] .calmato-video-controls {
   }
 
   .calmato-hero {
-    padding: 0 var(--panel-x);
+    padding: 0 var(--calmato-content-right-inset) 0 var(--panel-x);
   }
 
   .calmato-hero-content {
@@ -3963,10 +3974,22 @@ html:has(body.is-unsplash-lightbox-open) {
 @media (max-width: 833px) {
   .elsewhere-page {
     /* VS Code Edit: tune the Calmato hero without affecting desktop/tablet. */
-    --calmato-mobile-hero-title-size: 36px;
-    --calmato-mobile-hero-description-size: 13px;
-    --calmato-mobile-hero-gap: 18px;
+    --calmato-mobile-hero-label-size: 10px;
+    --calmato-mobile-hero-title-size: 32px;
+    --calmato-mobile-hero-description-size: 12px;
+    --calmato-mobile-hero-channel-link-size: 13px;
+    --calmato-mobile-hero-gap: 16px;
     --calmato-mobile-hero-offset-y: 0px;
+    --calmato-mobile-about-label-size: 10px;
+    --calmato-mobile-about-title-size: 36px;
+    --calmato-mobile-about-description-size: 12px;
+    --calmato-mobile-value-title-size: 14px;
+    --calmato-mobile-value-copy-size: 11px;
+    --calmato-mobile-featured-title-size: 36px;
+    --calmato-mobile-featured-description-size: 12px;
+    --calmato-mobile-closing-title-size: 40px;
+    --calmato-mobile-closing-message-size: 12px;
+    --calmato-mobile-closing-link-size: 12px;
     --calmato-mobile-about-offset-y: 0px;
   }
 
@@ -3994,6 +4017,10 @@ html:has(body.is-unsplash-lightbox-open) {
     transform: translateY(var(--calmato-mobile-hero-offset-y));
   }
 
+  .elsewhere-page .calmato-hero-label {
+    font-size: var(--calmato-mobile-hero-label-size);
+  }
+
   .elsewhere-page .calmato-hero-content h2 {
     font-size: var(--calmato-mobile-hero-title-size);
     line-height: 1.05;
@@ -4004,8 +4031,60 @@ html:has(body.is-unsplash-lightbox-open) {
     line-height: 1.65;
   }
 
+  .elsewhere-page .calmato-channel-link {
+    font-size: var(--calmato-mobile-hero-channel-link-size);
+  }
+
   .elsewhere-page .calmato-about-content {
     transform: translateY(var(--calmato-mobile-about-offset-y));
+  }
+
+  .elsewhere-page .calmato-about-label {
+    font-size: var(--calmato-mobile-about-label-size);
+  }
+
+  .elsewhere-page .calmato-about-intro h2 {
+    font-size: var(--calmato-mobile-about-title-size);
+  }
+
+  .elsewhere-page .calmato-about-description {
+    font-size: var(--calmato-mobile-about-description-size);
+  }
+
+  .elsewhere-page .calmato-value h3 {
+    font-size: var(--calmato-mobile-value-title-size);
+  }
+
+  .elsewhere-page .calmato-value p {
+    font-size: var(--calmato-mobile-value-copy-size);
+  }
+
+  .elsewhere-page .calmato-featured-content {
+    padding-right: max(48px, var(--calmato-content-right-inset));
+  }
+
+  .elsewhere-page .calmato-featured-content h2 {
+    font-size: var(--calmato-mobile-featured-title-size);
+  }
+
+  .elsewhere-page .calmato-featured-description {
+    font-size: var(--calmato-mobile-featured-description-size);
+  }
+
+  .elsewhere-page #calmato-closing {
+    padding-right: var(--calmato-content-right-inset);
+  }
+
+  .elsewhere-page .calmato-closing-title {
+    font-size: var(--calmato-mobile-closing-title-size);
+  }
+
+  .elsewhere-page .calmato-closing-message {
+    font-size: var(--calmato-mobile-closing-message-size);
+  }
+
+  .elsewhere-page .calmato-closing-link {
+    font-size: var(--calmato-mobile-closing-link-size);
   }
 }
 
