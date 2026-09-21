@@ -1553,19 +1553,24 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
   }
 }
 
-/* Elsewhere / Calmato scroll-driven cross-dissolve */
+/* Elsewhere / Calmato scroll-driven dissolve and slide transition */
 .elsewhere-panel-stage {
   /* VS Code Edit: Calmato dissolve and page-indicator controls. */
   --calmato-dissolve-scroll-distance: 1;
   --calmato-dissolve-progress-power: 1;
   --calmato-dissolve-leaving-scale: 0;
-  --calmato-dissolve-entering-translate-y: 0px;
+  --calmato-dissolve-leaving-translate-x: -52px;
+  --calmato-dissolve-entering-translate-x: 52px;
   --calmato-indicator-switch-threshold: 0.55;
   --calmato-indicator-bottom: 28px;
   --calmato-indicator-gap: 14px;
   --calmato-indicator-dot-size: 6px;
   --calmato-indicator-inactive-opacity: 0.25;
   --calmato-indicator-active-opacity: 1;
+  --calmato-scroll-hint-delay: 2000ms;
+  --calmato-scroll-hint-offset: 12px;
+  --calmato-scroll-hint-font-size: 10px;
+  --calmato-scroll-hint-opacity: 0.62;
   --calmato-snap-indicator-inset: 24px;
   --calmato-snap-indicator-active-size: calc(6px * 1.35);
   --calmato-snap-indicator-text-gap: 2px;
@@ -1615,7 +1620,7 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
   z-index: 0;
   opacity: var(--calmato-dissolve-opacity, 0);
   pointer-events: none;
-  transform: translateY(var(--calmato-dissolve-translate-y, 0px)) scale(var(--calmato-dissolve-scale, 1));
+  transform: translateX(var(--calmato-dissolve-translate-x, 0px)) scale(var(--calmato-dissolve-scale, 1));
   will-change: opacity, transform;
   scroll-snap-align: none;
   scroll-snap-stop: normal;
@@ -1655,6 +1660,28 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main:not(.is-foo
 .elsewhere-snap-nav.is-hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+.calmato-scroll-hint {
+  position: absolute;
+  bottom: calc(100% + var(--calmato-scroll-hint-offset));
+  left: 50%;
+  color: var(--foreground);
+  font-size: var(--calmato-scroll-hint-font-size);
+  font-weight: 500;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px);
+  transition:
+    opacity 0.28s ease,
+    transform 0.36s ease;
+  white-space: nowrap;
+}
+
+.elsewhere-snap-nav.is-scroll-hint-visible .calmato-scroll-hint {
+  opacity: var(--calmato-scroll-hint-opacity);
+  transform: translate(-50%, 0);
 }
 
 .elsewhere-snap-dot {

@@ -209,6 +209,7 @@
       });
 
       elsewhereSnapNav?.classList.toggle("is-hidden", nextPanel !== "calmato");
+      if (nextPanel !== "calmato") clearCalmatoScrollHint();
 
       // Unsplash is a single viewport. Reset a retained Calmato scroll position
       // so the gallery is not rendered above the currently visible area.
@@ -221,6 +222,7 @@
         window.requestAnimationFrame(() => {
           syncCalmatoDissolveMetrics();
           requestCalmatoDissolve();
+          scheduleCalmatoScrollHint();
         });
       }
     };
@@ -1686,14 +1688,51 @@
     let calmatoDissolveRootTop = 0;
     let calmatoDissolveProgressPower = 1;
     let calmatoDissolveLeavingScale = 0;
+    let calmatoDissolveLeavingTranslateY = 0;
     let calmatoDissolveEnteringTranslateY = 0;
     let calmatoIndicatorSwitchThreshold = 0.55;
     let calmatoDominantIndex = -1;
+    let calmatoScrollHintTimer = 0;
 
     const readCalmatoDissolveNumber = (propertyName, fallback) => {
       if (!elsewhereSnapRoot) return fallback;
       const value = Number.parseFloat(getComputedStyle(elsewhereSnapRoot).getPropertyValue(propertyName));
       return Number.isFinite(value) ? value : fallback;
+    };
+
+    const setCalmatoScrollHintVisible = (isVisible) => {
+      elsewhereSnapNav?.classList.toggle("is-scroll-hint-visible", isVisible);
+    };
+
+    const clearCalmatoScrollHint = () => {
+      window.clearTimeout(calmatoScrollHintTimer);
+      calmatoScrollHintTimer = 0;
+      setCalmatoScrollHintVisible(false);
+    };
+
+    const canShowCalmatoScrollHint = () => {
+      if (
+        !elsewhereSnapNav ||
+        !elsewhereSnapScroller ||
+        elsewhereActivePanel !== "calmato" ||
+        elsewhereSnapNav.classList.contains("is-hidden") ||
+        elsewhereSnapScroller.classList.contains("is-footer-free")
+      ) {
+        return false;
+      }
+
+      return true;
+    };
+
+    const scheduleCalmatoScrollHint = () => {
+      clearCalmatoScrollHint();
+      if (!canShowCalmatoScrollHint()) return;
+
+      const delay = Math.max(readCalmatoDissolveNumber("--calmato-scroll-hint-delay", 2000), 0);
+      calmatoScrollHintTimer = window.setTimeout(() => {
+        calmatoScrollHintTimer = 0;
+        if (canShowCalmatoScrollHint()) setCalmatoScrollHintVisible(true);
+      }, delay);
     };
 
     const syncCalmatoDissolveMetrics = () => {
@@ -1710,9 +1749,13 @@
         0.1
       );
       calmatoDissolveLeavingScale = readCalmatoDissolveNumber("--calmato-dissolve-leaving-scale", 0);
-      calmatoDissolveEnteringTranslateY = readCalmatoDissolveNumber(
-        "--calmato-dissolve-entering-translate-y",
-        0
+      calmatoDissolveLeavingTranslateX = readCalmatoDissolveNumber(
+      "--calmato-dissolve-leaving-translate-x",
+      0
+      );
+      calmatoDissolveEnteringTranslateX = readCalmatoDissolveNumber(
+      "--calmato-dissolve-entering-translate-x",
+      0
       );
       calmatoIndicatorSwitchThreshold = clampCalmatoDissolve(
         readCalmatoDissolveNumber("--calmato-indicator-switch-threshold", 0.55),
@@ -1739,6 +1782,8 @@
     const setCalmatoDominantIndex = (nextIndex) => {
       if (nextIndex === calmatoDominantIndex) return;
       calmatoDominantIndex = nextIndex;
+
+      if (nextIndex < 0) clearCalmatoScrollHint();
 
       elsewhereSnapDots.forEach((dot, index) => {
         const isActive = index === nextIndex;
@@ -1797,24 +1842,25 @@
 
       elsewhereSnapPanels.forEach((panel, index) => {
         let opacity = 0;
-        let translateY = 0;
+        let translateX = 0;
         let scale = 1;
         let zIndex = 0;
 
         if (index === fromIndex) {
           opacity = 1;
           scale += dissolveProgress * calmatoDissolveLeavingScale;
+          translateX = dissolveProgress * calmatoDissolveLeavingTranslateX;
           zIndex = 1;
         }
 
         if (index === toIndex && toIndex !== fromIndex) {
           opacity = dissolveProgress;
-          translateY = (1 - dissolveProgress) * calmatoDissolveEnteringTranslateY;
+          translateX = (1 - dissolveProgress) * calmatoDissolveEnteringTranslateX;
           zIndex = 2;
         }
 
         panel.style.setProperty("--calmato-dissolve-opacity", String(opacity));
-        panel.style.setProperty("--calmato-dissolve-translate-y", `${translateY}px`);
+        panel.style.setProperty("--calmato-dissolve-translate-x", `${translateX}px`);
         panel.style.setProperty("--calmato-dissolve-scale", String(scale));
         panel.style.zIndex = String(zIndex);
       });
@@ -1836,6 +1882,7 @@
       const nextIndex = clampCalmatoDissolve(targetIndex, 0, elsewhereSnapPanels.length - 1);
       elsewhereSnapScroller.classList.remove("is-footer-free");
       syncCalmatoDissolveMetrics();
+      scheduleCalmatoScrollHint();
       elsewhereSnapScroller.scrollTo({
         top: calmatoDissolveRootTop + calmatoDissolveDistance * nextIndex,
         behavior: prefersReducedMotion ? "auto" : "smooth",
@@ -1845,6 +1892,7 @@
     const scrollToCalmatoFooter = () => {
       const footer = document.querySelector("[data-elsewhere-footer]");
       if (!footer || !elsewhereSnapScroller) return;
+      clearCalmatoScrollHint();
       const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();
       const footerRect = footer.getBoundingClientRect();
       const targetTop = Math.min(
@@ -1968,21 +2016,30 @@
 
       elsewhereSnapScroller.addEventListener(
         "scroll",
-        requestCalmatoDissolve,
+        () => {
+          requestCalmatoDissolve();
+          scheduleCalmatoScrollHint();
+        },
         { passive: true }
       );
+
+      ["wheel", "pointerdown", "touchstart"].forEach((eventName) => {
+        elsewhereSnapScroller.addEventListener(eventName, scheduleCalmatoScrollHint, { passive: true });
+      });
 
       window.addEventListener(
         "resize",
         () => {
           syncCalmatoDissolveMetrics();
           requestCalmatoDissolve();
+          scheduleCalmatoScrollHint();
         },
         { passive: true }
       );
 
       syncCalmatoDissolveMetrics();
       updateCalmatoDissolve();
+      scheduleCalmatoScrollHint();
     }
 
     const closeMenu = () => {
