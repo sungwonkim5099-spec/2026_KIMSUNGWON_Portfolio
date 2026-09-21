@@ -1677,16 +1677,16 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main:not(.is-foo
 }
 
 /* Elsewhere / Calmato Page 01 - Cinematic Intro */
-.calmato-hero--cinematic {
+.calmato-dissolve-stage > .calmato-hero--cinematic {
   /* VS Code Edit: Page 01 image and desktop layout controls. */
   --calmato-hero-background-image: url("assets/elsewhere/elsewhere_calmato_background.jpg");
   --calmato-hero-background-size: cover;
   --calmato-hero-background-position: 60% center;
   --calmato-hero-image-overlay: rgba(0, 0, 0, 0.2);
-  --calmato-hero-padding-inline-start: max(32px, calc(var(--panel-x) - 24px));
+  /* Desktop/tablet: actual left edge for the complete hero content group. */
+  --calmato-hero-x: 80px;
   --calmato-hero-padding-inline-end: var(--calmato-content-right-inset);
   --calmato-hero-content-width: min(760px, 56vw);
-  --calmato-hero-content-offset-x: 0px;
   --calmato-hero-content-offset-y: 28px;
   --calmato-hero-title-size: clamp(52px, 5vw, 74px);
   --calmato-hero-title-line-height: 0.94;
@@ -1701,7 +1701,7 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main:not(.is-foo
   isolation: isolate;
   overflow: hidden;
   justify-content: flex-start;
-  padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-padding-inline-start);
+  padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-x);
   color: #ffffff;
   background: #111111;
 }
@@ -1730,6 +1730,7 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main:not(.is-foo
 .calmato-hero--cinematic .calmato-hero-content {
   position: relative;
   z-index: 2;
+  left: auto;
   width: var(--calmato-hero-content-width);
   display: flex;
   flex-direction: column;
@@ -1737,10 +1738,7 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main:not(.is-foo
   gap: 0;
   margin: 0;
   text-align: left;
-  transform: translate(
-    var(--calmato-hero-content-offset-x),
-    var(--calmato-hero-content-offset-y)
-  );
+  transform: translateY(var(--calmato-hero-content-offset-y));
 }
 
 .calmato-hero--cinematic .calmato-hero-content h2 {
@@ -4261,13 +4259,10 @@ html:has(body.is-unsplash-lightbox-open) {
   }
 
   .elsewhere-page .calmato-hero--cinematic {
-    /* VS Code Edit: mobile portrait crop, centered composition, and spacing controls. */
+    /* Mobile uses a separate, structurally centered hero content group. */
     --calmato-hero-background-position: 50% center;
     --calmato-hero-image-overlay: rgba(0, 0, 0, 0.3);
-    --calmato-hero-padding-inline-start: var(--panel-x);
-    --calmato-hero-padding-inline-end: var(--calmato-content-right-inset);
     --calmato-hero-content-width: min(350px, 100%);
-    --calmato-hero-content-offset-x: 0px;
     --calmato-hero-content-offset-y: 24px;
     --calmato-hero-title-size: clamp(36px, 10.2vw, 46px);
     --calmato-hero-title-line-height: 0.96;
@@ -4279,13 +4274,16 @@ html:has(body.is-unsplash-lightbox-open) {
     --calmato-hero-channel-icon-size: 15px;
     --calmato-hero-channel-gap: 7px;
     justify-content: center;
-    padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-padding-inline-start);
+    padding-inline: var(--panel-x);
   }
 
   .elsewhere-page .calmato-hero--cinematic .calmato-hero-content {
     align-items: center;
     gap: 0;
+    left: auto;
+    margin-inline: auto;
     text-align: center;
+    transform: translateY(var(--calmato-mobile-hero-offset-y));
   }
 
   .elsewhere-page .calmato-hero--cinematic .calmato-hero-content h2 span {
