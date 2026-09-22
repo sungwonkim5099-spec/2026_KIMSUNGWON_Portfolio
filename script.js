@@ -121,6 +121,58 @@
 
     renderProjectCards();
 
+    const initializeWorksGridEntrance = () => {
+      if (
+        !projectGrid ||
+        projects.length === 0 ||
+        prefersReducedMotion ||
+        !window.matchMedia("(min-width: 1440px)").matches
+      ) {
+        return;
+      }
+
+      const staggerToken = getComputedStyle(projectGrid).getPropertyValue("--works-enter-stagger").trim();
+      const staggerValue = Number.parseFloat(staggerToken);
+      const staggerMilliseconds = Number.isFinite(staggerValue) ? staggerValue : 70;
+
+      [...projectGrid.children].forEach((card, index) => {
+        card.style.setProperty("--works-enter-delay", `${index * staggerMilliseconds}ms`);
+      });
+
+      projectGrid.classList.add("is-works-entrance-ready");
+
+      const revealGrid = () => {
+        if (projectGrid.classList.contains("is-works-entrance-visible")) return;
+
+        requestAnimationFrame(() => {
+          projectGrid.classList.add("is-works-entrance-visible");
+        });
+      };
+
+      if (!("IntersectionObserver" in window)) {
+        requestAnimationFrame(revealGrid);
+        return;
+      }
+
+      const worksObserver = new IntersectionObserver(
+        (entries) => {
+          const isMeaningfullyVisible = entries.some(
+            (entry) => entry.isIntersecting && entry.intersectionRatio >= 0.32
+          );
+
+          if (!isMeaningfullyVisible) return;
+
+          worksObserver.disconnect();
+          revealGrid();
+        },
+        { threshold: 0.32 }
+      );
+
+      worksObserver.observe(projectGrid);
+    };
+
+    initializeWorksGridEntrance();
+
     // Elsewhere channel navigation
     const elsewhere = document.querySelector("[data-elsewhere]");
     const elsewhereSubnavs = [...document.querySelectorAll("[data-elsewhere-subnav]")];

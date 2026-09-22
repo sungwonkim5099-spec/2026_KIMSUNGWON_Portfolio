@@ -1,3 +1,4 @@
+// Source order is display order: add future projects at the top so they appear first.
 window.PORTFOLIO_PROJECTS = [
   {
     title: "ACE",

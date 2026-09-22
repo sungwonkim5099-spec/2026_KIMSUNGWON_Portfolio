@@ -633,6 +633,139 @@ html[data-theme="dark"] .footer-mark {
   line-height: 1.5;
 }
 
+/* Desktop Works grid: keep all eight existing projects visible in one viewport. */
+@media (min-width: 1440px) {
+  .works-page {
+    /* VS Code controls: desktop Works card size and spacing. */
+    --works-grid-columns: 4;
+    /* Match the fixed header's left/right content boundary via --panel-x. */
+    --works-grid-max-width: calc(100vw - (var(--panel-x) * 2));
+    --works-column-gap: 18px;
+    --works-row-separation: 24px;
+    --works-thumbnail-ratio: 1 / 1;
+    --works-thumbnail-label-gap: 10px;
+    --works-title-category-gap: 5px;
+    --works-category-opacity: 0.6;
+    --works-hover-scale: 1.025;
+    --works-hover-duration: 500ms;
+    --works-enter-distance: 40px;
+    --works-enter-duration: 800ms;
+    --works-enter-stagger: 70ms;
+    --works-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+    --works-desktop-title-size: 24px;
+    --works-desktop-category-size: 14px;
+    --works-desktop-gallery-top-space: 16px;
+    --works-desktop-gallery-bottom-space: 16px;
+  }
+
+  .works-page .project-gallery {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding:
+      calc(var(--header-height) + var(--works-desktop-gallery-top-space))
+      var(--panel-x)
+      var(--works-desktop-gallery-bottom-space);
+  }
+
+  .works-page .project-grid {
+    width: min(var(--works-grid-max-width), 100%);
+    grid-template-columns: repeat(var(--works-grid-columns), minmax(0, 1fr));
+    column-gap: var(--works-column-gap);
+    row-gap: var(--works-row-separation);
+  }
+
+  .works-page .project-card {
+    gap: var(--works-thumbnail-label-gap);
+  }
+
+  .works-page .project-media {
+    aspect-ratio: var(--works-thumbnail-ratio);
+  }
+
+  .works-page .project-info h2 {
+    font-size: var(--works-desktop-title-size);
+  }
+
+  .works-page .project-info p {
+    font-size: var(--works-desktop-category-size);
+    opacity: var(--works-category-opacity);
+  }
+
+  .works-page .project-info {
+    gap: var(--works-title-category-gap);
+  }
+
+  .works-page .project-card:hover {
+    opacity: 1;
+  }
+
+  .works-page .project-media img {
+    transform: scale(1);
+    transform-origin: center;
+    transition: transform var(--works-hover-duration) var(--works-motion-easing);
+    will-change: transform;
+  }
+
+  .works-page .project-grid.is-works-entrance-ready .project-card {
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+
+  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n + 1),
+  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n + 3) {
+    transform: translateX(calc(0px - var(--works-enter-distance)));
+  }
+
+  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n + 2),
+  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n) {
+    transform: translateX(var(--works-enter-distance));
+  }
+
+  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n + 1),
+  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n + 3) {
+    animation: works-card-enter-from-left var(--works-enter-duration) var(--works-motion-easing) both;
+    animation-delay: var(--works-enter-delay, 0ms);
+  }
+
+  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n + 2),
+  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n) {
+    animation: works-card-enter-from-right var(--works-enter-duration) var(--works-motion-easing) both;
+    animation-delay: var(--works-enter-delay, 0ms);
+  }
+}
+
+@media (min-width: 1440px) and (hover: hover) and (pointer: fine) {
+  .works-page .project-card:hover .project-media img {
+    transform: scale(var(--works-hover-scale));
+  }
+}
+
+@keyframes works-card-enter-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(calc(0px - var(--works-enter-distance)));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes works-card-enter-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(var(--works-enter-distance));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .works-footer {
   padding-top: 100px;
   padding-bottom: 100px;
