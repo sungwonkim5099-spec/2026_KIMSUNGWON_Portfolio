@@ -173,6 +173,245 @@
 
     initializeWorksGridEntrance();
 
+    const initializeWorksCameraGallery = () => {
+      const gallery = document.querySelector(".works-page .project-gallery");
+      const cameraViewport = gallery?.querySelector("[data-works-camera-viewport]");
+
+      if (!gallery || !cameraViewport || !projectGrid || projects.length === 0) return;
+
+      const cameraQuery = window.matchMedia("(min-width: 320px)");
+      if (!cameraQuery.matches) return;
+
+      const cameraConfig = {
+        wheelAxisBias: 1.15,
+      };
+      let activeIndex = 0;
+      let wheelLockedUntil = 0;
+      let suppressCardClickUntil = 0;
+      let touchGesture = null;
+
+      const cards = () => [...projectGrid.querySelectorAll(".project-card")];
+      const getCssNumber = (propertyName, fallback) => {
+        const value = Number.parseFloat(getComputedStyle(gallery).getPropertyValue(propertyName));
+        return Number.isFinite(value) ? value : fallback;
+      };
+      const isCameraEnabled = () => cameraQuery.matches;
+      const getColumnCount = () => Math.max(1, Math.round(getCssNumber("--works-grid-columns", 4)));
+
+      const getTargetIndex = (index, columnDelta, rowDelta) => {
+        const allCards = cards();
+        const columnCount = getColumnCount();
+        const rowCount = Math.ceil(allCards.length / columnCount);
+        const currentColumn = index % columnCount;
+        const currentRow = Math.floor(index / columnCount);
+        const nextColumn = Math.max(0, Math.min(columnCount - 1, currentColumn + columnDelta));
+        const nextRow = Math.max(0, Math.min(rowCount - 1, currentRow + rowDelta));
+        const targetIndex = nextRow * columnCount + nextColumn;
+
+        return targetIndex < allCards.length ? targetIndex : index;
+      };
+
+      const synchronizeCameraGeometry = () => {
+        if (!isCameraEnabled()) return false;
+
+        const stageWidth = cameraViewport.clientWidth;
+        const stageHeight = cameraViewport.clientHeight;
+        const zoom = Math.min(1, Math.max(0.01, getCssNumber("--works-camera-zoom", 0.35)));
+
+        if (!stageWidth || !stageHeight) return false;
+
+        const formatPixels = (value) => `${Math.round(value * 100) / 100}px`;
+        projectGrid.style.setProperty("--works-camera-cell-width", formatPixels(stageWidth * zoom));
+        projectGrid.style.setProperty("--works-camera-cell-height", formatPixels(stageHeight * zoom));
+
+        return true;
+      };
+
+      const positionCamera = () => {
+        if (!isCameraEnabled() || !synchronizeCameraGeometry()) return;
+
+        const allCards = cards();
+        const activeCard = allCards[activeIndex];
+        const activeMedia = activeCard?.querySelector(".project-media");
+
+        if (!activeCard || !activeMedia) return;
+
+        const stageWidth = cameraViewport.clientWidth;
+        const stageHeight = cameraViewport.clientHeight;
+        const focusY = getCssNumber("--works-camera-focus-y", 46) / 100;
+        const mediaCenterX = activeCard.offsetLeft + activeMedia.offsetLeft + activeMedia.offsetWidth / 2;
+        const mediaCenterY = activeCard.offsetTop + activeMedia.offsetTop + activeMedia.offsetHeight / 2;
+        const targetX = stageWidth / 2 - mediaCenterX;
+        const targetY = stageHeight * focusY - mediaCenterY;
+
+        projectGrid.style.setProperty("--works-camera-x", `${Math.round(targetX)}px`);
+        projectGrid.style.setProperty("--works-camera-y", `${Math.round(targetY)}px`);
+      };
+
+      const setActiveIndex = (nextIndex, { focus = false } = {}) => {
+        const allCards = cards();
+        const boundedIndex = Math.max(0, Math.min(allCards.length - 1, nextIndex));
+
+        activeIndex = boundedIndex;
+        allCards.forEach((card, index) => {
+          card.classList.toggle("is-works-camera-active", index === activeIndex);
+        });
+        positionCamera();
+
+        if (focus) allCards[activeIndex]?.focus({ preventScroll: true });
+      };
+
+      const moveCamera = (columnDelta, rowDelta, options) => {
+        const nextIndex = getTargetIndex(activeIndex, columnDelta, rowDelta);
+
+        if (nextIndex === activeIndex) return false;
+
+        setActiveIndex(nextIndex, options);
+        return true;
+      };
+
+      const normalizeWheelDelta = (value, deltaMode) => {
+        if (deltaMode === WheelEvent.DOM_DELTA_LINE) return value * 16;
+        if (deltaMode === WheelEvent.DOM_DELTA_PAGE) return value * cameraViewport.clientHeight;
+        return value;
+      };
+
+      const onWheel = (event) => {
+        if (!isCameraEnabled() || event.ctrlKey) return;
+
+        const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode);
+        const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode);
+        const threshold = getCssNumber("--works-camera-wheel-threshold", 10);
+        const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * cameraConfig.wheelAxisBias;
+        const primaryDelta = isHorizontal ? deltaX : deltaY;
+
+        if (Math.abs(primaryDelta) < threshold) return;
+
+        const canMove = isHorizontal
+          ? getTargetIndex(activeIndex, primaryDelta > 0 ? 1 : -1, 0) !== activeIndex
+          : getTargetIndex(activeIndex, 0, primaryDelta > 0 ? 1 : -1) !== activeIndex;
+
+        if (!canMove) return;
+
+        event.preventDefault();
+
+        if (performance.now() < wheelLockedUntil) return;
+
+        const cooldown = getCssNumber("--works-camera-wheel-cooldown", 430);
+        wheelLockedUntil = performance.now() + cooldown;
+        moveCamera(isHorizontal ? (primaryDelta > 0 ? 1 : -1) : 0, isHorizontal ? 0 : primaryDelta > 0 ? 1 : -1);
+      };
+
+      const onKeyDown = (event) => {
+        if (!isCameraEnabled() || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+
+        const directions = {
+          ArrowLeft: [-1, 0],
+          ArrowRight: [1, 0],
+          ArrowUp: [0, -1],
+          ArrowDown: [0, 1],
+        };
+        const direction = directions[event.key];
+
+        if (direction && moveCamera(direction[0], direction[1])) {
+          event.preventDefault();
+          return;
+        }
+
+        if (event.key === "Home" && activeIndex !== 0) {
+          event.preventDefault();
+          setActiveIndex(0);
+        }
+
+        if (event.key === "End") {
+          const lastIndex = cards().length - 1;
+          if (activeIndex !== lastIndex) {
+            event.preventDefault();
+            setActiveIndex(lastIndex);
+          }
+        }
+      };
+
+      const onCardClick = (event) => {
+        const card = event.target.closest(".project-card");
+
+        if (!card || !projectGrid.contains(card) || !isCameraEnabled()) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (performance.now() < suppressCardClickUntil) {
+          event.preventDefault();
+          return;
+        }
+
+        const index = cards().indexOf(card);
+        if (index === activeIndex) return;
+
+        event.preventDefault();
+        setActiveIndex(index, { focus: true });
+      };
+
+      const synchronizeCamera = () => {
+        if (!isCameraEnabled()) return;
+        positionCamera();
+      };
+
+      const onPointerDown = (event) => {
+        if (!isCameraEnabled() || event.pointerType !== "touch" || !event.isPrimary) return;
+
+        touchGesture = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+        };
+        gallery.setPointerCapture?.(event.pointerId);
+      };
+
+      const onPointerUp = (event) => {
+        if (!touchGesture || event.pointerId !== touchGesture.pointerId) return;
+
+        const deltaX = event.clientX - touchGesture.startX;
+        const deltaY = event.clientY - touchGesture.startY;
+        const threshold = getCssNumber("--works-camera-swipe-threshold", 28);
+        touchGesture = null;
+
+        if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < threshold) return;
+
+        const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * cameraConfig.wheelAxisBias;
+        const moved = isHorizontal
+          ? moveCamera(deltaX < 0 ? 1 : -1, 0)
+          : moveCamera(0, deltaY < 0 ? 1 : -1);
+
+        suppressCardClickUntil = performance.now() + 420;
+
+        if (!moved && !isHorizontal) {
+          window.scrollBy({ top: -deltaY, behavior: "auto" });
+        }
+      };
+
+      const onPointerCancel = (event) => {
+        if (touchGesture?.pointerId === event.pointerId) touchGesture = null;
+      };
+
+      gallery.tabIndex = 0;
+      gallery.setAttribute("aria-label", "Works gallery. Use arrow keys to browse projects.");
+      gallery.classList.add("is-works-camera-ready");
+      setActiveIndex(0);
+
+      gallery.addEventListener("wheel", onWheel, { passive: false });
+      gallery.addEventListener("keydown", onKeyDown);
+      gallery.addEventListener("pointerdown", onPointerDown);
+      gallery.addEventListener("pointerup", onPointerUp);
+      gallery.addEventListener("pointercancel", onPointerCancel);
+      projectGrid.addEventListener("click", onCardClick);
+      window.addEventListener("resize", synchronizeCamera);
+
+      if ("ResizeObserver" in window) {
+        const resizeObserver = new ResizeObserver(synchronizeCamera);
+        resizeObserver.observe(cameraViewport);
+      }
+    };
+
+    initializeWorksCameraGallery();
+
     // Elsewhere channel navigation
     const elsewhere = document.querySelector("[data-elsewhere]");
     const elsewhereSubnavs = [...document.querySelectorAll("[data-elsewhere-subnav]")];

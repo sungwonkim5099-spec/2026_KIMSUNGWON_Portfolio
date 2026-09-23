@@ -564,8 +564,20 @@ html[data-theme="dark"] .footer-mark {
   background: var(--background);
 }
 
+.works-page {
+  /* Shared Works thumbnail overlay controls. */
+  --works-thumbnail-gradient-opacity: 0.2;
+  --works-thumbnail-label-inline-padding: 20px;
+  --works-thumbnail-label-bottom-padding: 20px;
+  --works-thumbnail-title-category-gap: 5px;
+}
+
 .project-gallery {
   padding: 160px var(--panel-x) 0;
+}
+
+.project-camera-viewport {
+  display: contents;
 }
 
 .project-grid {
@@ -575,6 +587,7 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .project-card {
+  position: relative;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -593,12 +606,24 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .project-media {
+  position: relative;
   width: 100%;
   aspect-ratio: 380 / 430;
   margin: 0;
   overflow: hidden;
   border-radius: 8px;
   background: var(--line);
+  isolation: isolate;
+}
+
+.works-page .project-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to top, #000000 0%, rgba(0, 0, 0, 0) 100%);
+  opacity: var(--works-thumbnail-gradient-opacity);
 }
 
 .project-media img {
@@ -639,107 +664,236 @@ html[data-theme="dark"] .footer-mark {
   line-height: 1.5;
 }
 
-/* Desktop Works grid: keep all eight existing projects visible in one viewport. */
-@media (min-width: 1440px) {
-  .works-page {
-    /* VS Code controls: desktop Works card size and spacing. */
-    --works-grid-columns: 4;
-    /* Match the fixed header's left/right content boundary via --panel-x. */
-    --works-grid-max-width: calc(100vw - (var(--panel-x) * 2));
-    --works-column-gap: 32px;
-    --works-row-separation: 38px;
-    --works-thumbnail-ratio: 1 / 1;
-    --works-thumbnail-label-gap: 12px;
-    --works-title-category-gap: 5px;
-    --works-category-opacity: 0.6;
-    --works-hover-scale: 1.025;
-    --works-hover-duration: 500ms;
-    --works-enter-distance: 40px;
-    --works-enter-duration: 800ms;
-    --works-enter-stagger: 70ms;
-    --works-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
-    --works-desktop-title-size: 20px;
-    --works-desktop-category-size: 14px;
-    --works-desktop-gallery-top-space: 16px;
-    --works-desktop-gallery-bottom-space: 16px;
-  }
+/* Works gallery camera field. One viewport-proportional camera runs at every size. */
+.works-page {
+  /* Fallback grid controls before the desktop camera is initialized. */
+  --works-grid-columns: 3;
+  /* Match the fixed header's left/right content boundary via --panel-x. */
+  --works-grid-max-width: calc(100vw - (var(--panel-x) * 2));
+  --works-column-gap: 32px;
+  --works-row-separation: 38px;
+  /* Reference-style landscape thumbnails. */
+  --works-thumbnail-ratio: 2 / 1;
+  --works-thumbnail-label-gap: 12px;
+  --works-title-category-gap: 5px;
+  --works-category-opacity: 0.6;
+  --works-hover-scale: 1.025;
+  --works-hover-duration: 500ms;
+  --works-enter-distance: 40px;
+  --works-enter-duration: 800ms;
+  --works-enter-stagger: 70ms;
+  --works-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --works-desktop-title-size: 20px;
+  --works-desktop-category-size: 14px;
+  --works-thumbnail-label-inline-padding: 24px;
+  --works-thumbnail-label-bottom-padding: 24px;
+  --works-desktop-gallery-top-space: 16px;
+  --works-desktop-gallery-bottom-space: 16px;
 
-  .works-page .project-gallery {
-    min-height: 100svh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding:
-      calc(var(--header-height) + var(--works-desktop-gallery-top-space))
-      var(--panel-x)
-      var(--works-desktop-gallery-bottom-space);
-  }
+  /* VS Code control: one scale for both camera-card width and height at every viewport. */
+  --works-camera-zoom: 0.35;
+  --works-camera-cell-width: 35vw;
+  --works-camera-cell-height: 35svh;
+  --works-camera-gap: clamp(10px, 0.84vw, 12px);
+  --works-camera-stage-inline: 0px;
+  --works-camera-focus-y: 46%;
+  --works-camera-inactive-opacity: 0.2;
+  --works-camera-inactive-grayscale: 1;
+  --works-camera-transition-duration: 900ms;
+  --works-camera-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --works-camera-wheel-threshold: 10;
+  --works-camera-wheel-cooldown: 430ms;
+  --works-camera-swipe-threshold: 28px;
+}
 
-  .works-page .project-grid {
-    width: min(var(--works-grid-max-width), 100%);
-    grid-template-columns: repeat(var(--works-grid-columns), minmax(0, 1fr));
-    column-gap: var(--works-column-gap);
-    row-gap: var(--works-row-separation);
-  }
+.works-page .project-gallery {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    calc(var(--header-height) + var(--works-desktop-gallery-top-space))
+    var(--panel-x)
+    var(--works-desktop-gallery-bottom-space);
+}
 
-  .works-page .project-card {
-    gap: var(--works-thumbnail-label-gap);
-  }
+.works-page .project-grid {
+  width: min(var(--works-grid-max-width), 100%);
+  grid-template-columns: repeat(var(--works-grid-columns), minmax(0, 1fr));
+  column-gap: var(--works-column-gap);
+  row-gap: var(--works-row-separation);
+}
 
-  .works-page .project-media {
-    aspect-ratio: var(--works-thumbnail-ratio);
-  }
+.works-page .project-card {
+  gap: var(--works-thumbnail-label-gap);
+}
 
-  .works-page .project-info h2 {
-    font-size: var(--works-desktop-title-size);
-  }
+.works-page .project-media {
+  aspect-ratio: var(--works-thumbnail-ratio);
+}
 
-  .works-page .project-info p {
-    font-size: var(--works-desktop-category-size);
-    opacity: var(--works-category-opacity);
-  }
+.works-page .project-info h2 {
+  font-size: var(--works-desktop-title-size);
+}
 
-  .works-page .project-info {
-    gap: var(--works-title-category-gap);
-  }
+.works-page .project-info p {
+  font-size: var(--works-desktop-category-size);
+  opacity: var(--works-category-opacity);
+}
 
-  .works-page .project-card:hover {
-    opacity: 1;
-  }
+.works-page .project-info {
+  gap: var(--works-title-category-gap);
+}
 
-  .works-page .project-media img {
-    transform: scale(1);
-    transform-origin: center;
-    transition: transform var(--works-hover-duration) var(--works-motion-easing);
-    will-change: transform;
-  }
+.works-page .project-card:hover {
+  opacity: 1;
+}
 
-  .works-page .project-grid.is-works-entrance-ready .project-card {
-    opacity: 0;
-    will-change: opacity, transform;
-  }
+.works-page .project-media img {
+  transform: scale(1);
+  transform-origin: center;
+  transition: transform var(--works-hover-duration) var(--works-motion-easing);
+  will-change: transform;
+}
 
-  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n + 1),
-  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n + 3) {
-    transform: translateX(calc(0px - var(--works-enter-distance)));
-  }
+.works-page .project-grid.is-works-entrance-ready .project-card {
+  opacity: 0;
+  will-change: opacity, transform;
+}
 
-  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n + 2),
-  .works-page .project-grid.is-works-entrance-ready .project-card:nth-child(4n) {
-    transform: translateX(var(--works-enter-distance));
-  }
+.works-page .project-grid.is-works-entrance-ready .project-card:nth-child(3n + 1) {
+  transform: translateX(calc(0px - var(--works-enter-distance)));
+}
 
-  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n + 1),
-  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n + 3) {
-    animation: works-card-enter-from-left var(--works-enter-duration) var(--works-motion-easing) both;
-    animation-delay: var(--works-enter-delay, 0ms);
-  }
+.works-page .project-grid.is-works-entrance-ready .project-card:nth-child(3n + 2),
+.works-page .project-grid.is-works-entrance-ready .project-card:nth-child(3n) {
+  transform: translateX(var(--works-enter-distance));
+}
 
-  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n + 2),
-  .works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(4n) {
-    animation: works-card-enter-from-right var(--works-enter-duration) var(--works-motion-easing) both;
-    animation-delay: var(--works-enter-delay, 0ms);
-  }
+.works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 1) {
+  animation: works-card-enter-from-left var(--works-enter-duration) var(--works-motion-easing) both;
+  animation-delay: var(--works-enter-delay, 0ms);
+}
+
+.works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 2),
+.works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n) {
+  animation: works-card-enter-from-right var(--works-enter-duration) var(--works-motion-easing) both;
+  animation-delay: var(--works-enter-delay, 0ms);
+}
+
+/* Applied by JavaScript on every Works viewport. */
+.works-page .project-gallery.is-works-camera-ready {
+  position: relative;
+  height: 100svh;
+  min-height: 100svh;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: none;
+}
+
+.works-page .project-gallery.is-works-camera-ready:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -8px;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-camera-viewport {
+  position: absolute;
+  inset: 0 var(--works-camera-stage-inline);
+  display: block;
+  overflow: hidden;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  display: grid;
+  grid-template-columns: repeat(var(--works-grid-columns), var(--works-camera-cell-width));
+  grid-auto-rows: var(--works-camera-cell-height);
+  gap: var(--works-camera-gap);
+  transform: translate3d(var(--works-camera-x, 0px), var(--works-camera-y, 0px), 0);
+  transition: transform var(--works-camera-transition-duration) var(--works-camera-transition-easing);
+  will-change: transform;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-card {
+  --works-camera-card-opacity: var(--works-camera-inactive-opacity);
+  position: relative;
+  width: var(--works-camera-cell-width);
+  height: var(--works-camera-cell-height);
+  gap: var(--works-thumbnail-label-gap);
+  opacity: var(--works-camera-card-opacity);
+  transition: opacity var(--works-camera-transition-duration) var(--works-camera-transition-easing);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-card.is-works-camera-active {
+  --works-camera-card-opacity: 1;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-card:hover {
+  opacity: var(--works-camera-card-opacity);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-media {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-info {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--works-thumbnail-title-category-gap);
+  padding:
+    16px
+    var(--works-thumbnail-label-inline-padding)
+    var(--works-thumbnail-label-bottom-padding);
+  color: #ffffff;
+  pointer-events: none;
+  text-align: center;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.48);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-info h2,
+.works-page .project-gallery.is-works-camera-ready .project-info p {
+  color: inherit;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-info p {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-media img {
+  filter: grayscale(var(--works-camera-inactive-grayscale));
+  transition:
+    transform var(--works-hover-duration) var(--works-motion-easing),
+    filter var(--works-camera-transition-duration) var(--works-camera-transition-easing);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-card.is-works-camera-active .project-media img {
+  filter: grayscale(0);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready .project-card {
+  opacity: 0;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 1) {
+  animation: works-camera-card-enter-from-left var(--works-enter-duration) var(--works-motion-easing) both;
+  animation-delay: var(--works-enter-delay, 0ms);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 2),
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n) {
+  animation: works-camera-card-enter-from-right var(--works-enter-duration) var(--works-motion-easing) both;
+  animation-delay: var(--works-enter-delay, 0ms);
 }
 
 @media (min-width: 1440px) and (hover: hover) and (pointer: fine) {
@@ -768,6 +922,30 @@ html[data-theme="dark"] .footer-mark {
 
   to {
     opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes works-camera-card-enter-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(calc(0px - var(--works-enter-distance)));
+  }
+
+  to {
+    opacity: var(--works-camera-card-opacity);
+    transform: translateX(0);
+  }
+}
+
+@keyframes works-camera-card-enter-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(var(--works-enter-distance));
+  }
+
+  to {
+    opacity: var(--works-camera-card-opacity);
     transform: translateX(0);
   }
 }
@@ -4489,11 +4667,12 @@ html:has(body.is-unsplash-lightbox-open) {
 }
 
 /* =========================
-   Works / Tablet Grid Controls
-   834px–1439px only. Desktop and mobile keep their independent values.
+   Works / Tablet Camera Controls
+   Camera geometry is shared from the base Works controls.
 ========================= */
 @media (min-width: 834px) and (max-width: 1439px) {
   .works-page {
+    /* Static-grid fallback values only; camera geometry stays viewport-proportional. */
     --works-tablet-grid-columns: 3;
     --works-tablet-column-gap: 24px;
     --works-tablet-row-separation: 32px;
@@ -4503,6 +4682,9 @@ html:has(body.is-unsplash-lightbox-open) {
     --works-tablet-category-opacity: 0.6;
     --works-tablet-thumbnail-label-gap: 12px;
     --works-tablet-title-category-gap: 5px;
+    --works-thumbnail-label-inline-padding: 20px;
+    --works-thumbnail-label-bottom-padding: clamp(18px, 2.4vw, 28px);
+    --works-thumbnail-title-category-gap: var(--works-tablet-title-category-gap);
   }
 
   .works-page .project-grid {
@@ -4530,6 +4712,62 @@ html:has(body.is-unsplash-lightbox-open) {
   .works-page .project-info p {
     font-size: var(--works-tablet-category-size);
     opacity: var(--works-tablet-category-opacity);
+  }
+}
+
+/* =========================
+   Works / Mobile Camera Controls
+   Camera geometry is shared from the base Works controls.
+========================= */
+@media (max-width: 833px) {
+  .works-page {
+    --works-mobile-grid-columns: 2;
+    --works-mobile-column-gap: 16px;
+    --works-mobile-row-gap: 40px;
+    --works-mobile-thumbnail-ratio: 3 / 4;
+    --works-thumbnail-label-inline-padding: 12px;
+    --works-thumbnail-label-bottom-padding: clamp(14px, 4vw, 24px);
+    --works-thumbnail-title-category-gap: 4px;
+  }
+
+  .works-page .project-grid {
+    grid-template-columns: repeat(var(--works-mobile-grid-columns), minmax(0, 1fr));
+    column-gap: var(--works-mobile-column-gap);
+    row-gap: var(--works-mobile-row-gap);
+  }
+
+  .works-page .project-media {
+    height: auto;
+    aspect-ratio: var(--works-mobile-thumbnail-ratio);
+  }
+}
+
+@media (max-width: 1439px) {
+  .works-page .project-info {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--works-thumbnail-title-category-gap);
+    padding:
+      16px
+      var(--works-thumbnail-label-inline-padding)
+      var(--works-thumbnail-label-bottom-padding);
+    color: #ffffff;
+    pointer-events: none;
+    text-align: center;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.48);
+  }
+
+  .works-page .project-info h2,
+  .works-page .project-info p {
+    color: inherit;
+  }
+
+  .works-page .project-info p {
+    color: rgba(255, 255, 255, 0.82);
   }
 }
 
