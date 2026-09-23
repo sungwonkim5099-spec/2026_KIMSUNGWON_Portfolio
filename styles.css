@@ -2478,6 +2478,7 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
 
 .calmato-featured-content {
   --featured-final-y: 34px;
+  --calmato-featured-media-max-width: 1120px;
   width: min(1120px, 100%);
   display: flex;
   flex-direction: column;
@@ -2526,7 +2527,7 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
 
 .calmato-featured-grid {
   --calmato-video-frame-ratio: 16 / 10;
-  width: min(100%, 1120px);
+  width: min(100%, var(--calmato-featured-media-max-width));
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
@@ -4529,5 +4530,158 @@ html:has(body.is-unsplash-lightbox-open) {
   .works-page .project-info p {
     font-size: var(--works-tablet-category-size);
     opacity: var(--works-tablet-category-opacity);
+  }
+}
+
+/* =========================
+   Short Viewport Optimization
+   Desktop and tablet only. Width breakpoints, snap geometry, and interaction
+   behavior remain independent from these visual density controls.
+========================= */
+@media (min-width: 834px) and (max-height: 800px) {
+  /* Home: keep the navigation and About panels within a short snap viewport. */
+  .snap-root {
+    --home-short-category-padding-block: 72px;
+    --home-short-category-gap: 12px;
+    --home-short-category-link-height: 160px;
+    --home-short-category-link-size: clamp(76px, 10.5svh, 92px);
+    --home-short-about-padding-block-start: calc(var(--header-height) + 12px);
+    --home-short-about-padding-block-end: 48px;
+    --home-short-signature-margin: 28px;
+  }
+
+  .snap-root .category-panel {
+    padding-block: var(--home-short-category-padding-block);
+  }
+
+  .snap-root .category-stack {
+    gap: var(--home-short-category-gap);
+  }
+
+  .snap-root .category-link {
+    height: var(--home-short-category-link-height);
+    font-size: var(--home-short-category-link-size);
+  }
+
+  .snap-root .about-panel {
+    padding-top: var(--home-short-about-padding-block-start);
+    padding-bottom: var(--home-short-about-padding-block-end);
+  }
+
+  .snap-root .signature-line {
+    margin-block: var(--home-short-signature-margin);
+  }
+
+  /* Calmato: reduce the large visual stack before reducing its type scale. */
+  .elsewhere-page .calmato-about {
+    --calmato-value-icon-size: min(clamp(130px, 11vw, 154px), 20svh);
+  }
+
+  .elsewhere-page .calmato-about-content {
+    gap: clamp(20px, 3svh, 28px);
+  }
+
+  .elsewhere-page .calmato-featured-content {
+    --featured-final-y: 12px;
+    --calmato-featured-media-max-width: clamp(760px, 120svh, 960px);
+    width: min(1020px, 100%);
+    gap: clamp(14px, 2svh, 20px);
+  }
+
+  .elsewhere-page .calmato-featured-grid {
+    /* Reassert the height-based media cap after the desktop-width grid rule. */
+    width: min(100%, var(--calmato-featured-media-max-width));
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .elsewhere-page .calmato-video-controls {
+    margin-top: 10px;
+  }
+
+  /* Unsplash: preserve its card aspect ratio while keeping metadata visible. */
+  .elsewhere-page .unsplash-gallery {
+    --unsplash-card-width: min(clamp(120px, 21vw, 300px), 240px);
+    --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
+    --unsplash-meta-gap: 20px;
+    padding-top: calc(var(--header-height) + 36px);
+    padding-bottom: 44px;
+  }
+
+  .elsewhere-page .unsplash-meta {
+    min-height: 84px;
+  }
+}
+
+@media (min-width: 834px) and (max-width: 1099px) and (max-height: 800px) {
+  /* Tablet keeps its two-column video composition while reducing card height. */
+  .elsewhere-page .calmato-featured-content {
+    --calmato-featured-media-max-width: clamp(620px, 94svh, 760px);
+    width: min(880px, 100%);
+  }
+}
+
+@media (min-width: 834px) and (max-height: 700px) {
+  .snap-root {
+    --home-short-category-padding-block: 56px;
+    --home-short-category-gap: 8px;
+    --home-short-category-link-height: 138px;
+    --home-short-category-link-size: clamp(68px, 10svh, 80px);
+    --home-short-about-padding-block-start: calc(var(--header-height) + 8px);
+    --home-short-about-padding-block-end: 32px;
+    --home-short-signature-margin: 24px;
+  }
+
+  .snap-root .about-ko {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .snap-root .about-en {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .elsewhere-page .calmato-about {
+    --calmato-value-icon-size: min(clamp(112px, 10vw, 136px), 18svh);
+  }
+
+  .elsewhere-page .calmato-about-content {
+    gap: 14px;
+  }
+
+  .elsewhere-page .calmato-featured-content {
+    --featured-final-y: 0px;
+    --calmato-featured-media-max-width: clamp(660px, 108svh, 780px);
+    width: min(900px, 100%);
+    gap: 12px;
+  }
+
+  .elsewhere-page .calmato-featured-grid {
+    gap: 14px;
+    margin-top: 0;
+  }
+
+  .elsewhere-page .calmato-video-controls {
+    margin-top: 8px;
+  }
+
+  .elsewhere-page .unsplash-gallery {
+    --unsplash-card-width: min(clamp(120px, 21vw, 300px), 210px);
+    --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
+    --unsplash-meta-gap: 14px;
+    padding-top: calc(var(--header-height) + 24px);
+    padding-bottom: 32px;
+  }
+
+  .elsewhere-page .unsplash-meta {
+    min-height: 78px;
+  }
+}
+
+@media (min-width: 834px) and (max-width: 1099px) and (max-height: 700px) {
+  .elsewhere-page .calmato-featured-content {
+    --calmato-featured-media-max-width: clamp(540px, 94svh, 640px);
+    width: min(780px, 100%);
   }
 }
