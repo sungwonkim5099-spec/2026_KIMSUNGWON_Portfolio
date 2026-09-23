@@ -646,10 +646,10 @@ html[data-theme="dark"] .footer-mark {
     --works-grid-columns: 4;
     /* Match the fixed header's left/right content boundary via --panel-x. */
     --works-grid-max-width: calc(100vw - (var(--panel-x) * 2));
-    --works-column-gap: 18px;
-    --works-row-separation: 24px;
+    --works-column-gap: 32px;
+    --works-row-separation: 38px;
     --works-thumbnail-ratio: 1 / 1;
-    --works-thumbnail-label-gap: 10px;
+    --works-thumbnail-label-gap: 12px;
     --works-title-category-gap: 5px;
     --works-category-opacity: 0.6;
     --works-hover-scale: 1.025;
@@ -658,7 +658,7 @@ html[data-theme="dark"] .footer-mark {
     --works-enter-duration: 800ms;
     --works-enter-stagger: 70ms;
     --works-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
-    --works-desktop-title-size: 24px;
+    --works-desktop-title-size: 20px;
     --works-desktop-category-size: 14px;
     --works-desktop-gallery-top-space: 16px;
     --works-desktop-gallery-bottom-space: 16px;
@@ -4484,5 +4484,50 @@ html:has(body.is-unsplash-lightbox-open) {
 
   body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .site-header:has(.mobile-menu[aria-hidden="false"])::before {
     display: block;
+  }
+}
+
+/* =========================
+   Works / Tablet Grid Controls
+   834px–1439px only. Desktop and mobile keep their independent values.
+========================= */
+@media (min-width: 834px) and (max-width: 1439px) {
+  .works-page {
+    --works-tablet-grid-columns: 3;
+    --works-tablet-column-gap: 24px;
+    --works-tablet-row-separation: 32px;
+    --works-tablet-thumbnail-ratio: 1 / 1;
+    --works-tablet-title-size: 20px;
+    --works-tablet-category-size: 14px;
+    --works-tablet-category-opacity: 0.6;
+    --works-tablet-thumbnail-label-gap: 12px;
+    --works-tablet-title-category-gap: 5px;
+  }
+
+  .works-page .project-grid {
+    grid-template-columns: repeat(var(--works-tablet-grid-columns), minmax(0, 1fr));
+    column-gap: var(--works-tablet-column-gap);
+    row-gap: var(--works-tablet-row-separation);
+  }
+
+  .works-page .project-card {
+    gap: var(--works-tablet-thumbnail-label-gap);
+  }
+
+  .works-page .project-media {
+    aspect-ratio: var(--works-tablet-thumbnail-ratio);
+  }
+
+  .works-page .project-info {
+    gap: var(--works-tablet-title-category-gap);
+  }
+
+  .works-page .project-info h2 {
+    font-size: var(--works-tablet-title-size);
+  }
+
+  .works-page .project-info p {
+    font-size: var(--works-tablet-category-size);
+    opacity: var(--works-tablet-category-opacity);
   }
 }
