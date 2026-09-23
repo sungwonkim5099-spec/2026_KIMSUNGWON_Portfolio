@@ -440,6 +440,11 @@ html[data-theme="dark"] .footer-mark {
   scroll-snap-stop: normal;
 }
 
+.snap-root > .footer-panel {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}
+
 .snap-root.is-footer-free {
   scroll-snap-type: none;
 }
@@ -1719,23 +1724,31 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 
 .elsewhere-snap-root {
   position: relative;
+  display: grid;
   height: 400svh;
   min-height: 400svh;
   overflow: visible;
   background: var(--background);
 }
 
+.calmato-snap-track {
+  grid-area: 1 / 1;
+  min-height: 100%;
+  pointer-events: none;
+}
+
 .calmato-dissolve-stage {
+  grid-area: 1 / 1;
+  align-self: start;
   position: sticky;
   top: 0;
   height: 100svh;
   overflow: clip;
+  z-index: 1;
 }
 
 .calmato-snap-point {
-  position: absolute;
-  inset-inline: 0;
-  top: var(--calmato-snap-point-offset, 0px);
+  display: block;
   height: 100svh;
   pointer-events: none;
   scroll-snap-align: start;
@@ -1776,6 +1789,11 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 
 body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main:not(.is-footer-free) {
   scroll-snap-type: y mandatory;
+}
+
+body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-footer {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
 }
 
 .elsewhere-snap-nav {

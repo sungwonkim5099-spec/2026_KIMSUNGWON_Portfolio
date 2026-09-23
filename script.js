@@ -1510,7 +1510,6 @@
     const elsewhereSnapRoot = document.querySelector("[data-elsewhere-snap-root]");
     const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];
     const elsewhereSnapDots = [...document.querySelectorAll("[data-elsewhere-snap-dot]")];
-    const elsewhereSnapPoints = [...document.querySelectorAll("[data-calmato-snap-point]")];
     const elsewhereSnapScroller = elsewhere || elsewhereSnapRoot;
     let elsewhereDissolveFrame = 0;
 
@@ -1818,13 +1817,6 @@
       const trackHeight = calmatoDissolveDistance * elsewhereSnapPanels.length;
       elsewhereSnapRoot.style.height = `${trackHeight}px`;
       elsewhereSnapRoot.style.minHeight = `${trackHeight}px`;
-      elsewhereSnapPoints.forEach((point, index) => {
-        const pointIndex = Number(point.dataset.calmatoSnapPoint || index);
-        point.style.setProperty(
-          "--calmato-snap-point-offset",
-          `${calmatoDissolveDistance * pointIndex}px`
-        );
-      });
 
       const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();
       const rootRect = elsewhereSnapRoot.getBoundingClientRect();
@@ -2151,43 +2143,19 @@
     const updateFooterSnap = () => {
       if (!scroller) return;
       const about = document.querySelector("#about");
-      if (!about) return;
-      const releasePoint = about.offsetTop + 8;
-      scroller.classList.toggle("is-footer-free", scroller.scrollTop > releasePoint);
+      const footer = document.querySelector("#archive");
+      if (!about || !footer) return;
+
+      const footerHasEntered = footer.getBoundingClientRect().top < scroller.getBoundingClientRect().bottom;
+      if (footerHasEntered) {
+        scroller.classList.add("is-footer-free");
+        return;
+      }
+
+      if (scroller.scrollTop <= about.offsetTop + 8) {
+        scroller.classList.remove("is-footer-free");
+      }
     };
-
-    scroller?.addEventListener(
-      "wheel",
-      (event) => {
-        const about = document.querySelector("#about");
-        if (!about) return;
-        const isAtAbout = Math.abs(scroller.scrollTop - about.offsetTop) < 12;
-        if (event.deltaY > 0 && isAtAbout) {
-          scroller.classList.add("is-footer-free");
-        }
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      "wheel",
-      (event) => {
-        if (!scroller || event.ctrlKey) return;
-        const about = document.querySelector("#about");
-        if (!about) return;
-        const isAtAbout = Math.abs(scroller.scrollTop - about.offsetTop) < 12;
-        if (event.deltaY > 0 && isAtAbout) {
-          event.preventDefault();
-          scroller.classList.add("is-footer-free");
-          scroller.scrollBy({
-            top: event.deltaY,
-            left: 0,
-            behavior: "auto",
-          });
-        }
-      },
-      { capture: true, passive: false }
-    );
 
     scroller?.addEventListener("scroll", updateFooterSnap, { passive: true });
 
