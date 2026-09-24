@@ -563,9 +563,12 @@ html[data-theme="dark"] .footer-mark {
   --works-category-opacity: 0.6;
   --works-hover-scale: 1.025;
   --works-hover-duration: 500ms;
-  --works-enter-distance: 40px;
-  --works-enter-duration: 800ms;
-  --works-enter-stagger: 70ms;
+  /* Cinematic Works entry: camera settles before the surrounding cards dissolve. */
+  --works-camera-entrance-duration: 800ms;
+  --works-reveal-start-delay: 80ms;
+  --works-reveal-duration: 580ms;
+  --works-reveal-stagger: 75ms;
+  --works-reveal-blur: 4px;
   --works-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
   --works-desktop-title-size: 20px;
   --works-desktop-category-size: 14px;
@@ -640,31 +643,6 @@ html[data-theme="dark"] .footer-mark {
   will-change: transform;
 }
 
-.works-page .project-grid.is-works-entrance-ready .project-card {
-  opacity: 0;
-  will-change: opacity, transform;
-}
-
-.works-page .project-grid.is-works-entrance-ready .project-card:nth-child(3n + 1) {
-  transform: translateX(calc(0px - var(--works-enter-distance)));
-}
-
-.works-page .project-grid.is-works-entrance-ready .project-card:nth-child(3n + 2),
-.works-page .project-grid.is-works-entrance-ready .project-card:nth-child(3n) {
-  transform: translateX(var(--works-enter-distance));
-}
-
-.works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 1) {
-  animation: works-card-enter-from-left var(--works-enter-duration) var(--works-motion-easing) both;
-  animation-delay: var(--works-enter-delay, 0ms);
-}
-
-.works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 2),
-.works-page .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n) {
-  animation: works-card-enter-from-right var(--works-enter-duration) var(--works-motion-easing) both;
-  animation-delay: var(--works-enter-delay, 0ms);
-}
-
 /* Applied by JavaScript on every Works viewport. */
 .works-page .project-gallery.is-works-camera-ready {
   position: relative;
@@ -703,6 +681,15 @@ html[data-theme="dark"] .footer-mark {
   will-change: transform;
 }
 
+.works-page .project-gallery.is-works-camera-initializing .project-grid,
+.works-page .project-gallery.is-works-camera-entrance-prepared .project-grid {
+  transition: none;
+}
+
+.works-page .project-gallery.is-works-camera-entrance-moving .project-grid {
+  transition: transform var(--works-camera-entrance-duration) var(--works-motion-easing);
+}
+
 .works-page .project-gallery.is-works-camera-ready .project-card {
   --works-camera-card-opacity: var(--works-camera-inactive-opacity);
   position: relative;
@@ -715,6 +702,26 @@ html[data-theme="dark"] .footer-mark {
 
 .works-page .project-gallery.is-works-camera-ready .project-card.is-works-camera-active {
   --works-camera-card-opacity: 1;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared .project-card:not(.is-works-entrance-anchor) {
+  opacity: 0;
+  filter: blur(var(--works-reveal-blur));
+  transition:
+    opacity var(--works-reveal-duration) var(--works-motion-easing),
+    filter var(--works-reveal-duration) var(--works-motion-easing);
+  will-change: opacity, filter;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared .project-card.is-works-entrance-anchor {
+  opacity: 1;
+  filter: blur(0);
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared.is-works-entrance-revealing .project-card:not(.is-works-entrance-anchor) {
+  opacity: var(--works-camera-card-opacity);
+  filter: blur(0);
+  transition-delay: var(--works-reveal-delay, 0ms);
 }
 
 .works-page .project-gallery.is-works-camera-ready .project-card:hover {
@@ -765,72 +772,9 @@ html[data-theme="dark"] .footer-mark {
   filter: grayscale(0);
 }
 
-.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready .project-card {
-  opacity: 0;
-}
-
-.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 1) {
-  animation: works-camera-card-enter-from-left var(--works-enter-duration) var(--works-motion-easing) both;
-  animation-delay: var(--works-enter-delay, 0ms);
-}
-
-.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n + 2),
-.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-ready.is-works-entrance-visible .project-card:nth-child(3n) {
-  animation: works-camera-card-enter-from-right var(--works-enter-duration) var(--works-motion-easing) both;
-  animation-delay: var(--works-enter-delay, 0ms);
-}
-
 @media (min-width: 1440px) and (hover: hover) and (pointer: fine) {
   .works-page .project-card:hover .project-media img {
     transform: scale(var(--works-hover-scale));
-  }
-}
-
-@keyframes works-card-enter-from-left {
-  from {
-    opacity: 0;
-    transform: translateX(calc(0px - var(--works-enter-distance)));
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes works-card-enter-from-right {
-  from {
-    opacity: 0;
-    transform: translateX(var(--works-enter-distance));
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes works-camera-card-enter-from-left {
-  from {
-    opacity: 0;
-    transform: translateX(calc(0px - var(--works-enter-distance)));
-  }
-
-  to {
-    opacity: var(--works-camera-card-opacity);
-    transform: translateX(0);
-  }
-}
-
-@keyframes works-camera-card-enter-from-right {
-  from {
-    opacity: 0;
-    transform: translateX(var(--works-enter-distance));
-  }
-
-  to {
-    opacity: var(--works-camera-card-opacity);
-    transform: translateX(0);
   }
 }
 
@@ -5090,4 +5034,12 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
   .mobile-menu {
     transition-duration: 0.01ms;
   }
+}
+
+.works-page .project-card,
+.works-page .project-card a,
+.works-page .project-card img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
 }

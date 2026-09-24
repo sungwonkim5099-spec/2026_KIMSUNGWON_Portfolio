@@ -154,57 +154,132 @@
 
     renderProjectCards();
 
-    const initializeWorksGridEntrance = () => {
-      if (
-        !projectGrid ||
-        projects.length === 0 ||
-        prefersReducedMotion ||
-        !window.matchMedia("(min-width: 1440px)").matches
-      ) {
-        return;
+    const WORKS_GALLERY_ENTRY_KEY = "portfolio:works-gallery-entry";
+    const WORKS_GALLERY_ENTRY_MAX_AGE = 3000;
+
+    const isWorksDestination = (destination) =>
+      destination.pathname.replace(/\/+$/, "").endsWith("/works");
+
+    const rememberWorksGalleryEntry = (destination) => {
+      if (!isWorksDestination(destination)) return;
+
+      try {
+        window.sessionStorage.setItem(WORKS_GALLERY_ENTRY_KEY, String(Date.now()));
+      } catch {
+        // A blocked session store simply skips the cinematic entrance.
       }
-
-      const staggerToken = getComputedStyle(projectGrid).getPropertyValue("--works-enter-stagger").trim();
-      const staggerValue = Number.parseFloat(staggerToken);
-      const staggerMilliseconds = Number.isFinite(staggerValue) ? staggerValue : 70;
-
-      [...projectGrid.children].forEach((card, index) => {
-        card.style.setProperty("--works-enter-delay", `${index * staggerMilliseconds}ms`);
-      });
-
-      projectGrid.classList.add("is-works-entrance-ready");
-
-      const revealGrid = () => {
-        if (projectGrid.classList.contains("is-works-entrance-visible")) return;
-
-        requestAnimationFrame(() => {
-          projectGrid.classList.add("is-works-entrance-visible");
-        });
-      };
-
-      if (!("IntersectionObserver" in window)) {
-        requestAnimationFrame(revealGrid);
-        return;
-      }
-
-      const worksObserver = new IntersectionObserver(
-        (entries) => {
-          const isMeaningfullyVisible = entries.some(
-            (entry) => entry.isIntersecting && entry.intersectionRatio >= 0.32
-          );
-
-          if (!isMeaningfullyVisible) return;
-
-          worksObserver.disconnect();
-          revealGrid();
-        },
-        { threshold: 0.32 }
-      );
-
-      worksObserver.observe(projectGrid);
     };
 
-    initializeWorksGridEntrance();
+    const consumeWorksGalleryEntry = () => {
+      try {
+        const timestamp = Number.parseInt(window.sessionStorage.getItem(WORKS_GALLERY_ENTRY_KEY) || "", 10);
+        window.sessionStorage.removeItem(WORKS_GALLERY_ENTRY_KEY);
+        return Number.isFinite(timestamp) && Date.now() - timestamp <= WORKS_GALLERY_ENTRY_MAX_AGE;
+      } catch {
+        return false;
+      }
+    };
+
+    const getCssMilliseconds = (element, propertyName, fallback) => {
+      const token = getComputedStyle(element).getPropertyValue(propertyName).trim();
+      const value = Number.parseFloat(token);
+
+      if (!Number.isFinite(value)) return fallback;
+      return token.endsWith("ms") ? value : value * 1000;
+    };
+
+    const initializeWorksGridEntrance = () => {
+      const desktopEntryQuery = window.matchMedia("(min-width: 834px)");
+      const shouldPlayCinematicEntrance = consumeWorksGalleryEntry();
+      let isPrepared = false;
+      let isRevealing = false;
+      let revealTimer = 0;
+
+      const cards = () => (projectGrid ? [...projectGrid.querySelectorAll(".project-card")] : []);
+      const shouldRun = () =>
+        Boolean(
+          projectGrid &&
+            projects.length > 0 &&
+            shouldPlayCinematicEntrance &&
+            !prefersReducedMotion &&
+            desktopEntryQuery.matches
+        );
+
+      const getSpatialRevealOrder = () => {
+        const allCards = cards();
+        const anchor = allCards[0];
+        if (!anchor) return [];
+
+        const anchorCenterX = anchor.offsetLeft + anchor.offsetWidth / 2;
+        const anchorCenterY = anchor.offsetTop + anchor.offsetHeight / 2;
+
+        return allCards
+          .slice(1)
+          .map((card, index) => {
+            const cardCenterX = card.offsetLeft + card.offsetWidth / 2;
+            const cardCenterY = card.offsetTop + card.offsetHeight / 2;
+            const deltaX = cardCenterX - anchorCenterX;
+            const deltaY = cardCenterY - anchorCenterY;
+            const distance = Math.hypot(deltaX, deltaY);
+            const lowerRightBias = Math.max(0, deltaX + deltaY) * 0.12;
+
+            return { card, index, score: distance - lowerRightBias };
+          })
+          .sort((a, b) => a.score - b.score || a.index - b.index)
+          .map(({ card }) => card);
+      };
+
+      const clearEntranceState = () => {
+        window.clearTimeout(revealTimer);
+        cards().forEach((card) => {
+          card.classList.remove("is-works-entrance-anchor");
+          card.style.removeProperty("--works-reveal-delay");
+        });
+        projectGrid?.classList.remove("is-works-entrance-prepared", "is-works-entrance-revealing");
+        isPrepared = false;
+        isRevealing = false;
+      };
+
+      return {
+        shouldRun,
+        prepare: () => {
+          if (!shouldRun() || isPrepared) return isPrepared;
+
+          const [anchor, ...surroundingCards] = cards();
+          if (!anchor) return false;
+
+          anchor.classList.add("is-works-entrance-anchor");
+          surroundingCards.forEach((card) => card.style.removeProperty("--works-reveal-delay"));
+          projectGrid.classList.add("is-works-entrance-prepared");
+          isPrepared = true;
+          return true;
+        },
+        reveal: (onComplete = () => {}) => {
+          if (!isPrepared || isRevealing) return;
+
+          isRevealing = true;
+          const revealOrder = getSpatialRevealOrder();
+          const stagger = getCssMilliseconds(projectGrid, "--works-reveal-stagger", 75);
+          const duration = getCssMilliseconds(projectGrid, "--works-reveal-duration", 580);
+
+          revealOrder.forEach((card, index) => {
+            card.style.setProperty("--works-reveal-delay", `${index * stagger}ms`);
+          });
+
+          window.requestAnimationFrame(() => {
+            projectGrid.classList.add("is-works-entrance-revealing");
+
+            const finalDelay = Math.max(0, revealOrder.length - 1) * stagger;
+            revealTimer = window.setTimeout(() => {
+              clearEntranceState();
+              onComplete();
+            }, duration + finalDelay + 60);
+          });
+        },
+      };
+    };
+
+    const worksGridEntrance = initializeWorksGridEntrance();
 
     const initializeWorksCameraGallery = () => {
       const gallery = document.querySelector(".works-page .project-gallery");
@@ -222,6 +297,8 @@
       let wheelLockedUntil = 0;
       let suppressCardClickUntil = 0;
       let touchGesture = null;
+      let isCinematicEntranceActive = false;
+      let cameraEntranceTimer = 0;
 
       const cards = () => [...projectGrid.querySelectorAll(".project-card")];
       const getCssNumber = (propertyName, fallback) => {
@@ -260,14 +337,14 @@
         return true;
       };
 
-      const positionCamera = () => {
+      const getCameraTarget = () => {
         if (!isCameraEnabled() || !synchronizeCameraGeometry()) return;
 
         const allCards = cards();
         const activeCard = allCards[activeIndex];
         const activeMedia = activeCard?.querySelector(".project-media");
 
-        if (!activeCard || !activeMedia) return;
+        if (!activeCard || !activeMedia) return null;
 
         const stageWidth = cameraViewport.clientWidth;
         const stageHeight = cameraViewport.clientHeight;
@@ -277,11 +354,33 @@
         const targetX = stageWidth / 2 - mediaCenterX;
         const targetY = stageHeight * focusY - mediaCenterY;
 
-        projectGrid.style.setProperty("--works-camera-x", `${Math.round(targetX)}px`);
-        projectGrid.style.setProperty("--works-camera-y", `${Math.round(targetY)}px`);
+        return { x: Math.round(targetX), y: Math.round(targetY) };
       };
 
-      const setActiveIndex = (nextIndex, { focus = false } = {}) => {
+      const applyCameraTarget = (target) => {
+        if (!target) return;
+
+        projectGrid.style.setProperty("--works-camera-x", `${target.x}px`);
+        projectGrid.style.setProperty("--works-camera-y", `${target.y}px`);
+      };
+
+      const positionCamera = () => {
+        const target = getCameraTarget();
+        if (!target) return null;
+
+        applyCameraTarget(target);
+        return target;
+      };
+
+      const positionCameraImmediately = () => {
+        gallery.classList.add("is-works-camera-initializing");
+        const target = positionCamera();
+        projectGrid.getBoundingClientRect();
+        gallery.classList.remove("is-works-camera-initializing");
+        return target;
+      };
+
+      const setActiveIndex = (nextIndex, { focus = false, position = true } = {}) => {
         const allCards = cards();
         const boundedIndex = Math.max(0, Math.min(allCards.length - 1, nextIndex));
 
@@ -289,12 +388,14 @@
         allCards.forEach((card, index) => {
           card.classList.toggle("is-works-camera-active", index === activeIndex);
         });
-        positionCamera();
+        if (position) positionCamera();
 
         if (focus) allCards[activeIndex]?.focus({ preventScroll: true });
       };
 
       const moveCamera = (columnDelta, rowDelta, options) => {
+        if (isCinematicEntranceActive) return false;
+
         const nextIndex = getTargetIndex(activeIndex, columnDelta, rowDelta);
 
         if (nextIndex === activeIndex) return false;
@@ -311,6 +412,10 @@
 
       const onWheel = (event) => {
         if (!isCameraEnabled() || event.ctrlKey) return;
+        if (isCinematicEntranceActive) {
+          event.preventDefault();
+          return;
+        }
 
         const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode);
         const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode);
@@ -337,6 +442,13 @@
 
       const onKeyDown = (event) => {
         if (!isCameraEnabled() || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+
+        if (isCinematicEntranceActive) {
+          if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
+            event.preventDefault();
+          }
+          return;
+        }
 
         const directions = {
           ArrowLeft: [-1, 0],
@@ -370,6 +482,10 @@
 
         if (!card || !projectGrid.contains(card) || !isCameraEnabled()) return;
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (isCinematicEntranceActive) {
+          event.preventDefault();
+          return;
+        }
         if (performance.now() < suppressCardClickUntil) {
           event.preventDefault();
           return;
@@ -383,12 +499,12 @@
       };
 
       const synchronizeCamera = () => {
-        if (!isCameraEnabled()) return;
+        if (!isCameraEnabled() || isCinematicEntranceActive) return;
         positionCamera();
       };
 
       const onPointerDown = (event) => {
-        if (!isCameraEnabled() || event.pointerType !== "touch" || !event.isPrimary) return;
+        if (!isCameraEnabled() || isCinematicEntranceActive || event.pointerType !== "touch" || !event.isPrimary) return;
 
         touchGesture = {
           pointerId: event.pointerId,
@@ -400,6 +516,11 @@
 
       const onPointerUp = (event) => {
         if (!touchGesture || event.pointerId !== touchGesture.pointerId) return;
+
+        if (isCinematicEntranceActive) {
+          touchGesture = null;
+          return;
+        }
 
         const deltaX = event.clientX - touchGesture.startX;
         const deltaY = event.clientY - touchGesture.startY;
@@ -424,10 +545,73 @@
         if (touchGesture?.pointerId === event.pointerId) touchGesture = null;
       };
 
+      const startCinematicEntrance = () => {
+        if (!worksGridEntrance.prepare()) {
+          setActiveIndex(0, { position: false });
+          positionCameraImmediately();
+          return;
+        }
+
+        isCinematicEntranceActive = true;
+        gallery.classList.add("is-works-camera-entrance-prepared");
+        setActiveIndex(0, { position: false });
+
+        const target = getCameraTarget();
+        const revealStartDelay = getCssMilliseconds(gallery, "--works-reveal-start-delay", 80);
+        const completeEntrance = () => {
+          gallery.classList.remove("is-works-camera-entrance-prepared", "is-works-camera-entrance-moving");
+          window.setTimeout(() => {
+            worksGridEntrance.reveal(() => {
+              isCinematicEntranceActive = false;
+            });
+          }, revealStartDelay);
+        };
+
+        if (!target) {
+          positionCameraImmediately();
+          completeEntrance();
+          return;
+        }
+
+        const duration = getCssMilliseconds(gallery, "--works-camera-entrance-duration", 800);
+        let hasSettled = false;
+        const settleCamera = () => {
+          if (hasSettled) return;
+          hasSettled = true;
+          window.clearTimeout(cameraEntranceTimer);
+          projectGrid.removeEventListener("transitionend", handleCameraTransitionEnd);
+          applyCameraTarget(target);
+          completeEntrance();
+        };
+        const handleCameraTransitionEnd = (event) => {
+          if (event.target === projectGrid && event.propertyName === "transform") settleCamera();
+        };
+
+        projectGrid.addEventListener("transitionend", handleCameraTransitionEnd);
+        projectGrid.style.setProperty("--works-camera-x", "0px");
+        projectGrid.style.setProperty("--works-camera-y", "0px");
+        projectGrid.getBoundingClientRect();
+
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            gallery.classList.remove("is-works-camera-entrance-prepared");
+            gallery.classList.add("is-works-camera-entrance-moving");
+            applyCameraTarget(target);
+
+            if (target.x === 0 && target.y === 0) {
+              window.requestAnimationFrame(settleCamera);
+              return;
+            }
+
+            cameraEntranceTimer = window.setTimeout(settleCamera, duration + 120);
+          });
+        });
+      };
+
       gallery.tabIndex = 0;
       gallery.setAttribute("aria-label", "Works gallery. Use arrow keys to browse projects.");
       gallery.classList.add("is-works-camera-ready");
-      setActiveIndex(0);
+      startCinematicEntrance();
 
       gallery.addEventListener("wheel", onWheel, { passive: false });
       gallery.addEventListener("keydown", onKeyDown);
@@ -452,21 +636,113 @@
     const elsewhereTabs = [...document.querySelectorAll("[data-elsewhere-tab]")];
     const elsewherePanels = [...document.querySelectorAll("[data-elsewhere-panel]")];
     const elsewhereSnapNav = document.querySelector("[data-elsewhere-snap-nav]");
+    const floatingNavShell = document.querySelector(".nav-shell");
     const elsewhereNavItem = document.querySelector("[data-elsewhere-nav-item]");
     const elsewhereNavTrigger = elsewhereNavItem?.querySelector("[data-elsewhere-nav-trigger]");
+    const elsewhereDesktopSubnav = elsewhereNavItem?.querySelector(":scope > [data-elsewhere-subnav]");
+    const ELSEWHERE_PILL_ENTRY_KEY = "portfolio:elsewhere-pill-entry";
+    const ELSEWHERE_PILL_ENTRY_MAX_AGE = 3000;
     let elsewhereActivePanel = "calmato";
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
 
-    const setElsewhereDropdownOpen = (isOpen) => {
+    const isElsewhereDestination = (destination) =>
+      destination.pathname.replace(/\/+$/, "").endsWith("/elsewhere");
+
+    const rememberElsewherePillEntry = (destination) => {
+      if (!isElsewhereDestination(destination)) return;
+
+      try {
+        window.sessionStorage.setItem(ELSEWHERE_PILL_ENTRY_KEY, String(Date.now()));
+      } catch {
+        // A blocked session store simply skips the cross-document expansion.
+      }
+    };
+
+    const consumeElsewherePillEntry = () => {
+      try {
+        const timestamp = Number.parseInt(window.sessionStorage.getItem(ELSEWHERE_PILL_ENTRY_KEY) || "", 10);
+        window.sessionStorage.removeItem(ELSEWHERE_PILL_ENTRY_KEY);
+        return Number.isFinite(timestamp) && Date.now() - timestamp <= ELSEWHERE_PILL_ENTRY_MAX_AGE;
+      } catch {
+        return false;
+      }
+    };
+
+    const measureElsewherePill = () => {
+      if (!floatingNavShell || !elsewhereNavItem || !elsewhereNavTrigger || !elsewhereDesktopSubnav) return;
+
+      const wasOpen = elsewhereNavItem.classList.contains("is-open");
+      const wasExpanded = floatingNavShell.classList.contains("is-elsewhere-expanded");
+      floatingNavShell.classList.add("is-nav-pill-measuring");
+      elsewhereNavItem.classList.add("is-open");
+      elsewhereNavTrigger.setAttribute("aria-expanded", "true");
+
+      const subnavWidth = elsewhereDesktopSubnav.getBoundingClientRect().width;
+      floatingNavShell.style.setProperty("--nav-pill-secondary-width", `${subnavWidth}px`);
+
+      elsewhereNavItem.classList.toggle("is-open", wasOpen);
+      floatingNavShell.classList.toggle("is-elsewhere-expanded", wasExpanded);
+      elsewhereNavTrigger.setAttribute("aria-expanded", String(wasOpen));
+      floatingNavShell.classList.remove("is-nav-pill-measuring");
+    };
+
+    const applyElsewherePillImmediately = (callback) => {
+      if (!floatingNavShell) {
+        callback();
+        return;
+      }
+
+      floatingNavShell.classList.add("is-elsewhere-pill-initializing");
+      callback();
+      floatingNavShell.getBoundingClientRect();
+      floatingNavShell.classList.remove("is-elsewhere-pill-initializing");
+    };
+
+    const setElsewhereDropdownOpen = (isOpen, { measure = true } = {}) => {
       if (!elsewhereNavItem || !elsewhereNavTrigger) return;
+      if (isOpen && measure) measureElsewherePill();
       elsewhereNavItem.classList.toggle("is-open", isOpen);
+      floatingNavShell?.classList.toggle("is-elsewhere-expanded", isOpen);
       elsewhereNavTrigger.setAttribute("aria-expanded", String(isOpen));
     };
 
     const elsewhereDesktopPillQuery = window.matchMedia("(min-width: 834px)");
-    const syncElsewherePill = () => setElsewhereDropdownOpen(elsewhereDesktopPillQuery.matches);
+    let shouldAnimateElsewherePillEntry = consumeElsewherePillEntry() && !prefersReducedMotion;
+    const syncElsewherePill = () => {
+      if (!elsewhereDesktopPillQuery.matches) {
+        applyElsewherePillImmediately(() => setElsewhereDropdownOpen(false, { measure: false }));
+        floatingNavShell?.classList.add("is-elsewhere-pill-ready");
+        return;
+      }
+
+      if (shouldAnimateElsewherePillEntry) {
+        shouldAnimateElsewherePillEntry = false;
+        applyElsewherePillImmediately(() => {
+          setElsewhereDropdownOpen(false, { measure: false });
+          measureElsewherePill();
+        });
+        floatingNavShell?.classList.add("is-elsewhere-pill-ready");
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            if (elsewhereDesktopPillQuery.matches) {
+              setElsewhereDropdownOpen(true, { measure: false });
+            }
+          });
+        });
+        return;
+      }
+
+      applyElsewherePillImmediately(() => setElsewhereDropdownOpen(true));
+      floatingNavShell?.classList.add("is-elsewhere-pill-ready");
+    };
+
+    const collapseElsewherePillForPrimaryLeave = () => {
+      if (elsewhereDesktopPillQuery.matches) {
+        setElsewhereDropdownOpen(false, { measure: false });
+      }
+    };
 
     elsewhereNavTrigger?.addEventListener("click", (event) => {
       if (!elsewhereDesktopPillQuery.matches) return;
@@ -694,6 +970,10 @@
           const destination = getDestination(link);
           if (!destination) return;
 
+          const isEnteringWorks = isWorksDestination(destination);
+          const isEnteringElsewhere = isElsewhereDestination(destination);
+          const isLeavingElsewhere = Boolean(elsewhereNavItem) && !isEnteringElsewhere;
+
           event.preventDefault();
           if (isNavigating) return;
 
@@ -702,6 +982,9 @@
           const currentGeometry = navSelectionIndicators.getPrimaryCurrentGeometry();
 
           if (!indicator || !targetGeometry || !currentGeometry) {
+            if (isEnteringWorks) rememberWorksGalleryEntry(destination);
+            if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
+            if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
             window.location.assign(destination.href);
             return;
           }
@@ -710,9 +993,16 @@
           navSelectionIndicators.lockPrimaryGeometry();
           const frozenIndicator = navSelectionIndicators.freezePrimaryToGeometry(currentGeometry);
           if (!frozenIndicator) {
+            if (isEnteringWorks) rememberWorksGalleryEntry(destination);
+            if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
+            if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
             window.location.assign(destination.href);
             return;
           }
+
+          if (isEnteringWorks) rememberWorksGalleryEntry(destination);
+          if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
+          if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
 
           let hasNavigated = false;
           let fallbackTimer = 0;
