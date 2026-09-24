@@ -68,6 +68,42 @@
     const themeToggle = ensureThemeToggle();
     applyTheme(getStoredTheme(), themeToggle);
 
+    const ensureMobileElsewhereLinks = () => {
+      if (
+        !mobileMenu ||
+        document.body.classList.contains("elsewhere-page") ||
+        mobileMenu.querySelector("[data-mobile-elsewhere-links]")
+      ) {
+        return;
+      }
+
+      const elsewhereLink = [...mobileMenu.querySelectorAll("a")].find((link) =>
+        link.getAttribute("href")?.includes("elsewhere")
+      );
+      if (!elsewhereLink) return;
+
+      const channels = document.createElement("div");
+      channels.className = "mobile-elsewhere-links";
+      channels.setAttribute("data-mobile-elsewhere-links", "");
+      channels.setAttribute("aria-label", "Elsewhere channels");
+
+      [
+        ["YouTube", "calmato"],
+        ["Unsplash", "unsplash"],
+      ].forEach(([label, channel]) => {
+        const channelLink = document.createElement("a");
+        const destination = new URL(elsewhereLink.href, window.location.href);
+        destination.searchParams.set("channel", channel);
+        channelLink.href = destination.href;
+        channelLink.textContent = label;
+        channels.append(channelLink);
+      });
+
+      elsewhereLink.insertAdjacentElement("afterend", channels);
+    };
+
+    ensureMobileElsewhereLinks();
+
     const resolveProjectPath = (value, rootPrefix) => {
       if (!value) return "#";
       if (value.startsWith("#")) return `${rootPrefix}${value}`;
@@ -432,32 +468,17 @@
       elsewhereNavTrigger.setAttribute("aria-expanded", String(isOpen));
     };
 
+    const elsewhereDesktopPillQuery = window.matchMedia("(min-width: 834px)");
+    const syncElsewherePill = () => setElsewhereDropdownOpen(elsewhereDesktopPillQuery.matches);
+
     elsewhereNavTrigger?.addEventListener("click", (event) => {
-      if (!window.matchMedia("(min-width: 834px)").matches) return;
+      if (!elsewhereDesktopPillQuery.matches) return;
       event.preventDefault();
-      setElsewhereDropdownOpen(!elsewhereNavItem.classList.contains("is-open"));
+      setElsewhereDropdownOpen(true);
     });
 
-    elsewhereNavItem?.addEventListener("pointerenter", (event) => {
-      if (event.pointerType === "mouse") setElsewhereDropdownOpen(true);
-    });
-
-    elsewhereNavItem?.addEventListener("pointerleave", (event) => {
-      if (event.pointerType !== "mouse" || elsewhereNavItem.contains(document.activeElement)) return;
-      setElsewhereDropdownOpen(false);
-    });
-
-    document.addEventListener("pointerdown", (event) => {
-      if (!elsewhereNavItem?.contains(event.target)) setElsewhereDropdownOpen(false);
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") setElsewhereDropdownOpen(false);
-    });
-
-    window.addEventListener("resize", () => {
-      if (!window.matchMedia("(min-width: 834px)").matches) setElsewhereDropdownOpen(false);
-    }, { passive: true });
+    elsewhereDesktopPillQuery.addEventListener("change", syncElsewherePill);
+    syncElsewherePill();
 
     const setElsewhereSubnavHidden = (hidden) => {
       elsewhereSubnavs.forEach((subnav) => subnav.classList.toggle("is-hidden", hidden));
@@ -517,6 +538,11 @@
         });
       }
     };
+
+    const requestedElsewherePanel = new URLSearchParams(window.location.search).get("channel");
+    if (["calmato", "unsplash"].includes(requestedElsewherePanel)) {
+      window.requestAnimationFrame(() => setElsewherePanel(requestedElsewherePanel));
+    }
 
     elsewhereTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
