@@ -2,7 +2,7 @@
 window.PORTFOLIO_PROJECTS = [
   {
     title: "ACE",
-    description: "Brand Identity · Graphic Design",
+    description: "Brand Identity",
     image: "assets/works/ace.png",
     imageAlt: "ACE project preview",
     href: "ace/",
@@ -10,7 +10,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Brand New Day",
-    description: "UX/UI · Web Design",
+    description: "UX/UI",
     image: "assets/works/brand-new-day.jpg",
     imageAlt: "Brand New Day project preview",
     href: "brand-new-day/",
@@ -18,14 +18,14 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Calmato",
-    description: "UX/UI · Web Design",
+    description: "UX/UI",
     image: "assets/works/calmato.png",
     imageAlt: "Calmato project preview",
     href: "calmato/",
     nodeId: "288:460",
   },
   {
-    title: "Calmato Youtube",
+    title: "Calmato",
     description: "Youtube",
     image: "assets/works/youtube-calmato.png",
     imageAlt: "Youtube Calmato project preview",
@@ -35,7 +35,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Beerby",
-    description: "UX/UI · Mobile App",
+    description: "UX/UI",
     image: "assets/works/beerby.jpg",
     imageAlt: "Beerby project preview",
     href: "beerby/",
@@ -43,7 +43,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "On The Trip",
-    description: "UX/UI · Mobile App",
+    description: "UX/UI",
     image: "assets/works/on-the-trip.png",
     imageAlt: "On The Trip project preview",
     href: "onthetrip/",
@@ -51,7 +51,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "Zippo X Old School",
-    description: "Package · Graphic Design  ",
+    description: "Package",
     image: "assets/works/zippo.jpg",
     imageAlt: "Zippo project preview",
     href: "zippo/",
@@ -59,7 +59,7 @@ window.PORTFOLIO_PROJECTS = [
   },
   {
     title: "철거병단",
-    description: "Brand Identity · Graphic Design",
+    description: "Brand Identity",
     image: "assets/works/demolition-corps.png",
     imageAlt: "철거병단 project preview",
     href: "철거병단",
