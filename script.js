@@ -27,6 +27,10 @@
     const nextTheme = theme === DARK_THEME ? DARK_THEME : LIGHT_THEME;
     document.documentElement.dataset.theme = nextTheme;
     document.documentElement.style.colorScheme = nextTheme;
+    document.querySelector("meta[name='theme-color'][data-theme-color]")?.setAttribute(
+      "content",
+      nextTheme === DARK_THEME ? "#111111" : "#ffffff",
+    );
     toggle?.setAttribute("aria-label", nextTheme === DARK_THEME ? DARK_LABEL : LIGHT_LABEL);
   };
 
@@ -234,9 +238,29 @@
       let isWorksEntranceActive = false;
       let cameraOutlineTimer = 0;
 
+      // Resolves viewport-relative CSS lengths without changing camera placement logic.
+      const cameraLengthProbe = document.createElement("span");
+      cameraLengthProbe.setAttribute("aria-hidden", "true");
+      Object.assign(cameraLengthProbe.style, {
+        position: "absolute",
+        width: "0",
+        height: "0",
+        overflow: "hidden",
+        visibility: "hidden",
+        pointerEvents: "none",
+      });
+      gallery.append(cameraLengthProbe);
+
       const cards = () => [...projectGrid.querySelectorAll(".project-card")];
       const getCssNumber = (propertyName, fallback) => {
         const value = Number.parseFloat(getComputedStyle(gallery).getPropertyValue(propertyName));
+        return Number.isFinite(value) ? value : fallback;
+      };
+      const getCssLength = (propertyName, fallback) => {
+        cameraLengthProbe.style.setProperty("--works-camera-probe-length", `var(${propertyName})`);
+        cameraLengthProbe.style.width = "var(--works-camera-probe-length)";
+
+        const value = Number.parseFloat(getComputedStyle(cameraLengthProbe).width);
         return Number.isFinite(value) ? value : fallback;
       };
       const isCameraEnabled = () => cameraQuery.matches;
@@ -261,8 +285,8 @@
         const stageWidth = cameraViewport.clientWidth;
         const stageHeight = cameraViewport.clientHeight;
         const zoom = Math.min(1, Math.max(0.01, getCssNumber("--works-camera-zoom", 0.35)));
-        const minCellWidth = Math.max(0, getCssNumber("--works-camera-min-cell-width", 0));
-        const minCellHeight = Math.max(0, getCssNumber("--works-camera-min-cell-height", 0));
+        const minCellWidth = Math.max(0, getCssLength("--works-camera-min-cell-width", 0));
+        const minCellHeight = Math.max(0, getCssLength("--works-camera-min-cell-height", 0));
 
         if (!stageWidth || !stageHeight) return false;
 

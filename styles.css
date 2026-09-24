@@ -43,6 +43,9 @@
   --theme-toggle-border: rgba(0, 0, 0, 0.12);
   --theme-toggle-color: #111111;
   --theme-toggle-hidden-y: 14px;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --panel-x: 80px;
   --header-height: 100px;
 }
@@ -82,6 +85,7 @@ body {
 html {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  background: var(--background);
 }
 
 body {
@@ -148,7 +152,7 @@ img {
 
 .nav-shell {
   position: fixed;
-  top: var(--nav-pill-top);
+  top: calc(var(--safe-area-top) + var(--nav-pill-top));
   /* Use the visual viewport, not the scrollbar-reduced layout width. */
   left: 50vw;
   z-index: 1;
@@ -1708,7 +1712,7 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-footer {
 .elsewhere-snap-nav {
   position: fixed;
   z-index: 1500;
-  bottom: max(var(--calmato-indicator-bottom), env(safe-area-inset-bottom));
+  bottom: calc(var(--safe-area-bottom) + var(--calmato-indicator-bottom));
   left: 50%;
   display: flex;
   flex-direction: row;
@@ -3478,8 +3482,8 @@ html[data-theme="dark"] .calmato-video-controls {
 
 .theme-toggle {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  right: calc(var(--safe-area-right) + 24px);
+  bottom: calc(var(--safe-area-bottom) + 24px);
   z-index: 2000;
 
   width: 42px;
@@ -4061,6 +4065,14 @@ html:has(body.is-unsplash-lightbox-open) {
 ========================= */
 @media (max-width: 833px) {
   .works-page {
+    /*
+      Keep the camera field continuous from narrow phones into the existing
+      834px tablet geometry. script.js resolves these fluid length values.
+    */
+    --works-camera-zoom: 0.25;
+    --works-camera-min-cell-width: min(62vw, calc(217px + 10vw), 300px);
+    --works-camera-min-cell-height: min(65.1vw, calc(164px + 27vw), 389px);
+    --works-camera-gap: clamp(8px, 2.5vw, 12px);
     --works-mobile-grid-columns: 2;
     --works-mobile-column-gap: 16px;
     --works-mobile-row-gap: 40px;
@@ -4257,7 +4269,7 @@ html:has(body.is-unsplash-lightbox-open) {
 
 .nav-shell {
   position: fixed;
-  top: var(--nav-pill-top);
+  top: calc(var(--safe-area-top) + var(--nav-pill-top));
   /* Center against the visual viewport even when a scrollbar gutter is reserved. */
   left: 50vw;
   z-index: 1;
