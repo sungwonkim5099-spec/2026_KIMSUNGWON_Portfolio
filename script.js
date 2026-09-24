@@ -33,8 +33,6 @@
   applyTheme(getStoredTheme(), null);
 
   const onReady = () => {
-    const menuButton = document.querySelector("[data-menu-toggle]");
-    const mobileMenu = document.querySelector("[data-mobile-menu]");
     const projectGrid = document.querySelector("[data-project-grid]");
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -64,42 +62,6 @@
 
     const themeToggle = ensureThemeToggle();
     applyTheme(getStoredTheme(), themeToggle);
-
-    const ensureMobileElsewhereLinks = () => {
-      if (
-        !mobileMenu ||
-        document.body.classList.contains("elsewhere-page") ||
-        mobileMenu.querySelector("[data-mobile-elsewhere-links]")
-      ) {
-        return;
-      }
-
-      const elsewhereLink = [...mobileMenu.querySelectorAll("a")].find((link) =>
-        link.getAttribute("href")?.includes("elsewhere")
-      );
-      if (!elsewhereLink) return;
-
-      const channels = document.createElement("div");
-      channels.className = "mobile-elsewhere-links";
-      channels.setAttribute("data-mobile-elsewhere-links", "");
-      channels.setAttribute("aria-label", "Elsewhere channels");
-
-      [
-        ["YouTube", "calmato"],
-        ["Unsplash", "unsplash"],
-      ].forEach(([label, channel]) => {
-        const channelLink = document.createElement("a");
-        const destination = new URL(elsewhereLink.href, window.location.href);
-        destination.searchParams.set("channel", channel);
-        channelLink.href = destination.href;
-        channelLink.textContent = label;
-        channels.append(channelLink);
-      });
-
-      elsewhereLink.insertAdjacentElement("afterend", channels);
-    };
-
-    ensureMobileElsewhereLinks();
 
     const resolveProjectPath = (value, rootPrefix) => {
       if (!value) return "#";
@@ -564,15 +526,17 @@
     const elsewherePanels = [...document.querySelectorAll("[data-elsewhere-panel]")];
     const elsewhereSnapNav = document.querySelector("[data-elsewhere-snap-nav]");
     const floatingNavShell = document.querySelector(".nav-shell");
-    const elsewhereNavItem = document.querySelector("[data-elsewhere-nav-item]");
-    const elsewhereNavTrigger = elsewhereNavItem?.querySelector("[data-elsewhere-nav-trigger]");
-    const elsewhereDesktopSubnav = elsewhereNavItem?.querySelector(":scope > [data-elsewhere-subnav]");
+    const navPrimaryMode = floatingNavShell?.querySelector("[data-nav-primary-mode]");
+    const navSecondaryMode = floatingNavShell?.querySelector("[data-nav-secondary-mode]");
+    const navBackButton = floatingNavShell?.querySelector("[data-nav-back]");
+    const elsewhereNavTrigger = floatingNavShell?.querySelector("[data-elsewhere-nav-trigger]");
     const ELSEWHERE_PILL_ENTRY_KEY = "portfolio:elsewhere-pill-entry";
     const ELSEWHERE_PILL_ENTRY_MAX_AGE = 3000;
     let elsewhereActivePanel = "calmato";
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
     let elsewherePanelHeightTimer = 0;
+    let syncNavSelectionIndicators = () => {};
 
     const isElsewhereDestination = (destination) =>
       destination.pathname.replace(/\/+$/, "").endsWith("/elsewhere");
@@ -597,88 +561,140 @@
       }
     };
 
-    const measureElsewherePill = () => {
-      if (!floatingNavShell || !elsewhereNavItem || !elsewhereNavTrigger || !elsewhereDesktopSubnav) return;
+    const isElsewhereNavigation = Boolean(navSecondaryMode) && document.body.classList.contains("elsewhere-page");
+    let navModeSettleTimer = 0;
+    let navModeTransitionTarget = null;
+    let navModeTransitionHandler = null;
 
-      const wasOpen = elsewhereNavItem.classList.contains("is-open");
-      const wasExpanded = floatingNavShell.classList.contains("is-elsewhere-expanded");
-      floatingNavShell.classList.add("is-nav-pill-measuring");
-      elsewhereNavItem.classList.add("is-open");
-      elsewhereNavTrigger.setAttribute("aria-expanded", "true");
+    const getNavigationModeDuration = () => {
+      if (!floatingNavShell) return 260;
 
-      const subnavWidth = elsewhereDesktopSubnav.getBoundingClientRect().width;
-      floatingNavShell.style.setProperty("--nav-pill-secondary-width", `${subnavWidth}px`);
-
-      elsewhereNavItem.classList.toggle("is-open", wasOpen);
-      floatingNavShell.classList.toggle("is-elsewhere-expanded", wasExpanded);
-      elsewhereNavTrigger.setAttribute("aria-expanded", String(wasOpen));
-      floatingNavShell.classList.remove("is-nav-pill-measuring");
+      const token = getComputedStyle(floatingNavShell).getPropertyValue("--nav-mode-duration").trim();
+      const value = Number.parseFloat(token);
+      if (!Number.isFinite(value)) return 260;
+      return token.endsWith("ms") ? value : value * 1000;
     };
 
-    const applyElsewherePillImmediately = (callback) => {
-      if (!floatingNavShell) {
-        callback();
-        return;
+    const clearNavigationModeSettle = () => {
+      window.clearTimeout(navModeSettleTimer);
+      navModeSettleTimer = 0;
+
+      if (navModeTransitionTarget && navModeTransitionHandler) {
+        navModeTransitionTarget.removeEventListener("transitionend", navModeTransitionHandler);
       }
 
-      floatingNavShell.classList.add("is-elsewhere-pill-initializing");
-      callback();
-      floatingNavShell.getBoundingClientRect();
-      floatingNavShell.classList.remove("is-elsewhere-pill-initializing");
+      navModeTransitionTarget = null;
+      navModeTransitionHandler = null;
     };
 
-    const setElsewhereDropdownOpen = (isOpen, { measure = true } = {}) => {
-      if (!elsewhereNavItem || !elsewhereNavTrigger) return;
-      if (isOpen && measure) measureElsewherePill();
-      elsewhereNavItem.classList.toggle("is-open", isOpen);
-      floatingNavShell?.classList.toggle("is-elsewhere-expanded", isOpen);
-      elsewhereNavTrigger.setAttribute("aria-expanded", String(isOpen));
+    const measureNavigationModes = () => {
+      if (!floatingNavShell || !navPrimaryMode) return;
+
+      const measure = (mode) => {
+        const content = mode?.querySelector(".nav-mode-content");
+        if (!content) return 0;
+        return Math.ceil(Math.max(content.scrollWidth, content.getBoundingClientRect().width));
+      };
+
+      const primaryWidth = measure(navPrimaryMode);
+      const secondaryWidth = measure(navSecondaryMode);
+      if (primaryWidth) floatingNavShell.style.setProperty("--nav-primary-mode-width", `${primaryWidth}px`);
+      if (secondaryWidth) floatingNavShell.style.setProperty("--nav-secondary-mode-width", `${secondaryWidth}px`);
     };
 
-    const elsewhereDesktopPillQuery = window.matchMedia("(min-width: 834px)");
-    let shouldAnimateElsewherePillEntry = consumeElsewherePillEntry() && !prefersReducedMotion;
-    const syncElsewherePill = () => {
-      if (!elsewhereDesktopPillQuery.matches) {
-        applyElsewherePillImmediately(() => setElsewhereDropdownOpen(false, { measure: false }));
-        floatingNavShell?.classList.add("is-elsewhere-pill-ready");
-        return;
+    const setNavigationModeAccessibility = (mode) => {
+      if (!navPrimaryMode || !navSecondaryMode) return;
+
+      const isPrimary = mode === "primary";
+      navPrimaryMode.toggleAttribute("inert", !isPrimary);
+      navPrimaryMode.setAttribute("aria-hidden", String(!isPrimary));
+      navSecondaryMode.toggleAttribute("inert", isPrimary);
+      navSecondaryMode.setAttribute("aria-hidden", String(isPrimary));
+      elsewhereNavTrigger?.setAttribute("aria-expanded", String(!isPrimary));
+    };
+
+    const setNavigationMode = (nextMode, { immediate = false, focusTarget = null } = {}) => {
+      if (!floatingNavShell || !navPrimaryMode) return;
+
+      const mode = nextMode === "secondary" && navSecondaryMode ? "secondary" : "primary";
+      const hasChanged = floatingNavShell.dataset.navMode !== mode;
+      measureNavigationModes();
+      setNavigationModeAccessibility(mode);
+      floatingNavShell.dataset.navMode = mode;
+
+      clearNavigationModeSettle();
+      floatingNavShell.classList.remove("is-nav-mode-switching");
+
+      const activeMode = mode === "secondary" ? navSecondaryMode : navPrimaryMode;
+      const waitForModeToSettle = hasChanged && !immediate && !prefersReducedMotion && activeMode;
+      if (waitForModeToSettle) {
+        floatingNavShell.classList.add("is-nav-mode-switching");
+
+        const settle = () => {
+          clearNavigationModeSettle();
+          floatingNavShell.classList.remove("is-nav-mode-switching");
+          window.requestAnimationFrame(syncNavSelectionIndicators);
+        };
+
+        navModeTransitionTarget = activeMode;
+        navModeTransitionHandler = (event) => {
+          if (event.target === activeMode && event.propertyName === "max-width") settle();
+        };
+        activeMode.addEventListener("transitionend", navModeTransitionHandler);
+        navModeSettleTimer = window.setTimeout(settle, getNavigationModeDuration() + 80);
       }
 
-      if (shouldAnimateElsewherePillEntry) {
-        shouldAnimateElsewherePillEntry = false;
-        applyElsewherePillImmediately(() => {
-          setElsewhereDropdownOpen(false, { measure: false });
-          measureElsewherePill();
-        });
-        floatingNavShell?.classList.add("is-elsewhere-pill-ready");
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            if (elsewhereDesktopPillQuery.matches) {
-              setElsewhereDropdownOpen(true, { measure: false });
-            }
-          });
-        });
-        return;
-      }
-
-      applyElsewherePillImmediately(() => setElsewhereDropdownOpen(true));
-      floatingNavShell?.classList.add("is-elsewhere-pill-ready");
+      window.requestAnimationFrame(() => {
+        syncNavSelectionIndicators();
+        if (focusTarget && typeof focusTarget.focus === "function") focusTarget.focus();
+      });
     };
 
-    const collapseElsewherePillForPrimaryLeave = () => {
-      if (elsewhereDesktopPillQuery.matches) {
-        setElsewhereDropdownOpen(false, { measure: false });
+    const shouldAnimateElsewherePillEntry =
+      isElsewhereNavigation && consumeElsewherePillEntry() && !prefersReducedMotion;
+
+    const initializeNavigationModes = () => {
+      if (!floatingNavShell || !navPrimaryMode) {
+        return {
+          isElsewhere: () => false,
+          set: () => {},
+        };
       }
+
+      const initialMode = shouldAnimateElsewherePillEntry
+        ? "primary"
+        : navSecondaryMode && floatingNavShell.dataset.navMode === "secondary"
+          ? "secondary"
+          : "primary";
+
+      setNavigationMode(initialMode, { immediate: true });
+      window.requestAnimationFrame(() => {
+        floatingNavShell.classList.add("is-nav-mode-ready");
+        if (!shouldAnimateElsewherePillEntry) return;
+
+        window.requestAnimationFrame(() => setNavigationMode("secondary"));
+      });
+
+      window.addEventListener("resize", measureNavigationModes, { passive: true });
+      document.fonts?.ready.then(measureNavigationModes);
+
+      navBackButton?.addEventListener("click", () => {
+        setNavigationMode("primary", { focusTarget: elsewhereNavTrigger });
+      });
+
+      elsewhereNavTrigger?.addEventListener("click", (event) => {
+        if (!isElsewhereNavigation || floatingNavShell.dataset.navMode !== "primary") return;
+        event.preventDefault();
+        setNavigationMode("secondary", { focusTarget: elsewhereTabs[0] });
+      });
+
+      return {
+        isElsewhere: () => isElsewhereNavigation,
+        set: setNavigationMode,
+      };
     };
 
-    elsewhereNavTrigger?.addEventListener("click", (event) => {
-      if (!elsewhereDesktopPillQuery.matches) return;
-      event.preventDefault();
-      setElsewhereDropdownOpen(true);
-    });
-
-    elsewhereDesktopPillQuery.addEventListener("change", syncElsewherePill);
-    syncElsewherePill();
+    initializeNavigationModes();
 
     const initializeNavSelectionIndicators = () => {
       const navShell = document.querySelector(".nav-shell");
@@ -695,7 +711,6 @@
         };
       }
 
-      const desktopQuery = window.matchMedia("(min-width: 834px)");
       const primaryIndicatorModifier = "nav-selection-indicator--primary";
       const getPrimaryItems = () =>
         [...navPrimary.children].flatMap((child) =>
@@ -711,7 +726,6 @@
             (item.hasAttribute("aria-current") && item.getAttribute("aria-current") !== "false"),
         },
         ...elsewhereSubnavs
-          .filter((subnav) => !subnav.classList.contains("elsewhere-subnav-mobile"))
           .map((container) => ({
             container,
             modifier: "nav-selection-indicator--secondary",
@@ -749,13 +763,11 @@
       let isPrimaryGeometryLocked = false;
       const sync = () => {
         frame = 0;
-        const isDesktop = desktopQuery.matches;
-
         groups.forEach(({ container, indicator, getItems, isActive, modifier }) => {
           if (modifier === primaryIndicatorModifier && isPrimaryGeometryLocked) return;
 
           const items = getItems();
-          const activeItem = isDesktop ? items.find(isActive) : null;
+          const activeItem = items.find(isActive);
           if (!activeItem) {
             indicator.classList.remove("is-visible");
             return;
@@ -777,7 +789,6 @@
       });
 
       window.addEventListener("resize", scheduleSync, { passive: true });
-      desktopQuery.addEventListener("change", scheduleSync);
       document.fonts?.ready.then(scheduleSync);
       sync();
       window.requestAnimationFrame(() => {
@@ -803,8 +814,6 @@
             : null;
         },
         getPrimaryGeometry: (target) => {
-          if (!desktopQuery.matches) return null;
-
           const primaryGroup = groups.find(({ modifier }) => modifier === primaryIndicatorModifier);
           if (!primaryGroup || !primaryGroup.getItems().includes(target)) return null;
 
@@ -814,7 +823,7 @@
           isPrimaryGeometryLocked = true;
         },
         freezePrimaryToGeometry: (geometry) => {
-          if (!desktopQuery.matches || !geometry) return null;
+          if (!geometry) return null;
 
           const primaryGroup = groups.find(({ modifier }) => modifier === primaryIndicatorModifier);
           if (!primaryGroup) return null;
@@ -824,7 +833,7 @@
           return primaryGroup.indicator;
         },
         movePrimaryToGeometry: (geometry) => {
-          if (!desktopQuery.matches || !geometry) return null;
+          if (!geometry) return null;
 
           const primaryGroup = groups.find(({ modifier }) => modifier === primaryIndicatorModifier);
           if (!primaryGroup) return null;
@@ -837,13 +846,13 @@
     };
 
     const navSelectionIndicators = initializeNavSelectionIndicators();
-    const syncNavSelectionIndicators = navSelectionIndicators.sync;
+    syncNavSelectionIndicators = navSelectionIndicators.sync;
+    syncNavSelectionIndicators();
 
     const initializePrimaryNavLeaveMotion = () => {
       const navPrimary = document.querySelector(".nav-primary");
       if (!navPrimary) return;
 
-      const desktopQuery = window.matchMedia("(min-width: 834px)");
       const primaryLinks = [...navPrimary.children].flatMap((child) =>
         child.matches("a") ? [child] : [...child.querySelectorAll(":scope > a")]
       );
@@ -883,7 +892,6 @@
       primaryLinks.forEach((link) => {
         link.addEventListener("click", (event) => {
           if (
-            !desktopQuery.matches ||
             event.defaultPrevented ||
             event.button !== 0 ||
             event.metaKey ||
@@ -898,8 +906,6 @@
           if (!destination) return;
 
           const isEnteringElsewhere = isElsewhereDestination(destination);
-          const isLeavingElsewhere = Boolean(elsewhereNavItem) && !isEnteringElsewhere;
-
           event.preventDefault();
           if (isNavigating) return;
 
@@ -909,7 +915,6 @@
 
           if (!indicator || !targetGeometry || !currentGeometry) {
             if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
-            if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
             window.location.assign(destination.href);
             return;
           }
@@ -919,13 +924,11 @@
           const frozenIndicator = navSelectionIndicators.freezePrimaryToGeometry(currentGeometry);
           if (!frozenIndicator) {
             if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
-            if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
             window.location.assign(destination.href);
             return;
           }
 
           if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
-          if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
 
           let hasNavigated = false;
           let fallbackTimer = 0;
@@ -1038,7 +1041,6 @@
     elsewhereTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         setElsewherePanel(tab.dataset.elsewhereTab || "calmato");
-        if (tab.closest(".mobile-menu")) closeMenu();
       });
 
       tab.addEventListener("keydown", (event) => {
@@ -2841,25 +2843,6 @@
       updateCalmatoDissolve();
       scheduleCalmatoScrollHint();
     }
-
-    const closeMenu = () => {
-      if (!menuButton || !mobileMenu) return;
-      menuButton.setAttribute("aria-expanded", "false");
-      mobileMenu.setAttribute("aria-hidden", "true");
-      mobileMenu.classList.remove("is-open");
-    };
-
-    menuButton?.addEventListener("click", () => {
-      if (!mobileMenu) return;
-      const isOpen = menuButton.getAttribute("aria-expanded") === "true";
-      menuButton.setAttribute("aria-expanded", String(!isOpen));
-      mobileMenu.setAttribute("aria-hidden", String(isOpen));
-      mobileMenu.classList.toggle("is-open", !isOpen);
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeMenu();
-    });
 
     themeToggle?.addEventListener("click", () => {
       const nextTheme = document.documentElement.dataset.theme === DARK_THEME ? LIGHT_THEME : DARK_THEME;

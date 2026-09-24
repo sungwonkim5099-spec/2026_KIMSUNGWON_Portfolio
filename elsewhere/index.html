@@ -10,24 +10,31 @@
       content="Elsewhere channels and Calmato YouTube contents by designer Kim SungWon."
     >
     <meta name="portfolio-version" content="2026-08-18-project-data">
-    <script src="../script.js?v=20260924-site-structure-v7"></script>
-    <link rel="stylesheet" href="../styles.css?v=20260924-site-structure-v7">
+    <script src="../script.js?v=20260925-nav-alignment-v9"></script>
+    <link rel="stylesheet" href="../styles.css?v=20260925-nav-alignment-v9">
   </head>
   <body class="elsewhere-page">
     <header class="site-header" data-nav>
-      <nav class="nav-shell" aria-label="Portfolio navigation">
-        <div class="nav-group nav-primary">
-          <a href="../works/">works</a>
-          <a href="../about/">About</a>
-          <div class="elsewhere-nav-item" data-elsewhere-nav-item>
-            <a
-              href="./"
-              aria-current="page"
-              aria-expanded="false"
-              data-elsewhere-nav-trigger
-            >Elsewhere</a>
+      <nav class="nav-shell" aria-label="Portfolio navigation" data-nav-mode="secondary">
+        <div class="nav-mode nav-mode-primary" data-nav-primary-mode aria-hidden="true" inert>
+          <div class="nav-mode-content">
+            <div class="nav-group nav-primary">
+              <a href="../works/">Works</a>
+              <a href="../about/">About</a>
+              <a href="./" aria-current="page" aria-expanded="true" data-elsewhere-nav-trigger>Elsewhere</a>
+            </div>
+          </div>
+        </div>
 
-            <nav class="elsewhere-subnav" role="tablist" aria-label="Elsewhere channels" data-elsewhere-subnav>
+        <div class="nav-mode nav-mode-secondary" data-nav-secondary-mode>
+          <div class="nav-mode-content">
+            <button class="nav-back-button" type="button" data-nav-back aria-label="Back to main navigation">
+              <svg class="nav-back-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="m15 18-6-6 6-6"></path>
+              </svg>
+            </button>
+
+            <div class="nav-group elsewhere-subnav" role="tablist" aria-label="Elsewhere channels" data-elsewhere-subnav>
               <button
                 class="elsewhere-subnav-link is-active"
                 type="button"
@@ -46,64 +53,10 @@
                 aria-controls="elsewhere-panel-unsplash"
                 data-elsewhere-tab="unsplash"
               >Unsplash</button>
-            </nav>
+            </div>
           </div>
         </div>
-
-        <a class="nav-logo" href="../works/" aria-label="Kim SungWon Works">
-          <img src="../assets/nav-logo.svg" alt="">
-        </a>
-
-        <div class="nav-group nav-utility" aria-label="Utility links">
-          <a
-            class="icon-link"
-            href="https://youtube.com/channel/UCyv16-9W5sOhQr-svxCJ1qQ?si=cmL-SAkKw4Sa639q"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="YouTube - Calmato"
-          >
-            <img src="../assets/icon-youtube.svg" alt="">
-          </a>
-          <a
-            class="icon-link"
-            href="https://unsplash.com/ko/@kimsungwon"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Unsplash - Kim SungWon"
-          >
-            <img src="../assets/icon-profile.svg" alt="">
-          </a>
-        </div>
-
-        <button class="mobile-menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu">
-          <span class="sr-only">메뉴 열기</span>
-          <img src="../assets/mobile-menu.svg" alt="">
-        </button>
       </nav>
-
-      <div class="mobile-menu" id="mobile-menu" data-mobile-menu aria-hidden="true">
-        <a href="../works/">works</a>
-        <a href="../about/">About</a>
-        <a href="./" aria-current="page">Elsewhere</a>
-        <nav class="elsewhere-subnav elsewhere-subnav-mobile" role="tablist" aria-label="Elsewhere channels" data-elsewhere-subnav>
-          <button
-            class="elsewhere-subnav-link is-active"
-            type="button"
-            role="tab"
-            aria-selected="true"
-            aria-controls="elsewhere-panel-calmato"
-            data-elsewhere-tab="calmato"
-          >YouTube</button>
-          <button
-            class="elsewhere-subnav-link"
-            type="button"
-            role="tab"
-            aria-selected="false"
-            aria-controls="elsewhere-panel-unsplash"
-            data-elsewhere-tab="unsplash"
-          >Unsplash</button>
-        </nav>
-      </div>
     </header>
 
     <main class="elsewhere-main" data-elsewhere>
