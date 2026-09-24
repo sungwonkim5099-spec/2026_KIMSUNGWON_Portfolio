@@ -196,8 +196,8 @@ img {
   border-radius: var(--nav-pill-radius);
   color: inherit;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 590;
+  font-size: 13px;
+  font-weight: 560;
   line-height: 17px;
   text-transform: capitalize;
   white-space: nowrap;
@@ -579,17 +579,20 @@ html[data-theme="dark"] .footer-mark {
   --works-camera-zoom: 0.35;
   --works-camera-cell-width: 35vw;
   --works-camera-cell-height: 35svh;
+  /* VS Code controls: the continuous camera scale never makes a project card smaller than this. */
+  --works-camera-min-cell-width: 300px;
+  --works-camera-min-cell-height: 315px;
   --works-camera-gap: clamp(10px, 0.84vw, 12px);
   --works-camera-stage-inline: 0px;
   --works-camera-focus-y: 46%;
   --works-camera-inactive-opacity: 0.2;
   --works-camera-inactive-grayscale: 1;
-  --works-camera-transition-duration: 900ms;
+  --works-camera-transition-duration: 1500ms;
   --works-camera-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
   /* Selected card outline: begins one second after camera travel finishes. */
-  --works-camera-outline-delay: 1000ms;
-  --works-camera-outline-duration: 480ms;
-  --works-camera-outline-radius: 8px;
+  --works-camera-outline-delay: 0ms;
+  --works-camera-outline-duration: 2000ms;
+  --works-camera-outline-radius: 6px;
   --works-camera-outline-border: rgba(255, 255, 255, 0.72);
   --works-camera-outline-highlight: rgba(255, 255, 255, 0.64);
   --works-camera-outline-shadow:
@@ -598,7 +601,7 @@ html[data-theme="dark"] .footer-mark {
     0 0 0 1px rgba(255, 255, 255, 0.08),
     0 14px 34px rgba(0, 0, 0, 0.2);
   --works-camera-wheel-threshold: 10;
-  --works-camera-wheel-cooldown: 430ms;
+  --works-camera-wheel-cooldown: 400ms;
   --works-camera-swipe-threshold: 28px;
 }
 

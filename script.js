@@ -299,12 +299,14 @@
         const stageWidth = cameraViewport.clientWidth;
         const stageHeight = cameraViewport.clientHeight;
         const zoom = Math.min(1, Math.max(0.01, getCssNumber("--works-camera-zoom", 0.35)));
+        const minCellWidth = Math.max(0, getCssNumber("--works-camera-min-cell-width", 0));
+        const minCellHeight = Math.max(0, getCssNumber("--works-camera-min-cell-height", 0));
 
         if (!stageWidth || !stageHeight) return false;
 
         const formatPixels = (value) => `${Math.round(value * 100) / 100}px`;
-        projectGrid.style.setProperty("--works-camera-cell-width", formatPixels(stageWidth * zoom));
-        projectGrid.style.setProperty("--works-camera-cell-height", formatPixels(stageHeight * zoom));
+        projectGrid.style.setProperty("--works-camera-cell-width", formatPixels(Math.max(stageWidth * zoom, minCellWidth)));
+        projectGrid.style.setProperty("--works-camera-cell-height", formatPixels(Math.max(stageHeight * zoom, minCellHeight)));
 
         return true;
       };
