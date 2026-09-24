@@ -95,6 +95,8 @@ body {
   word-break: keep-all;
 }
 
+body.home-page,
+body.about-page,
 body.works-page,
 body.project-page {
   overflow-x: hidden;
@@ -263,171 +265,12 @@ html[data-theme="dark"] .footer-mark {
   display: none;
 }
 
-.snap-root {
-
-  height: 100svh;
-
-  overflow-x: hidden;
-
-  overflow-y: auto;
-
-  scroll-snap-type: y mandatory;
-
-  overscroll-behavior-y: contain;
-
-  scrollbar-width: none;
-
-  background: var(--background);
-
-}
-
-.snap-root::-webkit-scrollbar {
-
-  display: none;
-
-}
-/* ===== SNAP INDICATOR ===== */
-
-.snap-indicator {
-
-  position: fixed;
-
-  top: 50%;
-
-  right: 24px;
-
-  transform: translateY(-50%);
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 14px;
-
-  z-index: 1500;
-
-}
-
-.snap-dot {
-
-  width: 6px;
-
-  height: 6px;
-
-  padding: 0;
-
-  border: 0;
-
-  border-radius: 50%;
-
-  background: var(--foreground);
-
-  opacity: 0.25;
-
-  cursor: pointer;
-
-  transition:
-
-    opacity 0.25s ease,
-
-    transform 0.25s ease;
-
-}
-
-.snap-dot.is-active {
-
-  opacity: 1;
-
-  transform: scale(1.35);
-
-}
-.snap-panel {
+.home-main,
+.about-main {
   min-height: 100svh;
-  position: relative;
-  display: flex;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   background: var(--background);
 }
 
-.visual-panel {
-  align-items: flex-start;
-  justify-content: center;
-  padding: calc(var(--header-height) + 20px) var(--panel-x) 60px;
-}
-
-.media-frame {
-
-  width: 100%;
-
-  height: calc(100svh - var(--header-height) - 80px);
-
-  min-height: calc(100svh - var(--header-height) - 80px);
-
-  margin: 0;
-
-  overflow: hidden;
-
-  background: #000000;
-
-  position: relative;
-
-}
-
-.media-frame img,
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-}
-
-.video-fallback,
-.hero-video {
-  position: absolute;
-  inset: 0;
-}
-
-.hero-video {
-  z-index: 1;
-  background: #000000;
-}
-
-.hero-video.is-unavailable {
-  opacity: 0;
-}
-
-.category-panel {
-  align-items: center;
-  justify-content: center;
-  padding: 140px var(--panel-x);
-}
-
-.category-stack {
-  width: min(1280px, 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.category-link {
-  height: 191px;
-  display: grid;
-  place-items: center;
-  color: var(--foreground);
-  font-size: 110px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  text-transform: uppercase;
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-
-.category-link:hover {
-  opacity: 0.46;
-}
-
-.category-link:focus-visible,
 .nav-primary a:focus-visible,
 .nav-logo:focus-visible,
 .icon-link:focus-visible,
@@ -440,6 +283,9 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .about-panel {
+  min-height: 100svh;
+  position: relative;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 120px var(--panel-x);
@@ -488,15 +334,6 @@ html[data-theme="dark"] .footer-mark {
   padding: 100px var(--panel-x);
   scroll-snap-align: none;
   scroll-snap-stop: normal;
-}
-
-.snap-root > .footer-panel {
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
-}
-
-.snap-root.is-footer-free {
-  scroll-snap-type: none;
 }
 
 .footer-content {
@@ -683,9 +520,7 @@ html[data-theme="dark"] .footer-mark {
 
 .project-media img,
 .project-image-frame img,
-.project-image-frame video,
-.media-frame img,
-.hero-video {
+.project-image-frame video {
   filter: none;
 }
 
@@ -3352,37 +3187,6 @@ html[data-theme="dark"] .calmato-video-controls {
     gap: 20px;
   }
 
-  .visual-panel {
-    padding-top: calc(var(--header-height) + 12px);
-    padding-bottom: 56px;
-  }
-
-  .media-frame {
-    width: 100%;
-    height: min(720px, calc(100svh - var(--header-height) - 68px));
-    min-height: 0;
-  }
-
-  .media-frame img,
-  .hero-video {
-    object-fit: cover;
-    object-position: center center;
-  }
-
-  .category-panel {
-    padding-top: 120px;
-    padding-bottom: 120px;
-  }
-
-  .category-stack {
-    gap: 10px;
-  }
-
-  .category-link {
-    height: 191px;
-    font-size: 100px;
-  }
-
   .about-panel {
     padding-top: 110px;
     padding-bottom: 110px;
@@ -3656,38 +3460,6 @@ html[data-theme="dark"] .calmato-video-controls {
     -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
   }
 
-  .visual-panel {
-    padding-top: calc(var(--header-height) + 8px);
-    padding-bottom: 32px;
-  }
-
-  .media-frame {
-    width: 100%;
-    height: min(500px, calc(100svh - var(--header-height) - 40px));
-    min-height: 0;
-  }
-
-  .media-frame img,
-  .hero-video {
-    object-fit: cover;
-    object-position: center center;
-  }
-
-  .category-panel {
-    padding-top: 100px;
-    padding-bottom: 100px;
-  }
-
-  .category-stack {
-    width: min(350px, 100%);
-    gap: 20px;
-  }
-
-  .category-link {
-    height: 80px;
-    font-size: 50px;
-  }
-
   .about-panel {
     align-items: center;
     padding-top: 100px;
@@ -3954,15 +3726,6 @@ html[data-theme="dark"] .calmato-video-controls {
   }
 
 
-@media (max-width: 360px) {
-  .category-link {
-    font-size: 44px;
-  }
-
-  .media-frame {
-    min-height: 0;
-  }
-}
 .project-image-frame video {
   display: block;
   width: 100%;
@@ -3991,25 +3754,6 @@ html[data-theme="dark"] .calmato-video-controls {
 
     display: block;
 
-  }
-
-}
-/* HOME MOBILE HERO VIDEO */
-@media (max-width: 833px) {
-
-  .visual-panel .media-frame {
-    width: 100% !important;
-    height: 85svh !important;
-    min-height: 85svh !important;
-    overflow: hidden !important;
-    position: relative !important;
-  }
-
-  .visual-panel .media-frame .hero-video {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    object-position: center center !important;
   }
 
 }
@@ -4279,7 +4023,6 @@ html[data-theme="dark"] .theme-toggle {
   }
 
   html,
-  .snap-root,
   .elsewhere-main,
   .elsewhere-snap-root {
     scroll-behavior: auto;
@@ -4826,37 +4569,19 @@ html:has(body.is-unsplash-lightbox-open) {
    behavior remain independent from these visual density controls.
 ========================= */
 @media (min-width: 834px) and (max-height: 800px) {
-  /* Home: keep the navigation and About panels within a short snap viewport. */
-  .snap-root {
-    --home-short-category-padding-block: 72px;
-    --home-short-category-gap: 12px;
-    --home-short-category-link-height: 160px;
-    --home-short-category-link-size: clamp(76px, 10.5svh, 92px);
-    --home-short-about-padding-block-start: calc(var(--header-height) + 12px);
-    --home-short-about-padding-block-end: 48px;
-    --home-short-signature-margin: 28px;
+  .about-page {
+    --about-short-padding-block-start: calc(var(--header-height) + 12px);
+    --about-short-padding-block-end: 48px;
+    --about-short-signature-margin: 28px;
   }
 
-  .snap-root .category-panel {
-    padding-block: var(--home-short-category-padding-block);
+  .about-page .about-panel {
+    padding-top: var(--about-short-padding-block-start);
+    padding-bottom: var(--about-short-padding-block-end);
   }
 
-  .snap-root .category-stack {
-    gap: var(--home-short-category-gap);
-  }
-
-  .snap-root .category-link {
-    height: var(--home-short-category-link-height);
-    font-size: var(--home-short-category-link-size);
-  }
-
-  .snap-root .about-panel {
-    padding-top: var(--home-short-about-padding-block-start);
-    padding-bottom: var(--home-short-about-padding-block-end);
-  }
-
-  .snap-root .signature-line {
-    margin-block: var(--home-short-signature-margin);
+  .about-page .signature-line {
+    margin-block: var(--about-short-signature-margin);
   }
 
   /* Calmato: reduce the large visual stack before reducing its type scale. */
@@ -4909,22 +4634,18 @@ html:has(body.is-unsplash-lightbox-open) {
 }
 
 @media (min-width: 834px) and (max-height: 700px) {
-  .snap-root {
-    --home-short-category-padding-block: 56px;
-    --home-short-category-gap: 8px;
-    --home-short-category-link-height: 138px;
-    --home-short-category-link-size: clamp(68px, 10svh, 80px);
-    --home-short-about-padding-block-start: calc(var(--header-height) + 8px);
-    --home-short-about-padding-block-end: 32px;
-    --home-short-signature-margin: 24px;
+  .about-page {
+    --about-short-padding-block-start: calc(var(--header-height) + 8px);
+    --about-short-padding-block-end: 32px;
+    --about-short-signature-margin: 24px;
   }
 
-  .snap-root .about-ko {
+  .about-page .about-ko {
     font-size: 15px;
     line-height: 1.5;
   }
 
-  .snap-root .about-en {
+  .about-page .about-en {
     font-size: 13px;
     line-height: 1.5;
   }
@@ -5365,7 +5086,6 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
 @media (prefers-reduced-motion: reduce) {
   .nav-shell,
   .nav-shell .elsewhere-nav-item > .elsewhere-subnav,
-  .nav-selection-indicator,
   .mobile-menu {
     transition-duration: 0.01ms;
   }

@@ -33,13 +33,10 @@
   applyTheme(getStoredTheme(), null);
 
   const onReady = () => {
-    const scroller = document.querySelector(".snap-root");
     const menuButton = document.querySelector("[data-menu-toggle]");
     const mobileMenu = document.querySelector("[data-mobile-menu]");
-    const heroVideo = document.querySelector("[data-hero-video]");
     const projectGrid = document.querySelector("[data-project-grid]");
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
-    const links = [...document.querySelectorAll("[data-snap-link]")];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const ensureThemeToggle = () => {
       const existingToggle = document.querySelector("[data-theme-toggle]");
@@ -500,10 +497,6 @@
         [...navPrimary.children].flatMap((child) =>
           child.matches("a") ? [child] : [...child.querySelectorAll(":scope > a")]
         );
-      let initialHashTarget = window.location.hash
-        ? getPrimaryItems().find((item) => item.getAttribute("href") === window.location.hash)
-        : null;
-      if (initialHashTarget) initialHashTarget.dataset.navIndicatorTarget = "true";
       const groups = [
         {
           container: navPrimary,
@@ -554,18 +547,11 @@
         frame = 0;
         const isDesktop = desktopQuery.matches;
 
-        if (initialHashTarget?.classList.contains("is-active")) {
-          delete initialHashTarget.dataset.navIndicatorTarget;
-          initialHashTarget = null;
-        }
-
         groups.forEach(({ container, indicator, getItems, isActive, modifier }) => {
           if (modifier === primaryIndicatorModifier && isPrimaryGeometryLocked) return;
 
           const items = getItems();
-          const activeItem = isDesktop
-            ? items.find((item) => item.dataset.navIndicatorTarget === "true") || items.find(isActive)
-            : null;
+          const activeItem = isDesktop ? items.find(isActive) : null;
           if (!activeItem) {
             indicator.classList.remove("is-visible");
             return;
@@ -2626,30 +2612,6 @@
       mobileMenu.classList.remove("is-open");
     };
 
-    const scrollToPanel = (hash, behavior = prefersReducedMotion ? "auto" : "smooth") => {
-      const target = document.querySelector(hash);
-      if (!target) return;
-      scroller?.classList.toggle("is-footer-free", hash === "#archive");
-      target.scrollIntoView({
-        behavior,
-        block: "start",
-      });
-    };
-
-    links.forEach((link) => {
-      link.addEventListener("click", (event) => {
-        const hash = link.getAttribute("href");
-        if (!hash || !hash.startsWith("#")) return;
-        event.preventDefault();
-        closeMenu();
-        scrollToPanel(hash);
-      });
-    });
-
-    if (scroller && window.location.hash) {
-      requestAnimationFrame(() => scrollToPanel(window.location.hash, "auto"));
-    }
-
     menuButton?.addEventListener("click", () => {
       if (!mobileMenu) return;
       const isOpen = menuButton.getAttribute("aria-expanded") === "true";
@@ -2661,95 +2623,6 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") closeMenu();
     });
-
-    heroVideo?.addEventListener("canplay", () => {
-      heroVideo.classList.remove("is-unavailable");
-      heroVideo.play().catch(() => {
-        heroVideo.classList.add("is-unavailable");
-      });
-    });
-
-    heroVideo?.addEventListener("error", () => {
-      heroVideo.classList.add("is-unavailable");
-    });
-
-    const updateFooterSnap = () => {
-      if (!scroller) return;
-      const about = document.querySelector("#about");
-      const footer = document.querySelector("#archive");
-      if (!about || !footer) return;
-
-      const footerHasEntered = footer.getBoundingClientRect().top < scroller.getBoundingClientRect().bottom;
-      if (footerHasEntered) {
-        scroller.classList.add("is-footer-free");
-        return;
-      }
-
-      if (scroller.scrollTop <= about.offsetTop + 8) {
-        scroller.classList.remove("is-footer-free");
-      }
-    };
-
-    scroller?.addEventListener("scroll", updateFooterSnap, { passive: true });
-
-    if (scroller && "IntersectionObserver" in window) {
-      const panels = [...document.querySelectorAll(".snap-panel, .footer-panel")];
-      const snapDots = [...document.querySelectorAll(".snap-dot")];
-
-      const indicatorTargets = ["visual", "works", "about"];
-
-snapDots.forEach((dot, index) => {
-
-  dot.addEventListener("click", () => {
-
-    const targetId = indicatorTargets[index];
-
-    const target = document.getElementById(targetId);
-
-    if (!target) return;
-
-    target.scrollIntoView({
-
-      behavior: "smooth",
-
-      block: "start",
-
-    });
-
-  });
-
-});
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          const current = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-          if (!current) return;
-
-          const indicatorTargets = ["visual", "works", "about"];
-
-const currentIndex = indicatorTargets.indexOf(current.target.id);
-
-snapDots.forEach((dot, index) => {
-
-  dot.classList.toggle("is-active", index === currentIndex);
-
-});
-
-          links.forEach((link) => {
-            link.classList.toggle("is-active", link.getAttribute("href") === `#${current.target.id}`);
-          });
-        },
-        {
-          root: scroller,
-          threshold: [0.55, 0.7, 0.85],
-        }
-      );
-
-      panels.forEach((panel) => observer.observe(panel));
-    }
 
     themeToggle?.addEventListener("click", () => {
       const nextTheme = document.documentElement.dataset.theme === DARK_THEME ? LIGHT_THEME : DARK_THEME;
@@ -2774,14 +2647,12 @@ snapDots.forEach((dot, index) => {
     };
 
     const scrollTargets = new Set([window]);
+    if (elsewhere) scrollTargets.add(elsewhere);
+    if (elsewhereSnapRoot) scrollTargets.add(elsewhereSnapRoot);
 
-if (scroller) scrollTargets.add(scroller);
-if (elsewhere) scrollTargets.add(elsewhere);
-if (elsewhereSnapRoot) scrollTargets.add(elsewhereSnapRoot);
-
-scrollTargets.forEach((target) => {
-  target.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
-});
+    scrollTargets.forEach((target) => {
+      target.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
+    });
 
 }; // onReady 끝
 
