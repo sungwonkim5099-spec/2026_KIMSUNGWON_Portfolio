@@ -487,6 +487,7 @@
           getPrimaryCurrentGeometry: () => null,
           getPrimaryGeometry: () => null,
           lockPrimaryGeometry: () => {},
+          freezePrimaryToGeometry: () => null,
           movePrimaryToGeometry: () => null,
         };
       }
@@ -569,7 +570,7 @@
       observer.observe(navShell, {
         subtree: true,
         attributes: true,
-        attributeFilter: ["aria-current", "aria-selected", "class"],
+        attributeFilter: ["aria-current", "aria-selected"],
       });
 
       window.addEventListener("resize", scheduleSync, { passive: true });
@@ -609,6 +610,16 @@
         lockPrimaryGeometry: () => {
           isPrimaryGeometryLocked = true;
         },
+        freezePrimaryToGeometry: (geometry) => {
+          if (!desktopQuery.matches || !geometry) return null;
+
+          const primaryGroup = groups.find(({ modifier }) => modifier === primaryIndicatorModifier);
+          if (!primaryGroup) return null;
+
+          primaryGroup.indicator.classList.remove("is-motion-ready");
+          applyIndicatorGeometry(primaryGroup.indicator, geometry);
+          return primaryGroup.indicator;
+        },
         movePrimaryToGeometry: (geometry) => {
           if (!desktopQuery.matches || !geometry) return null;
 
@@ -633,6 +644,7 @@
       const primaryLinks = [...navPrimary.children].flatMap((child) =>
         child.matches("a") ? [child] : [...child.querySelectorAll(":scope > a")]
       );
+
       let isNavigating = false;
 
       const getIndicatorDuration = () => {
@@ -669,7 +681,6 @@
         link.addEventListener("click", (event) => {
           if (
             !desktopQuery.matches ||
-            prefersReducedMotion ||
             event.defaultPrevented ||
             event.button !== 0 ||
             event.metaKey ||
@@ -684,12 +695,12 @@
           if (!destination) return;
 
           event.preventDefault();
-
           if (isNavigating) return;
 
           const indicator = navSelectionIndicators.getPrimaryIndicator();
           const targetGeometry = navSelectionIndicators.getPrimaryGeometry(link);
           const currentGeometry = navSelectionIndicators.getPrimaryCurrentGeometry();
+
           if (!indicator || !targetGeometry || !currentGeometry) {
             window.location.assign(destination.href);
             return;
@@ -697,6 +708,11 @@
 
           isNavigating = true;
           navSelectionIndicators.lockPrimaryGeometry();
+          const frozenIndicator = navSelectionIndicators.freezePrimaryToGeometry(currentGeometry);
+          if (!frozenIndicator) {
+            window.location.assign(destination.href);
+            return;
+          }
 
           let hasNavigated = false;
           let fallbackTimer = 0;
@@ -709,23 +725,31 @@
           };
           const handleTransitionEnd = (transitionEvent) => {
             if (transitionEvent.target === indicator && transitionEvent.propertyName === "transform") {
-              navigate();
+              window.requestAnimationFrame(() => {
+                window.requestAnimationFrame(navigate);
+              });
             }
           };
 
           indicator.addEventListener("transitionend", handleTransitionEnd);
-          // Keep the measured source capsule painted, then move it once on the next frame.
+          // Paint the frozen source capsule before changing it to the target geometry.
           indicator.getBoundingClientRect();
           window.requestAnimationFrame(() => {
             if (hasNavigated) return;
 
-            const movingIndicator = navSelectionIndicators.movePrimaryToGeometry(targetGeometry);
-            if (!movingIndicator) {
-              navigate();
-              return;
-            }
+            indicator.classList.add("is-motion-ready");
+            indicator.getBoundingClientRect();
+            window.requestAnimationFrame(() => {
+              if (hasNavigated) return;
 
-            fallbackTimer = window.setTimeout(navigate, getIndicatorDuration() + 150);
+              const movingIndicator = navSelectionIndicators.movePrimaryToGeometry(targetGeometry);
+              if (!movingIndicator) {
+                navigate();
+                return;
+              }
+
+              fallbackTimer = window.setTimeout(navigate, getIndicatorDuration() + 150);
+            });
           });
         });
       });

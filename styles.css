@@ -5086,6 +5086,7 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
 @media (prefers-reduced-motion: reduce) {
   .nav-shell,
   .nav-shell .elsewhere-nav-item > .elsewhere-subnav,
+  .nav-selection-indicator,
   .mobile-menu {
     transition-duration: 0.01ms;
   }
