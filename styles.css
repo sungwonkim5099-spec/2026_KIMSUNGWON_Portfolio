@@ -33,6 +33,8 @@
   --nav-pill-secondary-max-width: 184px;
   --nav-pill-duration: 380ms;
   --nav-pill-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --nav-indicator-duration: 420ms;
+  --nav-indicator-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --nav-item-duration: 180ms;
   --theme-toggle-background: rgba(255, 255, 255, 0.75);
   --theme-toggle-border: rgba(0, 0, 0, 0.12);
@@ -5101,6 +5103,56 @@ html:has(body.is-unsplash-lightbox-open) {
   transform: translateX(-8px) !important;
 }
 
+/* One movable surface per independent navigation group. */
+@media (min-width: 834px) {
+  .nav-shell .nav-primary,
+  .nav-shell .elsewhere-nav-item > .elsewhere-subnav {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .nav-shell .nav-primary > a,
+  .nav-shell .elsewhere-nav-item > a,
+  .nav-shell .elsewhere-subnav-link {
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-shell .nav-primary > a.is-active,
+  .nav-shell .nav-primary > a[aria-current],
+  .nav-shell .elsewhere-nav-item > a.is-active,
+  .nav-shell .elsewhere-nav-item > a[aria-current],
+  .nav-shell .elsewhere-subnav-link.is-active {
+    background: transparent;
+  }
+
+  .nav-selection-indicator {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--nav-selection-width, 0px);
+    border-radius: var(--nav-pill-radius);
+    background: var(--nav-pill-active-bg);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(var(--nav-selection-x, 0px), 0, 0);
+    transition: none;
+  }
+
+  .nav-selection-indicator.is-motion-ready {
+    transition:
+      transform var(--nav-indicator-duration) var(--nav-indicator-ease),
+      width var(--nav-indicator-duration) var(--nav-indicator-ease),
+      opacity var(--nav-item-duration) ease;
+  }
+
+  .nav-selection-indicator.is-visible {
+    opacity: 1;
+  }
+}
+
 /* Calmato Page 01 remains legible over its photographic stage. */
 body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) {
   --nav-pill-bg: rgba(15, 15, 15, 0.58);
@@ -5313,6 +5365,7 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
 @media (prefers-reduced-motion: reduce) {
   .nav-shell,
   .nav-shell .elsewhere-nav-item > .elsewhere-subnav,
+  .nav-selection-indicator,
   .mobile-menu {
     transition-duration: 0.01ms;
   }

@@ -480,6 +480,273 @@
     elsewhereDesktopPillQuery.addEventListener("change", syncElsewherePill);
     syncElsewherePill();
 
+    const initializeNavSelectionIndicators = () => {
+      const navShell = document.querySelector(".nav-shell");
+      const navPrimary = navShell?.querySelector(".nav-primary");
+      if (!navShell || !navPrimary) {
+        return {
+          sync: () => {},
+          getPrimaryIndicator: () => null,
+          getPrimaryCurrentGeometry: () => null,
+          getPrimaryGeometry: () => null,
+          lockPrimaryGeometry: () => {},
+          movePrimaryToGeometry: () => null,
+        };
+      }
+
+      const desktopQuery = window.matchMedia("(min-width: 834px)");
+      const primaryIndicatorModifier = "nav-selection-indicator--primary";
+      const getPrimaryItems = () =>
+        [...navPrimary.children].flatMap((child) =>
+          child.matches("a") ? [child] : [...child.querySelectorAll(":scope > a")]
+        );
+      let initialHashTarget = window.location.hash
+        ? getPrimaryItems().find((item) => item.getAttribute("href") === window.location.hash)
+        : null;
+      if (initialHashTarget) initialHashTarget.dataset.navIndicatorTarget = "true";
+      const groups = [
+        {
+          container: navPrimary,
+          modifier: primaryIndicatorModifier,
+          getItems: getPrimaryItems,
+          isActive: (item) =>
+            item.classList.contains("is-active") ||
+            (item.hasAttribute("aria-current") && item.getAttribute("aria-current") !== "false"),
+        },
+        ...elsewhereSubnavs
+          .filter((subnav) => !subnav.classList.contains("elsewhere-subnav-mobile"))
+          .map((container) => ({
+            container,
+            modifier: "nav-selection-indicator--secondary",
+            getItems: () => [...container.querySelectorAll(".elsewhere-subnav-link")],
+            isActive: (item) => item.classList.contains("is-active") || item.getAttribute("aria-selected") === "true",
+          })),
+      ].map((group) => {
+        let indicator = group.container.querySelector(`.${group.modifier}`);
+        if (!indicator) {
+          indicator = document.createElement("span");
+          indicator.className = `nav-selection-indicator ${group.modifier}`;
+          indicator.setAttribute("aria-hidden", "true");
+          group.container.prepend(indicator);
+        }
+        return { ...group, indicator };
+      });
+
+      const getItemGeometry = (container, item) => {
+        const containerRect = container.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
+
+        return {
+          x: itemRect.left - containerRect.left - container.clientLeft,
+          width: itemRect.width,
+        };
+      };
+
+      const applyIndicatorGeometry = (indicator, geometry) => {
+        indicator.style.setProperty("--nav-selection-x", `${geometry.x}px`);
+        indicator.style.setProperty("--nav-selection-width", `${geometry.width}px`);
+        indicator.classList.add("is-visible");
+      };
+
+      let frame = 0;
+      let isPrimaryGeometryLocked = false;
+      const sync = () => {
+        frame = 0;
+        const isDesktop = desktopQuery.matches;
+
+        if (initialHashTarget?.classList.contains("is-active")) {
+          delete initialHashTarget.dataset.navIndicatorTarget;
+          initialHashTarget = null;
+        }
+
+        groups.forEach(({ container, indicator, getItems, isActive, modifier }) => {
+          if (modifier === primaryIndicatorModifier && isPrimaryGeometryLocked) return;
+
+          const items = getItems();
+          const activeItem = isDesktop
+            ? items.find((item) => item.dataset.navIndicatorTarget === "true") || items.find(isActive)
+            : null;
+          if (!activeItem) {
+            indicator.classList.remove("is-visible");
+            return;
+          }
+
+          applyIndicatorGeometry(indicator, getItemGeometry(container, activeItem));
+        });
+      };
+
+      const scheduleSync = () => {
+        if (!frame) frame = window.requestAnimationFrame(sync);
+      };
+
+      const observer = new MutationObserver(scheduleSync);
+      observer.observe(navShell, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["aria-current", "aria-selected", "class"],
+      });
+
+      window.addEventListener("resize", scheduleSync, { passive: true });
+      desktopQuery.addEventListener("change", scheduleSync);
+      document.fonts?.ready.then(scheduleSync);
+      sync();
+      window.requestAnimationFrame(() => {
+        groups.forEach(({ indicator }) => indicator.classList.add("is-motion-ready"));
+      });
+
+      return {
+        sync: scheduleSync,
+        getPrimaryIndicator: () =>
+          groups.find(({ modifier }) => modifier === primaryIndicatorModifier)?.indicator || null,
+        getPrimaryCurrentGeometry: () => {
+          const primaryGroup = groups.find(({ modifier }) => modifier === primaryIndicatorModifier);
+          const indicator = primaryGroup?.indicator;
+          if (!indicator || !indicator.classList.contains("is-visible")) return null;
+
+          const rect = indicator.getBoundingClientRect();
+          const containerRect = primaryGroup.container.getBoundingClientRect();
+          return rect.width > 0
+            ? {
+                x: rect.left - containerRect.left - primaryGroup.container.clientLeft,
+                width: rect.width,
+              }
+            : null;
+        },
+        getPrimaryGeometry: (target) => {
+          if (!desktopQuery.matches) return null;
+
+          const primaryGroup = groups.find(({ modifier }) => modifier === primaryIndicatorModifier);
+          if (!primaryGroup || !primaryGroup.getItems().includes(target)) return null;
+
+          return getItemGeometry(primaryGroup.container, target);
+        },
+        lockPrimaryGeometry: () => {
+          isPrimaryGeometryLocked = true;
+        },
+        movePrimaryToGeometry: (geometry) => {
+          if (!desktopQuery.matches || !geometry) return null;
+
+          const primaryGroup = groups.find(({ modifier }) => modifier === primaryIndicatorModifier);
+          if (!primaryGroup) return null;
+
+          primaryGroup.indicator.classList.add("is-motion-ready");
+          applyIndicatorGeometry(primaryGroup.indicator, geometry);
+          return primaryGroup.indicator;
+        },
+      };
+    };
+
+    const navSelectionIndicators = initializeNavSelectionIndicators();
+    const syncNavSelectionIndicators = navSelectionIndicators.sync;
+
+    const initializePrimaryNavLeaveMotion = () => {
+      const navPrimary = document.querySelector(".nav-primary");
+      if (!navPrimary) return;
+
+      const desktopQuery = window.matchMedia("(min-width: 834px)");
+      const primaryLinks = [...navPrimary.children].flatMap((child) =>
+        child.matches("a") ? [child] : [...child.querySelectorAll(":scope > a")]
+      );
+      let isNavigating = false;
+
+      const getIndicatorDuration = () => {
+        const token = getComputedStyle(document.documentElement)
+          .getPropertyValue("--nav-indicator-duration")
+          .trim();
+        const value = Number.parseFloat(token);
+        if (!Number.isFinite(value)) return 420;
+        return token.endsWith("ms") ? value : value * 1000;
+      };
+
+      const getDestination = (link) => {
+        const destination = new URL(link.href, window.location.href);
+        const current = new URL(window.location.href);
+        const isSameDocument =
+          destination.origin === current.origin &&
+          destination.pathname === current.pathname &&
+          destination.search === current.search;
+
+        if (
+          destination.origin !== current.origin ||
+          !["http:", "https:"].includes(destination.protocol) ||
+          isSameDocument ||
+          link.target && link.target !== "_self" ||
+          link.hasAttribute("download")
+        ) {
+          return null;
+        }
+
+        return destination;
+      };
+
+      primaryLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          if (
+            !desktopQuery.matches ||
+            prefersReducedMotion ||
+            event.defaultPrevented ||
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+          ) {
+            return;
+          }
+
+          const destination = getDestination(link);
+          if (!destination) return;
+
+          event.preventDefault();
+
+          if (isNavigating) return;
+
+          const indicator = navSelectionIndicators.getPrimaryIndicator();
+          const targetGeometry = navSelectionIndicators.getPrimaryGeometry(link);
+          const currentGeometry = navSelectionIndicators.getPrimaryCurrentGeometry();
+          if (!indicator || !targetGeometry || !currentGeometry) {
+            window.location.assign(destination.href);
+            return;
+          }
+
+          isNavigating = true;
+          navSelectionIndicators.lockPrimaryGeometry();
+
+          let hasNavigated = false;
+          let fallbackTimer = 0;
+          const navigate = () => {
+            if (hasNavigated) return;
+            hasNavigated = true;
+            window.clearTimeout(fallbackTimer);
+            indicator.removeEventListener("transitionend", handleTransitionEnd);
+            window.location.assign(destination.href);
+          };
+          const handleTransitionEnd = (transitionEvent) => {
+            if (transitionEvent.target === indicator && transitionEvent.propertyName === "transform") {
+              navigate();
+            }
+          };
+
+          indicator.addEventListener("transitionend", handleTransitionEnd);
+          // Keep the measured source capsule painted, then move it once on the next frame.
+          indicator.getBoundingClientRect();
+          window.requestAnimationFrame(() => {
+            if (hasNavigated) return;
+
+            const movingIndicator = navSelectionIndicators.movePrimaryToGeometry(targetGeometry);
+            if (!movingIndicator) {
+              navigate();
+              return;
+            }
+
+            fallbackTimer = window.setTimeout(navigate, getIndicatorDuration() + 150);
+          });
+        });
+      });
+    };
+
+    initializePrimaryNavLeaveMotion();
+
     const setElsewhereSubnavHidden = (hidden) => {
       elsewhereSubnavs.forEach((subnav) => subnav.classList.toggle("is-hidden", hidden));
     };
@@ -512,6 +779,7 @@
         tab.classList.toggle("is-active", isActive);
         tab.setAttribute("aria-selected", String(isActive));
       });
+      syncNavSelectionIndicators();
 
       elsewherePanels.forEach((panel) => {
         const isActive = panel.dataset.elsewherePanel === nextPanel;
