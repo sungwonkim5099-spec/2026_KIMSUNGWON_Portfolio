@@ -563,9 +563,7 @@ html[data-theme="dark"] .footer-mark {
   --works-category-opacity: 0.6;
   --works-hover-scale: 1.025;
   --works-hover-duration: 500ms;
-  /* Cinematic Works entry: camera settles before the surrounding cards dissolve. */
-  --works-camera-entrance-duration: 800ms;
-  --works-reveal-start-delay: 80ms;
+  /* Works entry: surrounding cards dissolve after the established camera framing. */
   --works-reveal-duration: 580ms;
   --works-reveal-stagger: 75ms;
   --works-reveal-blur: 4px;
@@ -588,9 +586,30 @@ html[data-theme="dark"] .footer-mark {
   --works-camera-inactive-grayscale: 1;
   --works-camera-transition-duration: 900ms;
   --works-camera-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Selected card outline: begins one second after camera travel finishes. */
+  --works-camera-outline-delay: 1000ms;
+  --works-camera-outline-duration: 480ms;
+  --works-camera-outline-radius: 8px;
+  --works-camera-outline-border: rgba(255, 255, 255, 0.72);
+  --works-camera-outline-highlight: rgba(255, 255, 255, 0.64);
+  --works-camera-outline-shadow:
+    inset 0 1px 0 var(--works-camera-outline-highlight),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 14px 34px rgba(0, 0, 0, 0.2);
   --works-camera-wheel-threshold: 10;
   --works-camera-wheel-cooldown: 430ms;
   --works-camera-swipe-threshold: 28px;
+}
+
+html[data-theme="dark"] .works-page {
+  --works-camera-outline-border: rgba(255, 255, 255, 0.52);
+  --works-camera-outline-highlight: rgba(255, 255, 255, 0.42);
+  --works-camera-outline-shadow:
+    inset 0 1px 0 var(--works-camera-outline-highlight),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 14px 34px rgba(0, 0, 0, 0.42);
 }
 
 .works-page .project-gallery {
@@ -681,13 +700,8 @@ html[data-theme="dark"] .footer-mark {
   will-change: transform;
 }
 
-.works-page .project-gallery.is-works-camera-initializing .project-grid,
-.works-page .project-gallery.is-works-camera-entrance-prepared .project-grid {
+.works-page .project-gallery.is-works-initializing .project-grid {
   transition: none;
-}
-
-.works-page .project-gallery.is-works-camera-entrance-moving .project-grid {
-  transition: transform var(--works-camera-entrance-duration) var(--works-motion-easing);
 }
 
 .works-page .project-gallery.is-works-camera-ready .project-card {
@@ -702,6 +716,32 @@ html[data-theme="dark"] .footer-mark {
 
 .works-page .project-gallery.is-works-camera-ready .project-card.is-works-camera-active {
   --works-camera-card-opacity: 1;
+}
+
+/* A delayed, translucent perimeter marks the card after the camera settles. */
+.works-page .project-gallery.is-works-camera-ready .project-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 1px solid var(--works-camera-outline-border);
+  border-radius: var(--works-camera-outline-radius);
+  background: transparent;
+  box-shadow: var(--works-camera-outline-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.992);
+  transition:
+    opacity var(--works-camera-outline-duration) var(--works-motion-easing),
+    transform var(--works-camera-outline-duration) var(--works-motion-easing),
+    box-shadow var(--works-camera-outline-duration) var(--works-motion-easing);
+  transition-delay: 0ms;
+}
+
+.works-page .project-gallery.is-works-camera-ready.is-works-camera-outline-visible .project-card.is-works-camera-active::after {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0ms;
 }
 
 .works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared .project-card:not(.is-works-entrance-anchor) {
@@ -1864,7 +1904,12 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-footer {
 /* Elsewhere / Calmato Page 01 - Cinematic Intro */
 .calmato-dissolve-stage > .calmato-hero--cinematic {
   /* VS Code Edit: Page 01 image and desktop layout controls. */
-  --calmato-hero-background-image: url("assets/elsewhere/elsewhere_calmato_background.jpg");
+  /* Light falls back to the dark image until the light asset is added. */
+  --calmato-hero-background-light-image:
+    url("assets/elsewhere/elsewhere_calmato_background_light.jpg"),
+    url("assets/elsewhere/elsewhere_calmato_background_dark.jpg");
+  --calmato-hero-background-dark-image: url("assets/elsewhere/elsewhere_calmato_background_dark.jpg");
+  --calmato-hero-background-image: var(--calmato-hero-background-light-image);
   --calmato-hero-background-size: cover;
   --calmato-hero-background-position: 60% center;
   --calmato-hero-image-overlay: rgba(0, 0, 0, 0.2);
@@ -1889,6 +1934,10 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-footer {
   padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-x);
   color: #ffffff;
   background: #111111;
+}
+
+html[data-theme="dark"] .calmato-dissolve-stage > .calmato-hero--cinematic {
+  --calmato-hero-background-image: var(--calmato-hero-background-dark-image);
 }
 
 .calmato-hero--cinematic::before,
@@ -1984,46 +2033,9 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-footer {
   text-transform: uppercase;
 }
 
-/* The header becomes image-led only while Calmato Page 01 is the visible snap panel. */
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) {
-  --calmato-hero-nav-background: transparent;
-  --calmato-hero-nav-backdrop-filter: none;
-  --calmato-hero-nav-color: #ffffff;
-  --calmato-hero-nav-icon-filter: invert(1);
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .site-header {
-  color: var(--calmato-hero-nav-color);
-  background: var(--calmato-hero-nav-background);
-  border: 0;
-  box-shadow: none;
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .nav-shell,
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-nav-item > .elsewhere-subnav {
-  background: var(--calmato-hero-nav-background);
-  border-color: transparent;
-  box-shadow: none;
-  backdrop-filter: var(--calmato-hero-nav-backdrop-filter);
-  -webkit-backdrop-filter: var(--calmato-hero-nav-backdrop-filter);
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .nav-logo img,
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .icon-link img,
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button img {
-  filter: var(--calmato-hero-nav-icon-filter);
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-subnav-link.is-active {
-  color: var(--calmato-hero-nav-color);
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-subnav-link:not(.is-active) {
-  color: rgba(255, 255, 255, 0.62);
-}
-
+/* The photographic first stage keeps only its own bottom page indicator treatment. */
 body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-snap-dot {
-  background: var(--calmato-hero-nav-color);
+  background: #ffffff;
   opacity: 0.42;
 }
 
@@ -4384,22 +4396,6 @@ html:has(body.is-unsplash-lightbox-open) {
     white-space: normal;
   }
 
-  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu[aria-hidden="false"] {
-    color: var(--calmato-hero-nav-color);
-    background: var(--nav-open-material) !important;
-    border-color: var(--line);
-    backdrop-filter: saturate(180%) blur(16px) !important;
-    -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
-  }
-
-  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button[aria-expanded="true"]::before,
-  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button[aria-expanded="true"]::after {
-    background: var(--calmato-hero-nav-color);
-  }
-
-  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .site-header:has(.mobile-menu[aria-hidden="false"])::before {
-    display: block;
-  }
 }
 
 /* =========================
@@ -4816,35 +4812,6 @@ html:has(body.is-unsplash-lightbox-open) {
   .nav-selection-indicator.is-visible {
     opacity: 1;
   }
-}
-
-/* Calmato Page 01 remains legible over its photographic stage. */
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) {
-  --nav-pill-bg: rgba(15, 15, 15, 0.58);
-  --nav-pill-border: rgba(255, 255, 255, 0.18);
-  --nav-pill-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  --nav-pill-hover-bg: rgba(255, 255, 255, 0.1);
-  --nav-pill-active-bg: rgba(255, 255, 255, 0.16);
-  --nav-pill-divider: rgba(255, 255, 255, 0.2);
-  --nav-pill-text: #ffffff;
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .nav-shell {
-  color: var(--nav-pill-text);
-  background: var(--nav-pill-bg);
-  border-color: var(--nav-pill-border);
-  box-shadow: var(--nav-pill-shadow);
-  backdrop-filter: saturate(150%) blur(var(--nav-pill-blur));
-  -webkit-backdrop-filter: saturate(150%) blur(var(--nav-pill-blur));
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .nav-logo img,
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .mobile-menu-button img {
-  filter: invert(1);
-}
-
-body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .nav-shell .elsewhere-subnav-link:not(.is-active) {
-  opacity: 0.7;
 }
 
 @media (max-width: 833px) {

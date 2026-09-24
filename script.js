@@ -154,32 +154,6 @@
 
     renderProjectCards();
 
-    const WORKS_GALLERY_ENTRY_KEY = "portfolio:works-gallery-entry";
-    const WORKS_GALLERY_ENTRY_MAX_AGE = 3000;
-
-    const isWorksDestination = (destination) =>
-      destination.pathname.replace(/\/+$/, "").endsWith("/works");
-
-    const rememberWorksGalleryEntry = (destination) => {
-      if (!isWorksDestination(destination)) return;
-
-      try {
-        window.sessionStorage.setItem(WORKS_GALLERY_ENTRY_KEY, String(Date.now()));
-      } catch {
-        // A blocked session store simply skips the cinematic entrance.
-      }
-    };
-
-    const consumeWorksGalleryEntry = () => {
-      try {
-        const timestamp = Number.parseInt(window.sessionStorage.getItem(WORKS_GALLERY_ENTRY_KEY) || "", 10);
-        window.sessionStorage.removeItem(WORKS_GALLERY_ENTRY_KEY);
-        return Number.isFinite(timestamp) && Date.now() - timestamp <= WORKS_GALLERY_ENTRY_MAX_AGE;
-      } catch {
-        return false;
-      }
-    };
-
     const getCssMilliseconds = (element, propertyName, fallback) => {
       const token = getComputedStyle(element).getPropertyValue(propertyName).trim();
       const value = Number.parseFloat(token);
@@ -190,7 +164,6 @@
 
     const initializeWorksGridEntrance = () => {
       const desktopEntryQuery = window.matchMedia("(min-width: 834px)");
-      const shouldPlayCinematicEntrance = consumeWorksGalleryEntry();
       let isPrepared = false;
       let isRevealing = false;
       let revealTimer = 0;
@@ -200,7 +173,6 @@
         Boolean(
           projectGrid &&
             projects.length > 0 &&
-            shouldPlayCinematicEntrance &&
             !prefersReducedMotion &&
             desktopEntryQuery.matches
         );
@@ -297,8 +269,8 @@
       let wheelLockedUntil = 0;
       let suppressCardClickUntil = 0;
       let touchGesture = null;
-      let isCinematicEntranceActive = false;
-      let cameraEntranceTimer = 0;
+      let isWorksEntranceActive = false;
+      let cameraOutlineTimer = 0;
 
       const cards = () => [...projectGrid.querySelectorAll(".project-card")];
       const getCssNumber = (propertyName, fallback) => {
@@ -337,14 +309,14 @@
         return true;
       };
 
-      const getCameraTarget = () => {
+      const positionCamera = () => {
         if (!isCameraEnabled() || !synchronizeCameraGeometry()) return;
 
         const allCards = cards();
         const activeCard = allCards[activeIndex];
         const activeMedia = activeCard?.querySelector(".project-media");
 
-        if (!activeCard || !activeMedia) return null;
+        if (!activeCard || !activeMedia) return;
 
         const stageWidth = cameraViewport.clientWidth;
         const stageHeight = cameraViewport.clientHeight;
@@ -354,33 +326,23 @@
         const targetX = stageWidth / 2 - mediaCenterX;
         const targetY = stageHeight * focusY - mediaCenterY;
 
-        return { x: Math.round(targetX), y: Math.round(targetY) };
+        projectGrid.style.setProperty("--works-camera-x", `${Math.round(targetX)}px`);
+        projectGrid.style.setProperty("--works-camera-y", `${Math.round(targetY)}px`);
       };
 
-      const applyCameraTarget = (target) => {
-        if (!target) return;
+      const scheduleCameraOutline = () => {
+        window.clearTimeout(cameraOutlineTimer);
+        gallery.classList.remove("is-works-camera-outline-visible");
 
-        projectGrid.style.setProperty("--works-camera-x", `${target.x}px`);
-        projectGrid.style.setProperty("--works-camera-y", `${target.y}px`);
+        const travelDuration = getCssMilliseconds(gallery, "--works-camera-transition-duration", 900);
+        const outlineDelay = getCssMilliseconds(gallery, "--works-camera-outline-delay", 1000);
+
+        cameraOutlineTimer = window.setTimeout(() => {
+          gallery.classList.add("is-works-camera-outline-visible");
+        }, travelDuration + outlineDelay);
       };
 
-      const positionCamera = () => {
-        const target = getCameraTarget();
-        if (!target) return null;
-
-        applyCameraTarget(target);
-        return target;
-      };
-
-      const positionCameraImmediately = () => {
-        gallery.classList.add("is-works-camera-initializing");
-        const target = positionCamera();
-        projectGrid.getBoundingClientRect();
-        gallery.classList.remove("is-works-camera-initializing");
-        return target;
-      };
-
-      const setActiveIndex = (nextIndex, { focus = false, position = true } = {}) => {
+      const setActiveIndex = (nextIndex, { focus = false } = {}) => {
         const allCards = cards();
         const boundedIndex = Math.max(0, Math.min(allCards.length - 1, nextIndex));
 
@@ -388,13 +350,21 @@
         allCards.forEach((card, index) => {
           card.classList.toggle("is-works-camera-active", index === activeIndex);
         });
-        if (position) positionCamera();
+        positionCamera();
+        scheduleCameraOutline();
 
         if (focus) allCards[activeIndex]?.focus({ preventScroll: true });
       };
 
+      const establishInitialCameraFraming = () => {
+        gallery.classList.add("is-works-initializing");
+        setActiveIndex(0);
+        projectGrid.getBoundingClientRect();
+        gallery.classList.remove("is-works-initializing");
+      };
+
       const moveCamera = (columnDelta, rowDelta, options) => {
-        if (isCinematicEntranceActive) return false;
+        if (isWorksEntranceActive) return false;
 
         const nextIndex = getTargetIndex(activeIndex, columnDelta, rowDelta);
 
@@ -412,7 +382,7 @@
 
       const onWheel = (event) => {
         if (!isCameraEnabled() || event.ctrlKey) return;
-        if (isCinematicEntranceActive) {
+        if (isWorksEntranceActive) {
           event.preventDefault();
           return;
         }
@@ -443,7 +413,7 @@
       const onKeyDown = (event) => {
         if (!isCameraEnabled() || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
 
-        if (isCinematicEntranceActive) {
+        if (isWorksEntranceActive) {
           if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
             event.preventDefault();
           }
@@ -482,7 +452,7 @@
 
         if (!card || !projectGrid.contains(card) || !isCameraEnabled()) return;
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        if (isCinematicEntranceActive) {
+        if (isWorksEntranceActive) {
           event.preventDefault();
           return;
         }
@@ -499,12 +469,12 @@
       };
 
       const synchronizeCamera = () => {
-        if (!isCameraEnabled() || isCinematicEntranceActive) return;
+        if (!isCameraEnabled() || isWorksEntranceActive) return;
         positionCamera();
       };
 
       const onPointerDown = (event) => {
-        if (!isCameraEnabled() || isCinematicEntranceActive || event.pointerType !== "touch" || !event.isPrimary) return;
+        if (!isCameraEnabled() || isWorksEntranceActive || event.pointerType !== "touch" || !event.isPrimary) return;
 
         touchGesture = {
           pointerId: event.pointerId,
@@ -517,7 +487,7 @@
       const onPointerUp = (event) => {
         if (!touchGesture || event.pointerId !== touchGesture.pointerId) return;
 
-        if (isCinematicEntranceActive) {
+        if (isWorksEntranceActive) {
           touchGesture = null;
           return;
         }
@@ -545,65 +515,20 @@
         if (touchGesture?.pointerId === event.pointerId) touchGesture = null;
       };
 
-      const startCinematicEntrance = () => {
-        if (!worksGridEntrance.prepare()) {
-          setActiveIndex(0, { position: false });
-          positionCameraImmediately();
-          return;
-        }
+      const startWorksEntrance = () => {
+        const shouldReveal = worksGridEntrance.prepare();
+        establishInitialCameraFraming();
 
-        isCinematicEntranceActive = true;
-        gallery.classList.add("is-works-camera-entrance-prepared");
-        setActiveIndex(0, { position: false });
+        if (!shouldReveal) return;
 
-        const target = getCameraTarget();
-        const revealStartDelay = getCssMilliseconds(gallery, "--works-reveal-start-delay", 80);
-        const completeEntrance = () => {
-          gallery.classList.remove("is-works-camera-entrance-prepared", "is-works-camera-entrance-moving");
-          window.setTimeout(() => {
-            worksGridEntrance.reveal(() => {
-              isCinematicEntranceActive = false;
-            });
-          }, revealStartDelay);
-        };
+        isWorksEntranceActive = true;
 
-        if (!target) {
-          positionCameraImmediately();
-          completeEntrance();
-          return;
-        }
-
-        const duration = getCssMilliseconds(gallery, "--works-camera-entrance-duration", 800);
-        let hasSettled = false;
-        const settleCamera = () => {
-          if (hasSettled) return;
-          hasSettled = true;
-          window.clearTimeout(cameraEntranceTimer);
-          projectGrid.removeEventListener("transitionend", handleCameraTransitionEnd);
-          applyCameraTarget(target);
-          completeEntrance();
-        };
-        const handleCameraTransitionEnd = (event) => {
-          if (event.target === projectGrid && event.propertyName === "transform") settleCamera();
-        };
-
-        projectGrid.addEventListener("transitionend", handleCameraTransitionEnd);
-        projectGrid.style.setProperty("--works-camera-x", "0px");
-        projectGrid.style.setProperty("--works-camera-y", "0px");
+        // Paint the hidden surrounding cards before dissolving them in.
         projectGrid.getBoundingClientRect();
 
         window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            gallery.classList.remove("is-works-camera-entrance-prepared");
-            gallery.classList.add("is-works-camera-entrance-moving");
-            applyCameraTarget(target);
-
-            if (target.x === 0 && target.y === 0) {
-              window.requestAnimationFrame(settleCamera);
-              return;
-            }
-
-            cameraEntranceTimer = window.setTimeout(settleCamera, duration + 120);
+          worksGridEntrance.reveal(() => {
+            isWorksEntranceActive = false;
           });
         });
       };
@@ -611,7 +536,7 @@
       gallery.tabIndex = 0;
       gallery.setAttribute("aria-label", "Works gallery. Use arrow keys to browse projects.");
       gallery.classList.add("is-works-camera-ready");
-      startCinematicEntrance();
+      startWorksEntrance();
 
       gallery.addEventListener("wheel", onWheel, { passive: false });
       gallery.addEventListener("keydown", onKeyDown);
@@ -970,7 +895,6 @@
           const destination = getDestination(link);
           if (!destination) return;
 
-          const isEnteringWorks = isWorksDestination(destination);
           const isEnteringElsewhere = isElsewhereDestination(destination);
           const isLeavingElsewhere = Boolean(elsewhereNavItem) && !isEnteringElsewhere;
 
@@ -982,7 +906,6 @@
           const currentGeometry = navSelectionIndicators.getPrimaryCurrentGeometry();
 
           if (!indicator || !targetGeometry || !currentGeometry) {
-            if (isEnteringWorks) rememberWorksGalleryEntry(destination);
             if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
             if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
             window.location.assign(destination.href);
@@ -993,14 +916,12 @@
           navSelectionIndicators.lockPrimaryGeometry();
           const frozenIndicator = navSelectionIndicators.freezePrimaryToGeometry(currentGeometry);
           if (!frozenIndicator) {
-            if (isEnteringWorks) rememberWorksGalleryEntry(destination);
             if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
             if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
             window.location.assign(destination.href);
             return;
           }
 
-          if (isEnteringWorks) rememberWorksGalleryEntry(destination);
           if (isEnteringElsewhere) rememberElsewherePillEntry(destination);
           if (isLeavingElsewhere) collapseElsewherePillForPrimaryLeave();
 
