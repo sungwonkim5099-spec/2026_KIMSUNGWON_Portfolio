@@ -152,9 +152,8 @@ img {
 
 .nav-shell {
   position: fixed;
-  top: max(var(--nav-pill-top), var(--safe-area-top));
-  /* Use the visual viewport, not the scrollbar-reduced layout width. */
-  left: 50vw;
+  top: var(--nav-pill-top);
+  left: 50%;
   z-index: 1;
   width: fit-content;
   max-width: calc(100vw - 32px);
@@ -191,6 +190,7 @@ img {
 }
 
 .nav-primary > a,
+.elsewhere-nav-item > a,
 .elsewhere-subnav-link {
   min-height: calc(var(--nav-pill-height) - 12px);
   display: inline-flex;
@@ -201,7 +201,7 @@ img {
   color: inherit;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 560;
+  font-weight: 590;
   line-height: 17px;
   text-transform: capitalize;
   white-space: nowrap;
@@ -212,6 +212,7 @@ img {
 }
 
 .nav-primary > a:hover,
+.elsewhere-nav-item > a:hover,
 .elsewhere-subnav-link:hover {
   background: var(--nav-pill-hover-bg);
   opacity: 1;
@@ -219,14 +220,53 @@ img {
 
 .nav-primary > a.is-active,
 .nav-primary > a[aria-current],
+.elsewhere-nav-item > a.is-active,
+.elsewhere-nav-item > a[aria-current],
 .elsewhere-subnav-link.is-active {
   color: var(--nav-pill-text);
   background: var(--nav-pill-active-bg);
   opacity: 1;
 }
 
+.nav-logo {
+  position: static;
+  z-index: auto;
+  order: -1;
+  width: 45px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  margin-right: 4px;
+  padding-right: 8px;
+  border-right: 1px solid var(--nav-pill-divider);
+  transform: none;
+  transition: opacity var(--nav-item-duration) ease;
+}
+
+.nav-logo:hover {
+  opacity: 0.62;
+}
+
+.nav-logo img {
+  width: 28px;
+  height: 32px;
+  transition: filter 180ms ease;
+}
+
+html[data-theme="dark"] .nav-logo img,
+html[data-theme="dark"] .mobile-menu-button img,
 html[data-theme="dark"] .footer-mark {
   filter: invert(1);
+}
+
+.nav-utility {
+  display: none;
+}
+
+.mobile-menu-button,
+.mobile-menu {
+  display: none;
 }
 
 .home-main,
@@ -236,7 +276,10 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .nav-primary a:focus-visible,
+.nav-logo:focus-visible,
 .icon-link:focus-visible,
+.mobile-menu-button:focus-visible,
+.mobile-menu a:focus-visible,
 .footer-column a:focus-visible,
 .theme-toggle:focus-visible {
   outline: 2px solid var(--accent);
@@ -894,6 +937,104 @@ html[data-theme="dark"] .works-page {
 .elsewhere-content {
   position: relative;
   padding: 0;
+}
+
+.elsewhere-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.elsewhere-subnav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 36px;
+  color: var(--foreground);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.elsewhere-nav-item > .elsewhere-subnav {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: -12px;
+  min-width: 124px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--nav-material);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 180ms;
+}
+
+.elsewhere-nav-item:hover > .elsewhere-subnav,
+.elsewhere-nav-item:focus-within > .elsewhere-subnav,
+.elsewhere-nav-item.is-open > .elsewhere-subnav {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.elsewhere-subnav-mobile {
+  display: none;
+}
+
+.elsewhere-subnav.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px);
+}
+
+.elsewhere-nav-item > .elsewhere-subnav.is-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-8px) !important;
+}
+
+.elsewhere-subnav-link {
+  min-height: 32px;
+  padding: 0;
+  color: var(--foreground-muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 590;
+  line-height: 1;
+  text-transform: capitalize;
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+.elsewhere-subnav-link:hover {
+  opacity: 0.62;
+}
+
+.elsewhere-subnav-link.is-active {
+  color: var(--foreground);
+  opacity: 1;
+}
+
+.elsewhere-nav-item > .elsewhere-subnav .elsewhere-subnav-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
 }
 
 .elsewhere-subnav-link:focus-visible,
@@ -2993,6 +3134,22 @@ html[data-theme="dark"] .calmato-video-controls {
     --header-height: 88px;
   }
 
+  .nav-shell {
+    grid-template-columns: minmax(0, 246px) 1fr minmax(0, 246px);
+  }
+
+  .nav-primary {
+    gap: 20px;
+  }
+
+  .nav-primary a {
+    padding: 0 8px;
+  }
+
+  .nav-utility {
+    gap: 20px;
+  }
+
   .about-panel {
     padding-top: 110px;
     padding-bottom: 110px;
@@ -3158,6 +3315,112 @@ html[data-theme="dark"] .calmato-video-controls {
   :root {
     --panel-x: 20px;
     --header-height: 72px;
+  }
+
+  .nav-shell {
+    height: var(--header-height);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--panel-x);
+  }
+
+  .nav-primary,
+  .nav-utility {
+    display: none;
+  }
+
+  .nav-logo {
+    position: static;
+    justify-self: auto;
+    transform: none;
+  }
+
+  .mobile-menu-button {
+    display: grid;
+    margin-left: auto;
+  }
+
+  .mobile-menu {
+    position: absolute;
+    top: calc(var(--header-height) + 4px);
+    left: var(--panel-x);
+    right: var(--panel-x);
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--nav-open-material);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 180ms ease, transform 180ms ease;
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+  }
+
+  .mobile-menu.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .mobile-menu a {
+    min-height: 48px;
+    justify-content: flex-end;
+    padding: 0;
+    font-size: 18px;
+    text-transform: capitalize;
+  }
+
+  .nav-primary > .elsewhere-nav-item > .elsewhere-subnav {
+    display: none;
+  }
+
+  .mobile-menu .elsewhere-subnav-mobile {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    min-height: 0;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    transform: none;
+  }
+
+  .mobile-menu .elsewhere-subnav-mobile .elsewhere-subnav-link {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 16px;
+    text-align: right;
+    text-transform: capitalize;
+  }
+
+  /* Elsewhere mobile menu: keep the shared header alignment and extend the material with its submenu. */
+  .elsewhere-page .nav-shell {
+    height: var(--header-height);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--panel-x);
+  }
+
+  .elsewhere-page .mobile-menu-button {
+    display: grid;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+  }
+
+  .elsewhere-page .mobile-menu {
+    background: var(--nav-open-material) !important;
+    backdrop-filter: saturate(180%) blur(16px) !important;
+    -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
   }
 
   .about-panel {
@@ -3457,6 +3720,85 @@ html[data-theme="dark"] .calmato-video-controls {
   }
 
 }
+/* ===== MOBILE MENU ===== */
+@media (max-width: 833px) {
+
+  /* 헤더 */
+  .site-header {
+    background: var(--nav-open-material);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* 펼쳐지는 메뉴 */
+  .mobile-menu {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+
+    margin: 0;
+    padding: 28px var(--panel-x) 36px;
+
+    background: var(--nav-open-material);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 0;
+    z-index: 999;
+  }
+
+  /* 메뉴 글자 */
+  .mobile-menu a {
+    display: block;
+    text-align: right;
+  }
+
+
+  /* ======================
+     햄버거 → X
+  ====================== */
+
+  .mobile-menu-button {
+    position: relative;
+    width: 40px;
+    height: 40px;
+  }
+
+  /* 메뉴가 열렸을 때 기존 햄버거 이미지 숨김 */
+  .mobile-menu-button[aria-expanded="true"] img {
+    opacity: 0;
+  }
+
+  /* X 선 두 개 */
+  .mobile-menu-button::before,
+  .mobile-menu-button::after {
+    content: "";
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 28px;
+    height: 3px;
+
+    background: var(--foreground);
+    border-radius: 999px;
+
+    opacity: 0;
+    transform-origin: center;
+  }
+
+  .mobile-menu-button[aria-expanded="true"]::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .mobile-menu-button[aria-expanded="true"]::after {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+}
 @media (max-width: 833px) {
     .calmato-hero-content h2 {
   font-size: 36px;
@@ -3477,6 +3819,55 @@ html[data-theme="dark"] .calmato-video-controls {
 }
 
 }
+
+  /* 헤더는 투명하게 */
+  .site-header {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    z-index: 1002;
+  }
+
+  /* 메뉴 */
+  .mobile-menu {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+
+    margin: 0;
+    padding: 28px var(--panel-x) 36px;
+
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+
+    border: 0;
+    z-index: 1002;
+  }
+
+  /* 메뉴가 열렸을 때 헤더부터 이어지는 하나의 블러 레이어 */
+  .site-header:has(.mobile-menu[aria-hidden="false"])::before {
+    content: "";
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 250px;
+
+    background: var(--nav-open-material);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    z-index: -1;
+  }
+
+  .mobile-menu a {
+    display: block;
+    text-align: right;
+  }
 
 /* ===== THEME BUTTON ===== */
 
@@ -3687,6 +4078,10 @@ html:has(body.is-unsplash-lightbox-open) {
     overflow-x: clip;
   }
 
+  /* Match the menu backdrop to the full expanded navigation height. */
+  .elsewhere-page .site-header:has(.mobile-menu[aria-hidden="false"])::before {
+    height: min(100svh, calc(var(--header-height) + 320px));
+  }
 }
 
 /*
@@ -4098,10 +4493,7 @@ html:has(body.is-unsplash-lightbox-open) {
   }
 
   .works-page {
-    /*
-      Keep the camera field continuous from narrow phones into the existing
-      834px tablet geometry. script.js resolves these fluid length values.
-    */
+    /* Keep the camera field continuous from narrow phones into tablet geometry. */
     --works-camera-zoom: 0.25;
     --works-camera-min-cell-width: min(62vw, calc(217px + 10vw), 300px);
     --works-camera-min-cell-height: min(65.1vw, calc(164px + 27vw), 389px);
@@ -4288,8 +4680,378 @@ html:has(body.is-unsplash-lightbox-open) {
 }
 
 /* =========================
-   Global / Navigation Mode Pill
-   One centered pill swaps between primary and Elsewhere channel modes.
+   Global / Floating Navigation Pill
+   Shared markup stays intact; these rules replace the former split header.
+========================= */
+.site-header {
+  z-index: 1000;
+  background: transparent !important;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.nav-shell {
+  display: flex;
+  grid-template-columns: none;
+  justify-content: flex-start;
+  color: var(--nav-pill-text);
+  background: var(--nav-pill-bg);
+  border-color: var(--nav-pill-border);
+  box-shadow: var(--nav-pill-shadow);
+  backdrop-filter: saturate(150%) blur(var(--nav-pill-blur));
+  -webkit-backdrop-filter: saturate(150%) blur(var(--nav-pill-blur));
+}
+
+.nav-shell .nav-primary {
+  gap: 0;
+}
+
+.nav-shell .nav-utility {
+  display: none;
+}
+
+.nav-shell .nav-primary > a,
+.nav-shell .elsewhere-nav-item > a,
+.nav-shell .elsewhere-subnav-link {
+  min-height: calc(var(--nav-pill-height) - 12px);
+  padding-inline: 10px;
+  color: inherit;
+}
+
+.nav-shell .nav-logo {
+  position: static;
+  order: -1;
+  width: 45px;
+  height: 36px;
+  margin-right: 4px;
+  padding-right: 8px;
+  border-right-color: var(--nav-pill-divider);
+  transform: none;
+}
+
+/* Elsewhere expands the existing pill rather than opening a second navigation. */
+.nav-shell .elsewhere-nav-item {
+  position: static;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.nav-shell .elsewhere-nav-item > .elsewhere-subnav {
+  position: static;
+  z-index: auto;
+  top: auto;
+  left: auto;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: calc(var(--nav-pill-height) - 12px);
+  max-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--nav-pill-gap);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid transparent;
+  box-shadow: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-8px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition:
+    max-width var(--nav-pill-duration) var(--nav-pill-ease),
+    margin-left var(--nav-pill-duration) var(--nav-pill-ease),
+    padding-left var(--nav-pill-duration) var(--nav-pill-ease),
+    border-color var(--nav-pill-duration) var(--nav-pill-ease),
+    opacity var(--nav-item-duration) ease,
+    transform var(--nav-pill-duration) var(--nav-pill-ease),
+    visibility 0s linear var(--nav-pill-duration);
+}
+
+.nav-shell .elsewhere-nav-item.is-open > .elsewhere-subnav {
+  max-width: var(--nav-pill-secondary-max-width);
+  margin-left: 6px;
+  padding-left: 6px;
+  border-left-color: var(--nav-pill-divider);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0);
+  transition-delay: 0s;
+}
+
+.nav-shell .elsewhere-nav-item > .elsewhere-subnav .elsewhere-subnav-link {
+  width: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding-inline: 10px;
+  color: inherit;
+  text-align: center;
+}
+
+.nav-shell .elsewhere-nav-item > .elsewhere-subnav.is-hidden {
+  max-width: 0 !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  border-left-color: transparent !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateX(-8px) !important;
+}
+
+/* One movable surface per independent navigation group. */
+@media (min-width: 834px) {
+  .nav-shell .nav-primary,
+  .nav-shell .elsewhere-nav-item > .elsewhere-subnav {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .nav-shell .nav-primary > a,
+  .nav-shell .elsewhere-nav-item > a,
+  .nav-shell .elsewhere-subnav-link {
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-shell .nav-primary > a.is-active,
+  .nav-shell .nav-primary > a[aria-current],
+  .nav-shell .elsewhere-nav-item > a.is-active,
+  .nav-shell .elsewhere-nav-item > a[aria-current],
+  .nav-shell .elsewhere-subnav-link.is-active {
+    background: transparent;
+  }
+
+  .nav-selection-indicator {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--nav-selection-width, 0px);
+    border-radius: var(--nav-pill-radius);
+    background: var(--nav-pill-active-bg);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(var(--nav-selection-x, 0px), 0, 0);
+    transition: none;
+  }
+
+  .nav-selection-indicator.is-motion-ready {
+    transition:
+      transform var(--nav-indicator-duration) var(--nav-indicator-ease),
+      width var(--nav-indicator-duration) var(--nav-indicator-ease),
+      opacity var(--nav-item-duration) ease;
+  }
+
+  .nav-selection-indicator.is-visible {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 833px) {
+  .site-header {
+    --nav-pill-height: 44px;
+    --nav-pill-top: 14px;
+    --nav-pill-padding-x: 6px;
+  }
+
+  .nav-shell {
+    top: var(--nav-pill-top);
+    left: 50%;
+    width: fit-content;
+    max-width: calc(100vw - 40px);
+    height: var(--nav-pill-height);
+    justify-content: flex-start;
+    padding: 0 var(--nav-pill-padding-x);
+    transform: translateX(-50%);
+  }
+
+  .site-header .nav-shell {
+    height: var(--nav-pill-height);
+    padding: 0 var(--nav-pill-padding-x);
+  }
+
+  .nav-shell .nav-primary,
+  .nav-shell .nav-utility {
+    display: none;
+  }
+
+  .nav-shell .nav-logo {
+    order: 0;
+    width: 36px;
+    height: 32px;
+    margin-right: 2px;
+    padding-right: 7px;
+    border-right-color: var(--nav-pill-divider);
+  }
+
+  .nav-shell .nav-logo img {
+    width: 24px;
+    height: 28px;
+  }
+
+  .mobile-menu-button {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    margin-left: 0;
+    border-radius: 999px;
+    color: inherit;
+  }
+
+  .site-header .mobile-menu-button {
+    width: 34px;
+    height: 34px;
+    margin-left: 0;
+  }
+
+  .mobile-menu-button:hover {
+    background: var(--nav-pill-hover-bg);
+  }
+
+  .mobile-menu-button img {
+    width: 25px;
+    height: 25px;
+  }
+
+  .mobile-menu-button::before,
+  .mobile-menu-button::after {
+    background: currentColor;
+  }
+
+  .mobile-menu {
+    position: fixed;
+    z-index: 2;
+    top: calc(var(--nav-pill-top) + var(--nav-pill-height) + 8px);
+    right: auto;
+    left: 50%;
+    width: min(320px, calc(100vw - 40px));
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 10px;
+    color: var(--nav-pill-text);
+    background: var(--nav-pill-bg) !important;
+    border: 1px solid var(--nav-pill-border);
+    border-radius: 16px;
+    box-shadow: var(--nav-pill-shadow);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, -8px);
+    backdrop-filter: saturate(150%) blur(var(--nav-pill-blur)) !important;
+    -webkit-backdrop-filter: saturate(150%) blur(var(--nav-pill-blur)) !important;
+    transition:
+      opacity var(--nav-item-duration) ease,
+      transform var(--nav-pill-duration) var(--nav-pill-ease),
+      visibility 0s linear var(--nav-pill-duration);
+  }
+
+  .mobile-menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
+  }
+
+  .mobile-menu a {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 10px;
+    color: inherit;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 590;
+    text-align: left;
+  }
+
+  .mobile-menu a:hover,
+  .mobile-menu a[aria-current] {
+    background: var(--nav-pill-active-bg);
+  }
+
+  .mobile-menu .elsewhere-subnav-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    min-height: 0;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top-color: var(--nav-pill-divider);
+    color: inherit;
+  }
+
+  .mobile-menu .elsewhere-subnav-mobile .elsewhere-subnav-link {
+    width: 100%;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 10px;
+    color: inherit;
+    border-radius: 10px;
+    font-size: 15px;
+    text-align: left;
+  }
+
+  .mobile-menu .elsewhere-subnav-mobile .elsewhere-subnav-link:hover,
+  .mobile-menu .elsewhere-subnav-mobile .elsewhere-subnav-link.is-active {
+    background: var(--nav-pill-active-bg);
+    opacity: 1;
+  }
+
+  .mobile-menu .mobile-elsewhere-links {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid var(--nav-pill-divider);
+  }
+
+  .mobile-menu .mobile-elsewhere-links a {
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 15px;
+  }
+
+  .site-header::before {
+    content: none !important;
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-shell,
+  .nav-shell .elsewhere-nav-item > .elsewhere-subnav,
+  .nav-selection-indicator,
+  .mobile-menu {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* =========================
+   Navigation / Conflict Recovery
+   The VS Code overwrite restored an obsolete logo/menu implementation here.
+   Keep this final shared mode-pill layer authoritative for every page.
 ========================= */
 .site-header {
   z-index: 1000;
@@ -4545,6 +5307,204 @@ html:has(body.is-unsplash-lightbox-open) {
   .nav-selection-indicator,
   .nav-shell {
     transition-duration: 0.01ms;
+  }
+}
+
+/* =========================
+   Home / Save Conflict Recovery
+   Root index.html still contains the original snap home. Restore only the
+   missing layout rules that give its media and snap panels real geometry.
+========================= */
+.snap-root {
+  height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  background: var(--background);
+}
+
+.snap-root::-webkit-scrollbar {
+  display: none;
+}
+
+.snap-indicator {
+  position: fixed;
+  top: 50%;
+  right: 24px;
+  z-index: 1500;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transform: translateY(-50%);
+}
+
+.snap-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--foreground);
+  opacity: 0.25;
+  cursor: pointer;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.snap-dot.is-active {
+  opacity: 1;
+  transform: scale(1.35);
+}
+
+.snap-panel {
+  position: relative;
+  display: flex;
+  min-height: 100svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: var(--background);
+}
+
+.snap-root > .footer-panel {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}
+
+.snap-root.is-footer-free {
+  scroll-snap-type: none;
+}
+
+.visual-panel {
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(var(--header-height) + 20px) var(--panel-x) 60px;
+}
+
+.media-frame {
+  position: relative;
+  width: 100%;
+  height: calc(100svh - var(--header-height) - 80px);
+  min-height: calc(100svh - var(--header-height) - 80px);
+  margin: 0;
+  overflow: hidden;
+  background: #000000;
+}
+
+.media-frame img,
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.video-fallback,
+.hero-video {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-video {
+  z-index: 1;
+  background: #000000;
+}
+
+.hero-video.is-unavailable {
+  opacity: 0;
+}
+
+.category-panel {
+  align-items: center;
+  justify-content: center;
+  padding: 140px var(--panel-x);
+}
+
+.category-stack {
+  display: flex;
+  flex-direction: column;
+  width: min(1280px, 100%);
+  gap: 20px;
+}
+
+.category-link {
+  display: grid;
+  place-items: center;
+  height: 191px;
+  color: var(--foreground);
+  font-size: 110px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.category-link:hover {
+  opacity: 0.46;
+}
+
+.category-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+@media (max-width: 1099px) {
+  .visual-panel {
+    padding-top: calc(var(--header-height) + 12px);
+    padding-bottom: 56px;
+  }
+
+  .media-frame {
+    height: min(720px, calc(100svh - var(--header-height) - 68px));
+    min-height: 0;
+  }
+
+  .category-panel {
+    padding-top: 120px;
+    padding-bottom: 120px;
+  }
+
+  .category-stack {
+    gap: 10px;
+  }
+
+  .category-link {
+    height: 191px;
+    font-size: 100px;
+  }
+}
+
+@media (max-width: 833px) {
+  .visual-panel {
+    padding-top: calc(var(--header-height) + 8px);
+    padding-bottom: 32px;
+  }
+
+  .media-frame,
+  .visual-panel .media-frame {
+    width: 100%;
+    height: min(500px, calc(100svh - var(--header-height) - 40px));
+    min-height: 0;
+  }
+
+  .category-panel {
+    padding-top: 100px;
+    padding-bottom: 100px;
+  }
+
+  .category-stack {
+    width: min(350px, 100%);
+    gap: 20px;
+  }
+
+  .category-link {
+    height: 80px;
+    font-size: 50px;
+  }
+
+  .snap-indicator {
+    right: max(16px, var(--safe-area-right));
   }
 }
 
