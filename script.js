@@ -98,7 +98,12 @@
         const image = document.createElement("img");
         image.src = resolveProjectPath(project.image, rootPrefix);
         image.alt = project.imageAlt || `${project.title} project preview`;
-        image.loading = project.loading || (index < 2 ? "eager" : "lazy");
+        const isVisiblePriorityProject =
+          (project.title === "Calmato" && project.description === "UX/UI") ||
+          project.title === "On The Trip";
+        if (isVisiblePriorityProject) card.dataset.worksEntryPriority = "true";
+        image.loading = project.loading || (isVisiblePriorityProject || index < 2 ? "eager" : "lazy");
+        if (isVisiblePriorityProject) image.fetchPriority = "high";
 
         const info = document.createElement("div");
         info.className = "project-info";
@@ -201,13 +206,18 @@
           const duration = getCssMilliseconds(projectGrid, "--works-reveal-duration", 580);
 
           revealOrder.forEach((card, index) => {
-            card.style.setProperty("--works-reveal-delay", `${index * stagger}ms`);
+            const delay = card.dataset.worksEntryPriority === "true" ? 0 : index * stagger;
+            card.style.setProperty("--works-reveal-delay", `${delay}ms`);
           });
 
           window.requestAnimationFrame(() => {
             projectGrid.classList.add("is-works-entrance-revealing");
 
-            const finalDelay = Math.max(0, revealOrder.length - 1) * stagger;
+            const finalDelay = revealOrder.reduce(
+              (latestDelay, card, index) =>
+                Math.max(latestDelay, card.dataset.worksEntryPriority === "true" ? 0 : index * stagger),
+              0,
+            );
             revealTimer = window.setTimeout(() => {
               clearEntranceState();
               onComplete();

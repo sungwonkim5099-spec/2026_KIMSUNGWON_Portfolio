@@ -101,12 +101,12 @@ body {
 
 body.home-page,
 body.about-page,
-body.works-page,
 body.project-page {
   overflow-x: hidden;
   overflow-y: auto;
 }
 
+body.works-page,
 body.elsewhere-page {
   overflow: hidden;
 }
@@ -450,7 +450,10 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .works-main {
-  min-height: 100svh;
+  height: 100svh;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
   background: var(--background);
 }
 
@@ -674,6 +677,7 @@ html[data-theme="dark"] .works-page {
   position: relative;
   height: 100svh;
   min-height: 100svh;
+  max-height: 100svh;
   display: block;
   padding: 0;
   overflow: hidden;
@@ -809,14 +813,10 @@ html[data-theme="dark"] .works-page {
 }
 
 .works-page .project-gallery.is-works-camera-ready .project-media img {
-  filter: grayscale(var(--works-camera-inactive-grayscale));
-  transition:
-    transform var(--works-hover-duration) var(--works-motion-easing),
-    filter var(--works-camera-transition-duration) var(--works-camera-transition-easing);
-}
-
-.works-page .project-gallery.is-works-camera-ready .project-card.is-works-camera-active .project-media img {
-  filter: grayscale(0);
+  /* Keep large thumbnails on a stable compositor layer during camera travel. */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform var(--works-hover-duration) var(--works-motion-easing);
 }
 
 @media (min-width: 1440px) and (hover: hover) and (pointer: fine) {
@@ -918,6 +918,9 @@ html[data-theme="dark"] .works-page {
 /* Elsewhere - Channel navigation */
 .elsewhere-main {
   height: 100svh;
+  min-height: 0;
+  max-height: 100svh;
+  margin: 0;
   overflow-x: hidden;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
@@ -932,6 +935,7 @@ html[data-theme="dark"] .works-page {
 
 .elsewhere-content {
   position: relative;
+  margin: 0;
   padding: 0;
 }
 
@@ -1044,6 +1048,7 @@ html[data-theme="dark"] .works-page {
 
 .elsewhere-panel-stage {
   position: relative;
+  margin: 0;
   overflow: visible;
   touch-action: pan-y;
 }
@@ -5061,12 +5066,12 @@ html:has(body.is-unsplash-lightbox-open) {
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
-  transform: translateX(calc(var(--nav-mode-shift) * -1));
+  /* Keep the centered shell stationary while its visible mode changes width. */
+  transform: none;
   transition:
     max-width var(--nav-mode-duration) var(--nav-mode-ease),
-    opacity 180ms ease,
-    transform var(--nav-mode-duration) var(--nav-mode-ease);
-  will-change: max-width, opacity, transform;
+    opacity 180ms ease;
+  will-change: max-width, opacity;
 }
 
 .nav-mode-content {
