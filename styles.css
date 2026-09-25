@@ -577,7 +577,7 @@ html[data-theme="dark"] .footer-mark {
   --works-thumbnail-label-inline-padding: 24px;
   --works-thumbnail-label-bottom-padding: 24px;
   --works-desktop-gallery-top-space: 16px;
-  --works-desktop-gallery-bottom-space: 16px;
+  --works-desktop-gallery-bottom-space: 0px;
 
   /* VS Code control: one scale for both camera-card width and height at every viewport. */
   --works-camera-zoom: 0.35;
