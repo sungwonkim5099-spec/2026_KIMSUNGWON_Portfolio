@@ -2853,15 +2853,14 @@
         elsewhereSnapScroller.addEventListener(eventName, scheduleCalmatoScrollHint, { passive: true });
       });
 
-      window.addEventListener(
-        "resize",
-        () => {
-          syncCalmatoDissolveMetrics();
-          requestCalmatoDissolve();
-          scheduleCalmatoScrollHint();
-        },
-        { passive: true }
-      );
+      const syncCalmatoViewport = () => {
+        syncCalmatoDissolveMetrics();
+        requestCalmatoDissolve();
+        scheduleCalmatoScrollHint();
+      };
+
+      window.addEventListener("resize", syncCalmatoViewport, { passive: true });
+      window.visualViewport?.addEventListener("resize", syncCalmatoViewport, { passive: true });
 
       syncCalmatoDissolveMetrics();
       updateCalmatoDissolve();
