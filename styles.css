@@ -5260,6 +5260,7 @@ html:has(body.is-unsplash-lightbox-open) {
 }
 
 .nav-selection-indicator.is-motion-ready {
+  will-change: transform, width;
   transition:
     transform var(--nav-indicator-duration) var(--nav-indicator-ease),
     width var(--nav-indicator-duration) var(--nav-indicator-ease),

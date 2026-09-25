@@ -344,11 +344,18 @@
         if (focus) allCards[activeIndex]?.focus({ preventScroll: true });
       };
 
-      const establishInitialCameraFraming = () => {
+      const establishInitialCameraFraming = (onReady = () => {}) => {
         gallery.classList.add("is-works-initializing");
         setActiveIndex(0);
+        // Commit the initial camera transform with transitions disabled before revealing it.
         projectGrid.getBoundingClientRect();
-        gallery.classList.remove("is-works-initializing");
+        window.requestAnimationFrame(() => {
+          projectGrid.getBoundingClientRect();
+          window.requestAnimationFrame(() => {
+            gallery.classList.remove("is-works-initializing");
+            onReady();
+          });
+        });
       };
 
       const moveCamera = (columnDelta, rowDelta, options) => {
@@ -505,16 +512,10 @@
 
       const startWorksEntrance = () => {
         const shouldReveal = worksGridEntrance.prepare();
-        establishInitialCameraFraming();
+        if (shouldReveal) isWorksEntranceActive = true;
 
-        if (!shouldReveal) return;
-
-        isWorksEntranceActive = true;
-
-        // Paint the hidden surrounding cards before dissolving them in.
-        projectGrid.getBoundingClientRect();
-
-        window.requestAnimationFrame(() => {
+        establishInitialCameraFraming(() => {
+          if (!shouldReveal) return;
           worksGridEntrance.reveal(() => {
             isWorksEntranceActive = false;
           });
