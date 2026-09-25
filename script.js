@@ -1020,11 +1020,6 @@
       }
 
       elsewhereActivePanel = nextPanel;
-      elsewhere?.classList.toggle(
-        "is-calmato-footer-swipe-ready",
-        nextPanel === "calmato" && calmatoDominantIndex === elsewhereSnapPanels.length - 1
-      );
-
       elsewhereTabs.forEach((tab) => {
         const isActive = tab.dataset.elsewhereTab === nextPanel;
         tab.classList.toggle("is-active", isActive);
@@ -1045,7 +1040,6 @@
       // Unsplash is a single viewport. Reset a retained Calmato scroll position
       // so the gallery is not rendered above the currently visible area.
       if (nextPanel === "unsplash" && elsewhere) {
-        elsewhere.classList.remove("is-footer-free");
         elsewhere.scrollTop = 0;
       }
 
@@ -2549,8 +2543,7 @@
         !elsewhereSnapNav ||
         !elsewhereSnapScroller ||
         elsewhereActivePanel !== "calmato" ||
-        elsewhereSnapNav.classList.contains("is-hidden") ||
-        elsewhereSnapScroller.classList.contains("is-footer-free")
+        elsewhereSnapNav.classList.contains("is-hidden")
       ) {
         return false;
       }
@@ -2624,11 +2617,6 @@
           Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex
         );
       });
-
-      elsewhere?.classList.toggle(
-        "is-calmato-footer-swipe-ready",
-        elsewhereActivePanel === "calmato" && nextIndex === elsewhereSnapPanels.length - 1
-      );
 
       if (nextIndex === 1) revealCalmatoValueIconsOnce();
     };
@@ -2707,34 +2695,11 @@
     const scrollToCalmatoPage = (targetIndex) => {
       if (!elsewhereSnapScroller || elsewhereSnapPanels.length === 0) return;
       const nextIndex = clampCalmatoDissolve(targetIndex, 0, elsewhereSnapPanels.length - 1);
-      elsewhereSnapScroller.classList.remove("is-footer-free");
       syncCalmatoDissolveMetrics();
       scheduleCalmatoScrollHint();
       elsewhereSnapScroller.scrollTo({
         top: calmatoDissolveRootTop + calmatoDissolveDistance * nextIndex,
         behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
-    };
-
-    const scrollToCalmatoFooter = () => {
-      const footer = document.querySelector("[data-elsewhere-footer]");
-      if (!footer || !elsewhereSnapScroller) return;
-      clearCalmatoScrollHint();
-      const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();
-      const footerRect = footer.getBoundingClientRect();
-      const targetTop = Math.min(
-        elsewhereSnapScroller.scrollHeight - elsewhereSnapScroller.clientHeight,
-        elsewhereSnapScroller.scrollTop + footerRect.top - scrollerRect.top
-      );
-
-      // The footer sits after the four snap pages, so release their mandatory snap
-      // before continuing the last mobile swipe into the normal document flow.
-      elsewhereSnapScroller.classList.add("is-footer-free");
-      window.requestAnimationFrame(() => {
-        elsewhereSnapScroller.scrollTo({
-          top: targetTop,
-          behavior: prefersReducedMotion ? "auto" : "smooth",
-        });
       });
     };
 
@@ -2800,8 +2765,7 @@
             return;
           }
 
-          const isLastPage = calmatoMobileSwipe.startIndex === elsewhereSnapPanels.length - 1;
-          if (!isLastPage || deltaY > 0) event.preventDefault();
+          event.preventDefault();
         },
         { passive: false }
       );
@@ -2814,15 +2778,6 @@
           const swipe = calmatoMobileSwipe;
           calmatoMobileSwipe = null;
           if (!touch) return;
-
-          if (
-            swipe.axis === "vertical" &&
-            swipe.startIndex === elsewhereSnapPanels.length - 1 &&
-            touch.clientY - swipe.startY < -56
-          ) {
-            scrollToCalmatoFooter();
-            return;
-          }
 
           if (swipe.axis !== "horizontal") return;
 
