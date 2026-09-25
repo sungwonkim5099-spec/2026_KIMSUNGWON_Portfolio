@@ -4214,10 +4214,9 @@ html:has(body.is-unsplash-lightbox-open) {
   }
 
   .elsewhere-page .elsewhere-main {
-    /* Track the live mobile viewport so the final snap/footer is never below browser chrome. */
-    height: 100dvh;
+    /* Match About's stable small viewport while browser chrome expands or collapses. */
+    height: 100svh;
     scroll-snap-type: y mandatory;
-    scroll-padding-block: 0;
   }
 
   .elsewhere-page .elsewhere-main.is-footer-free {
@@ -4231,35 +4230,31 @@ html:has(body.is-unsplash-lightbox-open) {
   }
 
   .elsewhere-page .elsewhere-snap-root {
-    /* script.js replaces this with an exact pixel track after each viewport resize. */
-    height: 400dvh;
-    min-height: 400dvh;
+    height: 400svh;
+    min-height: 400svh;
     overflow: visible;
   }
 
   .elsewhere-page .calmato-dissolve-stage,
   .elsewhere-page .calmato-snap-point {
-    height: 100dvh;
+    height: 100svh;
   }
 
   .elsewhere-page .calmato-dissolve-stage > .elsewhere-snap-panel,
   .elsewhere-page .calmato-closing-content,
   .elsewhere-page #elsewhere-panel-unsplash,
   .elsewhere-page .unsplash-gallery {
-    min-height: 100dvh;
+    min-height: 100svh;
   }
 
   .elsewhere-page .calmato-dissolve-stage > .elsewhere-snap-panel {
-    height: 100dvh;
+    height: 100svh;
   }
 
   .elsewhere-page .elsewhere-snap-panel {
     block-size: 100svh;
-    block-size: 100dvh;
     min-block-size: 100svh;
-    min-block-size: 100dvh;
     max-block-size: 100svh;
-    max-block-size: 100dvh;
     scroll-snap-align: none;
     scroll-snap-stop: normal;
   }
@@ -4484,12 +4479,12 @@ html:has(body.is-unsplash-lightbox-open) {
 ========================= */
 @media (max-width: 833px) {
   .works-page .works-main {
-    min-height: 100dvh;
+    min-height: 100svh;
   }
 
   .works-page .project-gallery.is-works-camera-ready {
-    height: 100dvh;
-    min-height: 100dvh;
+    height: 100svh;
+    min-height: 100svh;
   }
 
   .works-page {
@@ -5308,204 +5303,6 @@ html:has(body.is-unsplash-lightbox-open) {
   .nav-selection-indicator,
   .nav-shell {
     transition-duration: 0.01ms;
-  }
-}
-
-/* =========================
-   Home / Save Conflict Recovery
-   Root index.html still contains the original snap home. Restore only the
-   missing layout rules that give its media and snap panels real geometry.
-========================= */
-.snap-root {
-  height: 100svh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  overscroll-behavior-y: contain;
-  scrollbar-width: none;
-  background: var(--background);
-}
-
-.snap-root::-webkit-scrollbar {
-  display: none;
-}
-
-.snap-indicator {
-  position: fixed;
-  top: 50%;
-  right: 24px;
-  z-index: 1500;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  transform: translateY(-50%);
-}
-
-.snap-dot {
-  width: 6px;
-  height: 6px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--foreground);
-  opacity: 0.25;
-  cursor: pointer;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.snap-dot.is-active {
-  opacity: 1;
-  transform: scale(1.35);
-}
-
-.snap-panel {
-  position: relative;
-  display: flex;
-  min-height: 100svh;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  background: var(--background);
-}
-
-.snap-root > .footer-panel {
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
-}
-
-.snap-root.is-footer-free {
-  scroll-snap-type: none;
-}
-
-.visual-panel {
-  align-items: flex-start;
-  justify-content: center;
-  padding: calc(var(--header-height) + 20px) var(--panel-x) 60px;
-}
-
-.media-frame {
-  position: relative;
-  width: 100%;
-  height: calc(100svh - var(--header-height) - 80px);
-  min-height: calc(100svh - var(--header-height) - 80px);
-  margin: 0;
-  overflow: hidden;
-  background: #000000;
-}
-
-.media-frame img,
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-}
-
-.video-fallback,
-.hero-video {
-  position: absolute;
-  inset: 0;
-}
-
-.hero-video {
-  z-index: 1;
-  background: #000000;
-}
-
-.hero-video.is-unavailable {
-  opacity: 0;
-}
-
-.category-panel {
-  align-items: center;
-  justify-content: center;
-  padding: 140px var(--panel-x);
-}
-
-.category-stack {
-  display: flex;
-  flex-direction: column;
-  width: min(1280px, 100%);
-  gap: 20px;
-}
-
-.category-link {
-  display: grid;
-  place-items: center;
-  height: 191px;
-  color: var(--foreground);
-  font-size: 110px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  text-transform: uppercase;
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-
-.category-link:hover {
-  opacity: 0.46;
-}
-
-.category-link:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 4px;
-}
-
-@media (max-width: 1099px) {
-  .visual-panel {
-    padding-top: calc(var(--header-height) + 12px);
-    padding-bottom: 56px;
-  }
-
-  .media-frame {
-    height: min(720px, calc(100svh - var(--header-height) - 68px));
-    min-height: 0;
-  }
-
-  .category-panel {
-    padding-top: 120px;
-    padding-bottom: 120px;
-  }
-
-  .category-stack {
-    gap: 10px;
-  }
-
-  .category-link {
-    height: 191px;
-    font-size: 100px;
-  }
-}
-
-@media (max-width: 833px) {
-  .visual-panel {
-    padding-top: calc(var(--header-height) + 8px);
-    padding-bottom: 32px;
-  }
-
-  .media-frame,
-  .visual-panel .media-frame {
-    width: 100%;
-    height: min(500px, calc(100svh - var(--header-height) - 40px));
-    min-height: 0;
-  }
-
-  .category-panel {
-    padding-top: 100px;
-    padding-bottom: 100px;
-  }
-
-  .category-stack {
-    width: min(350px, 100%);
-    gap: 20px;
-  }
-
-  .category-link {
-    height: 80px;
-    font-size: 50px;
-  }
-
-  .snap-indicator {
-    right: max(16px, var(--safe-area-right));
   }
 }
 
