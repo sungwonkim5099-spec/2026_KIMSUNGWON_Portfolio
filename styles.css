@@ -152,7 +152,7 @@ img {
 
 .nav-shell {
   position: fixed;
-  top: calc(var(--safe-area-top) + var(--nav-pill-top));
+  top: max(var(--nav-pill-top), var(--safe-area-top));
   /* Use the visual viewport, not the scrollbar-reduced layout width. */
   left: 50vw;
   z-index: 1;
@@ -1712,7 +1712,7 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-footer {
 .elsewhere-snap-nav {
   position: fixed;
   z-index: 1500;
-  bottom: calc(var(--safe-area-bottom) + var(--calmato-indicator-bottom));
+  bottom: max(var(--calmato-indicator-bottom), var(--safe-area-bottom));
   left: 50%;
   display: flex;
   flex-direction: row;
@@ -3482,8 +3482,8 @@ html[data-theme="dark"] .calmato-video-controls {
 
 .theme-toggle {
   position: fixed;
-  right: calc(var(--safe-area-right) + 24px);
-  bottom: calc(var(--safe-area-bottom) + 24px);
+  right: max(24px, var(--safe-area-right));
+  bottom: max(24px, var(--safe-area-bottom));
   z-index: 2000;
 
   width: 42px;
@@ -4269,7 +4269,7 @@ html:has(body.is-unsplash-lightbox-open) {
 
 .nav-shell {
   position: fixed;
-  top: calc(var(--safe-area-top) + var(--nav-pill-top));
+  top: max(var(--nav-pill-top), var(--safe-area-top));
   /* Center against the visual viewport even when a scrollbar gutter is reserved. */
   left: 50vw;
   z-index: 1;
