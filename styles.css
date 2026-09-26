@@ -84,7 +84,6 @@ body {
 
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
   background: var(--background);
 }
 
@@ -4022,32 +4021,6 @@ html[data-theme="dark"] .theme-toggle {
   }
 
 }
-/* =========================
-   Elsewhere Scrollbar Gutter Fix
-========================= */
-
-html:has(body.elsewhere-page),
-body.elsewhere-page {
-  scrollbar-gutter: auto;
-}
-
-/* Keep Elsewhere's mobile header aligned with the shared page gutter. */
-@media (max-width: 833px) {
-  html:has(body.elsewhere-page) {
-    scrollbar-gutter: stable;
-  }
-}
-
-html:has(body.is-unsplash-lightbox-open) {
-  scrollbar-gutter: auto;
-}
-
-@media (max-width: 833px) {
-  html:has([data-elsewhere-panel="unsplash"].is-active) {
-    scrollbar-gutter: auto;
-  }
-}
-
 /* =========================
    Elsewhere / Small Mobile Sizing
    Portrait phones with a short visual viewport (for example, iPhone 12
