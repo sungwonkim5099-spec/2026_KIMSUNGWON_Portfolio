@@ -4022,6 +4022,14 @@ html[data-theme="dark"] .theme-toggle {
    These values only tune size and spacing; the desktop/tablet design stays untouched.
 ========================= */
 @media (max-width: 833px) {
+  /* Paint fullscreen surfaces against Safari's large viewport from first render.
+     This is a minimum only: it does not recreate the removed viewport lock. */
+  .works-page .works-main,
+  .elsewhere-page .elsewhere-main {
+    min-height: 100vh;
+    min-height: 100lvh;
+  }
+
   /* Keep the off-canvas panel transition from widening the mobile scroll area. */
   .elsewhere-page .elsewhere-panel-stage {
     overflow-x: clip;
