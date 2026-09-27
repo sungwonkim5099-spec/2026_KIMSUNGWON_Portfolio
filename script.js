@@ -389,22 +389,19 @@
 
       const onWheel = (event) => {
         if (!isCameraEnabled() || event.ctrlKey) return;
-        if (isWorksEntranceActive) {
-          event.preventDefault();
-          return;
-        }
 
         const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode);
         const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode);
         const threshold = getCssNumber("--works-camera-wheel-threshold", 10);
         const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * cameraConfig.wheelAxisBias;
-        const primaryDelta = isHorizontal ? deltaX : deltaY;
 
-        if (Math.abs(primaryDelta) < threshold) return;
+        if (!isHorizontal || Math.abs(deltaX) < threshold) return;
+        if (isWorksEntranceActive) {
+          event.preventDefault();
+          return;
+        }
 
-        const canMove = isHorizontal
-          ? getTargetIndex(activeIndex, primaryDelta > 0 ? 1 : -1, 0) !== activeIndex
-          : getTargetIndex(activeIndex, 0, primaryDelta > 0 ? 1 : -1) !== activeIndex;
+        const canMove = getTargetIndex(activeIndex, deltaX > 0 ? 1 : -1, 0) !== activeIndex;
 
         if (!canMove) return;
 
@@ -414,14 +411,14 @@
 
         const cooldown = getCssNumber("--works-camera-wheel-cooldown", 430);
         wheelLockedUntil = performance.now() + cooldown;
-        moveCamera(isHorizontal ? (primaryDelta > 0 ? 1 : -1) : 0, isHorizontal ? 0 : primaryDelta > 0 ? 1 : -1);
+        moveCamera(deltaX > 0 ? 1 : -1, 0);
       };
 
       const onKeyDown = (event) => {
         if (!isCameraEnabled() || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
 
         if (isWorksEntranceActive) {
-          if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
+          if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
             event.preventDefault();
           }
           return;
@@ -430,27 +427,12 @@
         const directions = {
           ArrowLeft: [-1, 0],
           ArrowRight: [1, 0],
-          ArrowUp: [0, -1],
-          ArrowDown: [0, 1],
         };
         const direction = directions[event.key];
 
         if (direction && moveCamera(direction[0], direction[1])) {
           event.preventDefault();
           return;
-        }
-
-        if (event.key === "Home" && activeIndex !== 0) {
-          event.preventDefault();
-          setActiveIndex(0);
-        }
-
-        if (event.key === "End") {
-          const lastIndex = cards().length - 1;
-          if (activeIndex !== lastIndex) {
-            event.preventDefault();
-            setActiveIndex(lastIndex);
-          }
         }
       };
 
@@ -504,18 +486,14 @@
         const threshold = getCssNumber("--works-camera-swipe-threshold", 28);
         touchGesture = null;
 
-        if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < threshold) return;
+        if (Math.abs(deltaX) < threshold) return;
 
         const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * cameraConfig.wheelAxisBias;
-        const moved = isHorizontal
-          ? moveCamera(deltaX < 0 ? 1 : -1, 0)
-          : moveCamera(0, deltaY < 0 ? 1 : -1);
+        if (!isHorizontal) return;
+
+        moveCamera(deltaX < 0 ? 1 : -1, 0);
 
         suppressCardClickUntil = performance.now() + 420;
-
-        if (!moved && !isHorizontal) {
-          window.scrollBy({ top: -deltaY, behavior: "auto" });
-        }
       };
 
       const onPointerCancel = (event) => {
@@ -558,7 +536,6 @@
     // Elsewhere channel navigation
     const elsewhere = document.querySelector("[data-elsewhere]");
     const elsewhereSubnavs = [...document.querySelectorAll("[data-elsewhere-subnav]")];
-    const elsewherePanelStage = document.querySelector("[data-elsewhere-panel-stage]");
     const elsewhereTabs = [...document.querySelectorAll("[data-elsewhere-tab]")];
     const elsewherePanels = [...document.querySelectorAll("[data-elsewhere-panel]")];
     const elsewhereSnapNav = document.querySelector("[data-elsewhere-snap-nav]");
@@ -572,7 +549,6 @@
     let elsewhereActivePanel = "calmato";
     let elsewhereTouchStartX = 0;
     let elsewhereTouchStartY = 0;
-    let elsewherePanelHeightTimer = 0;
     let syncNavSelectionIndicators = () => {};
 
     const isElsewhereDestination = (destination) =>
@@ -1023,14 +999,6 @@
 
       const isMovingToRight = nextPanel === "unsplash";
 
-      if (elsewherePanelStage) {
-        elsewherePanelStage.style.minHeight = `${elsewherePanelStage.offsetHeight}px`;
-        window.clearTimeout(elsewherePanelHeightTimer);
-        elsewherePanelHeightTimer = window.setTimeout(() => {
-          elsewherePanelStage.style.minHeight = "";
-        }, prefersReducedMotion ? 0 : 420);
-      }
-
       elsewhereActivePanel = nextPanel;
       elsewhereTabs.forEach((tab) => {
         const isActive = tab.dataset.elsewhereTab === nextPanel;
@@ -1049,16 +1017,9 @@
       elsewhereSnapNav?.classList.toggle("is-hidden", nextPanel !== "calmato");
       if (nextPanel !== "calmato") clearCalmatoScrollHint();
 
-      // Unsplash is a single viewport. Reset a retained Calmato scroll position
-      // so the gallery is not rendered above the currently visible area.
-      if (nextPanel === "unsplash" && elsewhere) {
-        elsewhere.scrollTop = 0;
-      }
-
       if (nextPanel === "calmato") {
         window.requestAnimationFrame(() => {
-          syncCalmatoDissolveMetrics();
-          requestCalmatoDissolve();
+          setCalmatoPage(Math.max(calmatoDominantIndex, 0), { immediate: true });
           scheduleCalmatoScrollHint();
         });
       }
@@ -1394,7 +1355,7 @@
     };
 
     const restoreUnsplashLightboxScroll = () => {
-      if (elsewhere) elsewhere.scrollTop = unsplashLightboxScrollTop;
+      window.scrollTo({ top: unsplashLightboxScrollTop, behavior: "auto" });
     };
 
     const restoreUnsplashLightboxScrollAfterFocus = () => {
@@ -1809,7 +1770,7 @@
       unsplashLightboxClose?.style.removeProperty("--unsplash-lightbox-close-left");
       unsplashLightboxClose?.style.removeProperty("--unsplash-lightbox-close-right");
 
-      unsplashLightboxScrollTop = elsewhere?.scrollTop ?? 0;
+      unsplashLightboxScrollTop = window.scrollY;
       stopUnsplashMotion();
       stopUnsplashMotionFrame();
       unsplashLightboxOpen = true;
@@ -2299,8 +2260,6 @@
     const elsewhereSnapRoot = document.querySelector("[data-elsewhere-snap-root]");
     const elsewhereSnapPanels = [...document.querySelectorAll("[data-elsewhere-snap-panel]")];
     const elsewhereSnapDots = [...document.querySelectorAll("[data-elsewhere-snap-dot]")];
-    const elsewhereSnapScroller = elsewhere || elsewhereSnapRoot;
-    let elsewhereDissolveFrame = 0;
 
     // Calmato 02 core-value icons reveal once when the page becomes dominant.
     const calmatoValueIcons = [...document.querySelectorAll(".calmato-value-icon")];
@@ -2523,16 +2482,17 @@
       }
     }
 
-    const clampCalmatoDissolve = (value, min, max) => Math.min(Math.max(value, min), max);
-    let calmatoDissolveDistance = 0;
-    let calmatoDissolveRootTop = 0;
-    let calmatoDissolveProgressPower = 1;
-    let calmatoDissolveLeavingScale = 0;
-    let calmatoDissolveLeavingTranslateY = 0;
-    let calmatoDissolveEnteringTranslateY = 0;
-    let calmatoIndicatorSwitchThreshold = 0.55;
+    const clampCalmatoIndex = (value) =>
+      Math.min(Math.max(value, 0), Math.max(elsewhereSnapPanels.length - 1, 0));
+    const calmatoDissolveStage = document.querySelector("[data-calmato-dissolve-stage]");
     let calmatoDominantIndex = -1;
     let calmatoScrollHintTimer = 0;
+    let calmatoTransitionTimer = 0;
+    let calmatoTransitionFrame = 0;
+    let calmatoTransitionCommitFrame = 0;
+    let calmatoWheelLockedUntil = 0;
+    let calmatoWheelGestureActive = false;
+    let calmatoWheelGestureTimer = 0;
 
     const readCalmatoDissolveNumber = (propertyName, fallback) => {
       if (!elsewhereSnapRoot) return fallback;
@@ -2550,18 +2510,13 @@
       setCalmatoScrollHintVisible(false);
     };
 
-    const canShowCalmatoScrollHint = () => {
-      if (
-        !elsewhereSnapNav ||
-        !elsewhereSnapScroller ||
-        elsewhereActivePanel !== "calmato" ||
-        elsewhereSnapNav.classList.contains("is-hidden")
-      ) {
-        return false;
-      }
-
-      return true;
-    };
+    const canShowCalmatoScrollHint = () =>
+      Boolean(
+        elsewhereSnapNav &&
+        elsewhereSnapRoot &&
+        elsewhereActivePanel === "calmato" &&
+        !elsewhereSnapNav.classList.contains("is-hidden")
+      );
 
     const scheduleCalmatoScrollHint = () => {
       clearCalmatoScrollHint();
@@ -2574,48 +2529,9 @@
       }, delay);
     };
 
-    const syncCalmatoDissolveMetrics = () => {
-      if (!elsewhereSnapRoot || !elsewhereSnapScroller || elsewhereSnapPanels.length === 0) return;
-
-      const distanceMultiplier = Math.max(
-        readCalmatoDissolveNumber("--calmato-dissolve-scroll-distance", 1),
-        0.1
-      );
-
-      calmatoDissolveDistance = Math.max(elsewhereSnapScroller.clientHeight * distanceMultiplier, 1);
-      calmatoDissolveProgressPower = Math.max(
-        readCalmatoDissolveNumber("--calmato-dissolve-progress-power", 1),
-        0.1
-      );
-      calmatoDissolveLeavingScale = readCalmatoDissolveNumber("--calmato-dissolve-leaving-scale", 0);
-      calmatoDissolveLeavingTranslateX = readCalmatoDissolveNumber(
-      "--calmato-dissolve-leaving-translate-x",
-      0
-      );
-      calmatoDissolveEnteringTranslateX = readCalmatoDissolveNumber(
-      "--calmato-dissolve-entering-translate-x",
-      0
-      );
-      calmatoIndicatorSwitchThreshold = clampCalmatoDissolve(
-        readCalmatoDissolveNumber("--calmato-indicator-switch-threshold", 0.55),
-        0.5,
-        0.95
-      );
-
-      const trackHeight = calmatoDissolveDistance * elsewhereSnapPanels.length;
-      elsewhereSnapRoot.style.height = `${trackHeight}px`;
-      elsewhereSnapRoot.style.minHeight = `${trackHeight}px`;
-
-      const scrollerRect = elsewhereSnapScroller.getBoundingClientRect();
-      const rootRect = elsewhereSnapRoot.getBoundingClientRect();
-      calmatoDissolveRootTop = elsewhereSnapScroller.scrollTop + rootRect.top - scrollerRect.top;
-    };
-
     const setCalmatoDominantIndex = (nextIndex) => {
       if (nextIndex === calmatoDominantIndex) return;
       calmatoDominantIndex = nextIndex;
-
-      if (nextIndex < 0) clearCalmatoScrollHint();
 
       elsewhereSnapDots.forEach((dot, index) => {
         const isActive = index === nextIndex;
@@ -2623,219 +2539,241 @@
         dot.setAttribute("aria-current", isActive ? "true" : "false");
       });
 
-      elsewhereSnapPanels.forEach((panel) => {
-        panel.classList.toggle(
-          "is-visible",
-          Number(panel.dataset.elsewhereSnapPanel || 0) === nextIndex
-        );
-      });
-
       if (nextIndex === 1) revealCalmatoValueIconsOnce();
     };
 
-    const getCalmatoDominantIndex = (fromIndex, toIndex, progress) => {
-      if (fromIndex === toIndex) return fromIndex;
-      if (calmatoDominantIndex === toIndex) {
-        return progress <= 1 - calmatoIndicatorSwitchThreshold ? fromIndex : toIndex;
-      }
-      if (calmatoDominantIndex === fromIndex) {
-        return progress >= calmatoIndicatorSwitchThreshold ? toIndex : fromIndex;
-      }
-      return progress >= 0.5 ? toIndex : fromIndex;
+    const cancelCalmatoTransition = () => {
+      window.clearTimeout(calmatoTransitionTimer);
+      window.cancelAnimationFrame(calmatoTransitionFrame);
+      window.cancelAnimationFrame(calmatoTransitionCommitFrame);
+      calmatoTransitionTimer = 0;
+      calmatoTransitionFrame = 0;
+      calmatoTransitionCommitFrame = 0;
+      elsewhereSnapPanels.forEach((panel) => panel.classList.remove("is-calmato-leaving"));
     };
 
-    const updateCalmatoDissolve = () => {
-      if (
-        elsewhereActivePanel !== "calmato" ||
-        !elsewhereSnapScroller ||
-        elsewhereSnapPanels.length === 0 ||
-        calmatoDissolveDistance <= 0
-      ) {
-        return;
-      }
-
-      const rawProgress = (elsewhereSnapScroller.scrollTop - calmatoDissolveRootTop) / calmatoDissolveDistance;
-      const panelCount = elsewhereSnapPanels.length;
-
-      if (rawProgress < 0 || rawProgress >= panelCount) {
-        setCalmatoDominantIndex(-1);
-        return;
-      }
-
-      const sceneProgress = clampCalmatoDissolve(rawProgress, 0, panelCount - 1);
-      const fromIndex = Math.floor(sceneProgress);
-      const toIndex = Math.min(fromIndex + 1, panelCount - 1);
-      const dissolveProgress = Math.pow(sceneProgress - fromIndex, calmatoDissolveProgressPower);
-
+    const showOnlyCalmatoPanel = (targetIndex) => {
       elsewhereSnapPanels.forEach((panel, index) => {
-        let opacity = 0;
-        let translateX = 0;
-        let scale = 1;
-        let zIndex = 0;
-
-        if (index === fromIndex) {
-          opacity = 1;
-          scale += dissolveProgress * calmatoDissolveLeavingScale;
-          translateX = dissolveProgress * calmatoDissolveLeavingTranslateX;
-          zIndex = 1;
-        }
-
-        if (index === toIndex && toIndex !== fromIndex) {
-          opacity = dissolveProgress;
-          translateX = (1 - dissolveProgress) * calmatoDissolveEnteringTranslateX;
-          zIndex = 2;
-        }
-
-        panel.style.setProperty("--calmato-dissolve-opacity", String(opacity));
-        panel.style.setProperty("--calmato-dissolve-translate-x", `${translateX}px`);
-        panel.style.setProperty("--calmato-dissolve-scale", String(scale));
-        panel.style.zIndex = String(zIndex);
-      });
-
-      setCalmatoDominantIndex(getCalmatoDominantIndex(fromIndex, toIndex, dissolveProgress));
-    };
-
-    const requestCalmatoDissolve = () => {
-      if (elsewhereDissolveFrame) return;
-
-      elsewhereDissolveFrame = window.requestAnimationFrame(() => {
-        elsewhereDissolveFrame = 0;
-        updateCalmatoDissolve();
+        panel.classList.toggle("is-visible", index === targetIndex);
+        panel.classList.remove("is-calmato-leaving");
       });
     };
 
-    const scrollToCalmatoPage = (targetIndex) => {
-      if (!elsewhereSnapScroller || elsewhereSnapPanels.length === 0) return;
-      const nextIndex = clampCalmatoDissolve(targetIndex, 0, elsewhereSnapPanels.length - 1);
-      syncCalmatoDissolveMetrics();
-      scheduleCalmatoScrollHint();
-      elsewhereSnapScroller.scrollTo({
-        top: calmatoDissolveRootTop + calmatoDissolveDistance * nextIndex,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
+    const setCalmatoPage = (targetIndex, { immediate = false } = {}) => {
+      if (!calmatoDissolveStage || elsewhereSnapPanels.length === 0) return;
+
+      const nextIndex = clampCalmatoIndex(targetIndex);
+      const visibleIndex = elsewhereSnapPanels.findIndex((panel) => panel.classList.contains("is-visible"));
+      const currentIndex = calmatoDominantIndex >= 0 ? calmatoDominantIndex : Math.max(visibleIndex, 0);
+
+      cancelCalmatoTransition();
+      clearCalmatoScrollHint();
+
+      if (immediate || prefersReducedMotion || currentIndex === nextIndex) {
+        calmatoDissolveStage.classList.add("is-calmato-motion-disabled");
+        showOnlyCalmatoPanel(nextIndex);
+        setCalmatoDominantIndex(nextIndex);
+        calmatoDissolveStage.getBoundingClientRect();
+        calmatoTransitionFrame = window.requestAnimationFrame(() => {
+          calmatoTransitionFrame = 0;
+          calmatoDissolveStage.classList.remove("is-calmato-motion-disabled");
+          scheduleCalmatoScrollHint();
+        });
+        return;
+      }
+
+      const direction = nextIndex > currentIndex ? 1 : -1;
+      const leavingDistance = Math.abs(
+        readCalmatoDissolveNumber("--calmato-dissolve-leaving-translate-x", -52)
+      );
+      const enteringDistance = Math.abs(
+        readCalmatoDissolveNumber("--calmato-dissolve-entering-translate-x", 52)
+      );
+      const duration = getCssMilliseconds(elsewhereSnapRoot, "--calmato-panel-duration", 680);
+      const currentPanel = elsewhereSnapPanels[currentIndex];
+      const nextPanel = elsewhereSnapPanels[nextIndex];
+
+      calmatoDissolveStage.classList.add("is-calmato-motion-disabled");
+      showOnlyCalmatoPanel(currentIndex);
+      calmatoDissolveStage.style.setProperty(
+        "--calmato-dissolve-leaving-translate-x",
+        `${direction * -leavingDistance}px`
+      );
+      calmatoDissolveStage.style.setProperty(
+        "--calmato-dissolve-entering-translate-x",
+        `${direction * enteringDistance}px`
+      );
+      calmatoDissolveStage.getBoundingClientRect();
+      calmatoDissolveStage.classList.remove("is-calmato-motion-disabled");
+
+      // Commit the outgoing and incoming source positions before starting motion.
+      calmatoTransitionFrame = window.requestAnimationFrame(() => {
+        calmatoTransitionFrame = 0;
+        nextPanel.getBoundingClientRect();
+        calmatoTransitionCommitFrame = window.requestAnimationFrame(() => {
+          calmatoTransitionCommitFrame = 0;
+          currentPanel.classList.add("is-calmato-leaving");
+          nextPanel.classList.add("is-visible");
+          setCalmatoDominantIndex(nextIndex);
+
+          calmatoTransitionTimer = window.setTimeout(() => {
+            calmatoTransitionTimer = 0;
+            showOnlyCalmatoPanel(nextIndex);
+            scheduleCalmatoScrollHint();
+          }, duration + 40);
+        });
       });
     };
 
-    if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
+    if (elsewhereSnapRoot && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
       elsewhereSnapDots.forEach((dot) => {
         dot.addEventListener("click", () => {
           const targetIndex = Number(dot.dataset.elsewhereSnapDot || 0);
           if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= elsewhereSnapPanels.length) return;
-
-          scrollToCalmatoPage(targetIndex);
+          setCalmatoPage(targetIndex);
         });
       });
 
-      let calmatoMobileSwipe = null;
-      const calmatoMobileQuery = window.matchMedia("(max-width: 833px)");
-      const getCalmatoMobileSwipeIndex = () => {
-        if (calmatoDominantIndex >= 0) return calmatoDominantIndex;
-        const rawIndex = (elsewhereSnapScroller.scrollTop - calmatoDissolveRootTop) / calmatoDissolveDistance;
-        return clampCalmatoDissolve(Math.round(rawIndex), 0, elsewhereSnapPanels.length - 1);
-      };
       const isCalmatoSwipeTarget = (target) =>
         !target.closest("a, button, input, textarea, select, iframe, [data-youtube-frame]");
+      let calmatoHorizontalSwipe = null;
 
-      elsewhereSnapScroller.addEventListener(
-        "touchstart",
+      elsewhereSnapRoot.addEventListener(
+        "wheel",
         (event) => {
-          if (
-            !calmatoMobileQuery.matches ||
-            elsewhereActivePanel !== "calmato" ||
-            !isCalmatoSwipeTarget(event.target)
-          ) {
-            calmatoMobileSwipe = null;
-            return;
-          }
+          if (elsewhereActivePanel !== "calmato" || event.ctrlKey) return;
 
-          const touch = event.touches[0];
-          if (!touch) return;
-          calmatoMobileSwipe = {
-            startX: touch.clientX,
-            startY: touch.clientY,
-            startIndex: getCalmatoMobileSwipeIndex(),
-            axis: null,
-          };
-        },
-        { passive: true }
-      );
+          const lineScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : 1;
+          const deltaX = event.deltaX * (
+            event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? window.innerWidth : lineScale
+          );
+          const deltaY = event.deltaY * (
+            event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? window.innerHeight : lineScale
+          );
+          const dominantDelta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
+          const threshold = Math.max(
+            readCalmatoDissolveNumber("--calmato-wheel-threshold", 8),
+            0
+          );
+          const gestureEndDelay = Math.max(
+            getCssMilliseconds(elsewhereSnapRoot, "--calmato-wheel-gesture-end-delay", 180),
+            0
+          );
 
-      elsewhereSnapScroller.addEventListener(
-        "touchmove",
-        (event) => {
-          if (!calmatoMobileSwipe) return;
-          const touch = event.touches[0];
-          if (!touch) return;
+          if (Math.abs(dominantDelta) < 0.5) return;
 
-          const deltaX = touch.clientX - calmatoMobileSwipe.startX;
-          const deltaY = touch.clientY - calmatoMobileSwipe.startY;
-          if (!calmatoMobileSwipe.axis && Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 12) {
-            calmatoMobileSwipe.axis = Math.abs(deltaX) > Math.abs(deltaY) ? "horizontal" : "vertical";
-          }
+          window.clearTimeout(calmatoWheelGestureTimer);
+          calmatoWheelGestureTimer = window.setTimeout(() => {
+            calmatoWheelGestureActive = false;
+            calmatoWheelGestureTimer = 0;
+          }, gestureEndDelay);
 
-          if (calmatoMobileSwipe.axis === "horizontal") {
-            event.preventDefault();
+          if (Math.abs(dominantDelta) < threshold) {
+            if (calmatoWheelGestureActive) event.preventDefault();
             return;
           }
 
           event.preventDefault();
+          clearCalmatoScrollHint();
+          const now = performance.now();
+          const cooldown = getCssMilliseconds(
+            elsewhereSnapRoot,
+            "--calmato-wheel-cooldown",
+            680
+          );
+
+          if (calmatoWheelGestureActive) {
+            calmatoWheelLockedUntil = Math.max(calmatoWheelLockedUntil, now + cooldown);
+            return;
+          }
+
+          calmatoWheelGestureActive = true;
+          if (now < calmatoWheelLockedUntil) {
+            calmatoWheelLockedUntil = now + cooldown;
+            return;
+          }
+
+          const nextIndex = clampCalmatoIndex(
+            Math.max(calmatoDominantIndex, 0) + (dominantDelta > 0 ? 1 : -1)
+          );
+          calmatoWheelLockedUntil = now + cooldown;
+          if (nextIndex === calmatoDominantIndex) return;
+
+          setCalmatoPage(nextIndex);
         },
         { passive: false }
       );
 
-      elsewhereSnapScroller.addEventListener(
-        "touchend",
+      elsewhereSnapRoot.addEventListener(
+        "touchstart",
         (event) => {
-          if (!calmatoMobileSwipe) return;
-          const touch = event.changedTouches[0];
-          const swipe = calmatoMobileSwipe;
-          calmatoMobileSwipe = null;
+          if (elsewhereActivePanel !== "calmato" || !isCalmatoSwipeTarget(event.target)) {
+            calmatoHorizontalSwipe = null;
+            return;
+          }
+
+          const touch = event.touches[0];
           if (!touch) return;
-
-          if (swipe.axis !== "horizontal") return;
-
-          const deltaX = touch.clientX - swipe.startX;
-          if (Math.abs(deltaX) < 56) return;
-          scrollToCalmatoPage(swipe.startIndex + (deltaX < 0 ? 1 : -1));
-        },
-        { passive: true }
-      );
-
-      elsewhereSnapScroller.addEventListener(
-        "touchcancel",
-        () => {
-          calmatoMobileSwipe = null;
-        },
-        { passive: true }
-      );
-
-      elsewhereSnapScroller.addEventListener(
-        "scroll",
-        () => {
-          requestCalmatoDissolve();
+          calmatoHorizontalSwipe = {
+            startX: touch.clientX,
+            startY: touch.clientY,
+            startIndex: Math.max(calmatoDominantIndex, 0),
+            axis: null,
+          };
           scheduleCalmatoScrollHint();
         },
         { passive: true }
       );
 
-      ["wheel", "pointerdown", "touchstart"].forEach((eventName) => {
-        elsewhereSnapScroller.addEventListener(eventName, scheduleCalmatoScrollHint, { passive: true });
+      elsewhereSnapRoot.addEventListener(
+        "touchmove",
+        (event) => {
+          if (!calmatoHorizontalSwipe) return;
+          const touch = event.touches[0];
+          if (!touch) return;
+
+          const deltaX = touch.clientX - calmatoHorizontalSwipe.startX;
+          const deltaY = touch.clientY - calmatoHorizontalSwipe.startY;
+          if (!calmatoHorizontalSwipe.axis && Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 12) {
+            calmatoHorizontalSwipe.axis = Math.abs(deltaX) > Math.abs(deltaY)
+              ? "horizontal"
+              : "vertical";
+          }
+
+          if (calmatoHorizontalSwipe.axis === "horizontal") event.preventDefault();
+        },
+        { passive: false }
+      );
+
+      elsewhereSnapRoot.addEventListener(
+        "touchend",
+        (event) => {
+          if (!calmatoHorizontalSwipe) return;
+          const touch = event.changedTouches[0];
+          const swipe = calmatoHorizontalSwipe;
+          calmatoHorizontalSwipe = null;
+          if (!touch || swipe.axis !== "horizontal") return;
+
+          const deltaX = touch.clientX - swipe.startX;
+          if (Math.abs(deltaX) < 56) return;
+          setCalmatoPage(swipe.startIndex + (deltaX < 0 ? 1 : -1));
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapRoot.addEventListener(
+        "touchcancel",
+        () => {
+          calmatoHorizontalSwipe = null;
+        },
+        { passive: true }
+      );
+
+      ["pointerdown", "touchstart"].forEach((eventName) => {
+        elsewhereSnapRoot.addEventListener(eventName, scheduleCalmatoScrollHint, { passive: true });
       });
 
-      const syncCalmatoViewport = () => {
-        syncCalmatoDissolveMetrics();
-        requestCalmatoDissolve();
-        scheduleCalmatoScrollHint();
-      };
-
-      window.addEventListener("resize", syncCalmatoViewport, { passive: true });
-
-      if ("ResizeObserver" in window) {
-        new ResizeObserver(syncCalmatoViewport).observe(elsewhereSnapScroller);
-      }
-
-      syncCalmatoDissolveMetrics();
-      updateCalmatoDissolve();
-      scheduleCalmatoScrollHint();
+      setCalmatoPage(0, { immediate: true });
     }
 
     themeToggle?.addEventListener("click", () => {
@@ -2860,13 +2798,7 @@
       themeToggleRevealTimer = window.setTimeout(showThemeToggle, 1000);
     };
 
-    const scrollTargets = new Set([window]);
-    if (elsewhere) scrollTargets.add(elsewhere);
-    if (elsewhereSnapRoot) scrollTargets.add(elsewhereSnapRoot);
-
-    scrollTargets.forEach((target) => {
-      target.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
-    });
+    window.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
 
 }; // onReady 끝
 

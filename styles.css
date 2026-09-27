@@ -1,5 +1,4 @@
 :root {
-  --app-viewport-height: 100svh;
   --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo",
     "Noto Sans KR", "Pretendard", system-ui, sans-serif;
   --background: #ffffff;
@@ -51,12 +50,6 @@
   --header-height: 100px;
 }
 
-@supports (height: 100dvh) {
-  :root {
-    --app-viewport-height: 100dvh;
-  }
-}
-
 html[data-theme="dark"] {
   --background: #111111;
   --foreground: #ffffff;
@@ -106,7 +99,6 @@ body {
   word-break: keep-all;
 }
 
-body.home-page,
 body.about-page,
 body.project-page {
   overflow-x: hidden;
@@ -115,7 +107,8 @@ body.project-page {
 
 body.works-page,
 body.elsewhere-page {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 a {
@@ -276,7 +269,6 @@ html[data-theme="dark"] .footer-mark {
   display: none;
 }
 
-.home-main,
 .about-main {
   min-height: 100svh;
   background: var(--background);
@@ -343,8 +335,6 @@ html[data-theme="dark"] .footer-mark {
   align-items: flex-start;
   justify-content: center;
   padding: 100px var(--panel-x);
-  scroll-snap-align: none;
-  scroll-snap-stop: normal;
 }
 
 .footer-content {
@@ -457,10 +447,10 @@ html[data-theme="dark"] .footer-mark {
 }
 
 .works-main {
-  height: 100svh;
-  min-height: 0;
+  min-height: 100%;
+  display: grid;
   margin: 0;
-  overflow: hidden;
+  overflow: visible;
   background: var(--background);
 }
 
@@ -630,7 +620,7 @@ html[data-theme="dark"] .works-page {
 }
 
 .works-page .project-gallery {
-  min-height: 100svh;
+  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -682,14 +672,12 @@ html[data-theme="dark"] .works-page {
 /* Applied by JavaScript on every Works viewport. */
 .works-page .project-gallery.is-works-camera-ready {
   position: relative;
-  height: 100svh;
-  min-height: 100svh;
-  max-height: 100svh;
+  min-height: 0;
   display: block;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   isolation: isolate;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .works-page .project-gallery.is-works-camera-ready:focus-visible {
@@ -701,7 +689,7 @@ html[data-theme="dark"] .works-page {
   position: absolute;
   inset: 0 var(--works-camera-stage-inline);
   display: block;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .works-page .project-gallery.is-works-camera-ready .project-grid {
@@ -934,24 +922,17 @@ html[data-theme="dark"] .works-page {
 
 /* Elsewhere - Channel navigation */
 .elsewhere-main {
-  height: 100svh;
-  min-height: 0;
-  max-height: 100svh;
+  min-height: 100%;
+  display: grid;
   margin: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  overscroll-behavior-y: contain;
-  scrollbar-width: none;
+  overflow: visible;
   background: var(--background);
-}
-
-.elsewhere-main::-webkit-scrollbar {
-  display: none;
 }
 
 .elsewhere-content {
   position: relative;
+  display: grid;
+  min-height: 100%;
   margin: 0;
   padding: 0;
 }
@@ -1065,6 +1046,8 @@ html[data-theme="dark"] .works-page {
 
 .elsewhere-panel-stage {
   position: relative;
+  display: grid;
+  min-height: 100%;
   margin: 0;
   overflow: visible;
   touch-action: pan-y;
@@ -1100,7 +1083,6 @@ html[data-theme="dark"] .works-page {
    Elsewhere / Unsplash Carousel
 ========================= */
 #elsewhere-panel-unsplash {
-  min-height: 100svh;
   color: var(--foreground);
 }
 
@@ -1151,7 +1133,6 @@ html[data-theme="dark"] .works-page {
   --unsplash-depth-far: -58;
   width: 100%;
   box-sizing: border-box;
-  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1412,7 +1393,6 @@ html[data-theme="dark"] .unsplash-external-logo {
 
 body.is-unsplash-lightbox-open .elsewhere-main {
   overflow: hidden;
-  scroll-snap-type: none;
 }
 
 body.is-unsplash-lightbox-open .site-header {
@@ -1763,15 +1743,17 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
   }
 }
 
-/* Elsewhere / Calmato scroll-driven dissolve and slide transition */
+/* Elsewhere / Calmato horizontal dissolve and slide transition */
 .elsewhere-panel-stage {
-  /* VS Code Edit: Calmato dissolve and page-indicator controls. */
-  --calmato-dissolve-scroll-distance: 1;
-  --calmato-dissolve-progress-power: 1;
+  /* VS Code Edit: Calmato horizontal panel and page-indicator controls. */
   --calmato-dissolve-leaving-scale: 0;
   --calmato-dissolve-leaving-translate-x: -52px;
   --calmato-dissolve-entering-translate-x: 52px;
-  --calmato-indicator-switch-threshold: 0.55;
+  --calmato-panel-duration: 680ms;
+  --calmato-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --calmato-wheel-threshold: 8;
+  --calmato-wheel-cooldown: 680ms;
+  --calmato-wheel-gesture-end-delay: 180ms;
   --calmato-indicator-bottom: 28px;
   --calmato-indicator-gap: 14px;
   --calmato-indicator-dot-size: 6px;
@@ -1797,70 +1779,63 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 .elsewhere-snap-root {
   position: relative;
   display: grid;
-  height: 400svh;
-  min-height: 400svh;
+  min-height: 100%;
   overflow: visible;
   background: var(--background);
 }
 
-.calmato-snap-track {
-  grid-area: 1 / 1;
-  min-height: 100%;
-  pointer-events: none;
-}
-
 .calmato-dissolve-stage {
-  grid-area: 1 / 1;
-  align-self: start;
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: clip;
+  position: relative;
+  display: grid;
+  min-height: 100%;
+  overflow: visible;
   z-index: 1;
 }
 
-.calmato-snap-point {
-  display: block;
-  height: 100svh;
-  pointer-events: none;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
-
 .calmato-dissolve-stage > .elsewhere-snap-panel {
-  position: absolute;
-  inset: 0;
-  height: 100svh;
-  min-height: 100svh;
+  position: relative;
+  grid-area: 1 / 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 0;
-  opacity: var(--calmato-dissolve-opacity, 0);
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transform: translateX(var(--calmato-dissolve-translate-x, 0px)) scale(var(--calmato-dissolve-scale, 1));
+  transform: translateX(var(--calmato-dissolve-entering-translate-x)) scale(1);
+  transition:
+    opacity var(--calmato-panel-duration) var(--calmato-panel-ease),
+    transform var(--calmato-panel-duration) var(--calmato-panel-ease),
+    visibility 0s linear var(--calmato-panel-duration);
   will-change: opacity, transform;
-  scroll-snap-align: none;
-  scroll-snap-stop: normal;
   background: var(--background);
 }
 
 .calmato-dissolve-stage > #calmato-closing {
-  position: absolute;
-  inset: 0;
-}
-
-.elsewhere-snap-panel[data-elsewhere-snap-panel="0"] {
-  --calmato-dissolve-opacity: 1;
-  z-index: 1;
+  position: relative;
 }
 
 .elsewhere-snap-panel.is-visible {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+  transform: translateX(0) scale(1);
+  transition-delay: 0s;
 }
 
-body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main {
-  scroll-snap-type: y mandatory;
+.elsewhere-snap-panel.is-calmato-leaving {
+  z-index: 1;
+  opacity: 0;
+  visibility: visible;
+  pointer-events: none;
+  transform: translateX(var(--calmato-dissolve-leaving-translate-x))
+    scale(calc(1 + var(--calmato-dissolve-leaving-scale)));
+}
+
+.calmato-dissolve-stage.is-calmato-motion-disabled > .elsewhere-snap-panel {
+  transition: none;
 }
 
 .elsewhere-snap-nav {
@@ -1952,9 +1927,6 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main {
   isolation: isolate;
   overflow: hidden;
   inline-size: 100%;
-  block-size: 100%;
-  min-block-size: 100%;
-  max-block-size: 100%;
   justify-content: flex-start;
   padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-x);
   color: #ffffff;
@@ -2753,7 +2725,7 @@ html[data-theme="dark"] .calmato-video-controls {
   position: relative;
   z-index: 1;
   width: 100%;
-  min-height: 100svh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3607,10 +3579,6 @@ html[data-theme="dark"] .calmato-video-controls {
     padding-top: 0;
   }
 
-  .elsewhere-snap-panel {
-    min-height: 100svh;
-  }
-
   .calmato-hero {
     padding: 0 var(--calmato-content-right-inset) 0 var(--panel-x);
   }
@@ -3993,9 +3961,7 @@ html[data-theme="dark"] .theme-toggle {
     --theme-toggle-hidden-y: 0;
   }
 
-  html,
-  .elsewhere-main,
-  .elsewhere-snap-root {
+  html {
     scroll-behavior: auto;
   }
 
@@ -4169,19 +4135,9 @@ html[data-theme="dark"] .theme-toggle {
 }
 
 /* =========================
-   Elsewhere / Mobile Snap Balance
-   These controls are intentionally mobile-only. Keep each snap panel inside
-   one visual viewport so adjacent panel content cannot bleed into it.
+   Elsewhere / Mobile Content Controls
 ========================= */
 @media (max-width: 833px) {
-  body.works-page,
-  body.elsewhere-page {
-    /* Keep fullscreen app surfaces behind Safari's floating bottom toolbar. */
-    --app-viewport-height: 100vh;
-    height: var(--app-viewport-height);
-    min-height: var(--app-viewport-height);
-  }
-
   .elsewhere-page {
     /* VS Code Edit: tune the Calmato hero without affecting desktop/tablet. */
     --calmato-mobile-hero-label-size: 10px;
@@ -4201,49 +4157,6 @@ html[data-theme="dark"] .theme-toggle {
     --calmato-mobile-closing-message-size: 12px;
     --calmato-mobile-closing-link-size: 12px;
     --calmato-mobile-about-offset-y: 0px;
-  }
-
-  .elsewhere-page .elsewhere-main {
-    height: var(--app-viewport-height);
-    min-height: var(--app-viewport-height);
-    max-height: var(--app-viewport-height);
-    scroll-snap-type: y mandatory;
-  }
-
-  .elsewhere-page .elsewhere-panel-stage,
-  .elsewhere-page .elsewhere-snap-panel {
-    overflow-x: clip;
-    overflow-y: clip;
-  }
-
-  .elsewhere-page .elsewhere-snap-root {
-    height: calc(var(--app-viewport-height) * 4);
-    min-height: calc(var(--app-viewport-height) * 4);
-    overflow: visible;
-  }
-
-  .elsewhere-page .calmato-dissolve-stage,
-  .elsewhere-page .calmato-snap-point {
-    height: var(--app-viewport-height);
-  }
-
-  .elsewhere-page .calmato-dissolve-stage > .elsewhere-snap-panel,
-  .elsewhere-page .calmato-closing-content,
-  .elsewhere-page #elsewhere-panel-unsplash,
-  .elsewhere-page .unsplash-gallery {
-    min-height: var(--app-viewport-height);
-  }
-
-  .elsewhere-page .calmato-dissolve-stage > .elsewhere-snap-panel {
-    height: var(--app-viewport-height);
-  }
-
-  .elsewhere-page .elsewhere-snap-panel {
-    block-size: var(--app-viewport-height);
-    min-block-size: var(--app-viewport-height);
-    max-block-size: var(--app-viewport-height);
-    scroll-snap-align: none;
-    scroll-snap-stop: normal;
   }
 
   .elsewhere-page .calmato-hero-content {
@@ -4319,15 +4232,6 @@ html[data-theme="dark"] .theme-toggle {
 
   .elsewhere-page .calmato-closing-link {
     font-size: var(--calmato-mobile-closing-link-size);
-  }
-}
-
-@supports (height: 100lvh) {
-  @media (max-width: 833px) {
-    body.works-page,
-    body.elsewhere-page {
-      --app-viewport-height: 100lvh;
-    }
   }
 }
 
@@ -4470,17 +4374,6 @@ html[data-theme="dark"] .theme-toggle {
    Camera geometry is shared from the base Works controls.
 ========================= */
 @media (max-width: 833px) {
-  .works-page .works-main {
-    height: var(--app-viewport-height);
-    min-height: var(--app-viewport-height);
-  }
-
-  .works-page .project-gallery.is-works-camera-ready {
-    height: var(--app-viewport-height);
-    min-height: var(--app-viewport-height);
-    max-height: var(--app-viewport-height);
-  }
-
   /* Keep moving images on stable layers in mobile WebKit. */
   .works-page .project-gallery.is-works-camera-ready .project-card,
   .works-page .project-gallery.is-works-camera-ready .project-card:hover {
