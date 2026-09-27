@@ -698,6 +698,22 @@ html[data-theme="dark"] .works-page {
   touch-action: none;
 }
 
+/* Works — Initial Zoom In */
+.works-page .project-gallery.is-works-camera-ready {
+  scale: .68;
+  opacity: 0;
+  transform-origin: center center;
+  will-change: scale, opacity;
+}
+
+.works-page .project-gallery.is-works-camera-ready.is-entry-visible {
+  scale: 1;
+  opacity: 1;
+  transition:
+    scale 1000ms cubic-bezier(.8, 0, .32, 1),
+    opacity 300ms ease-out;
+}
+
 .works-page .project-gallery.is-works-camera-ready:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -8px;

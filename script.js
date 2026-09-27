@@ -553,6 +553,12 @@
       gallery.tabIndex = 0;
       gallery.setAttribute("aria-label", "Works gallery. Use arrow keys to browse projects.");
       gallery.classList.add("is-works-camera-ready");
+
+      requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        gallery.classList.add("is-entry-visible");
+        });
+      });
       startWorksEntrance();
 
       gallery.addEventListener("wheel", onWheel, { passive: false });
