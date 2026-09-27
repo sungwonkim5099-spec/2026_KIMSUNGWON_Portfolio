@@ -50,6 +50,13 @@
   --panel-x: 80px;
   --header-height: 100px;
 }
+
+@supports (height: 100dvh) {
+  :root {
+    --app-viewport-height: 100dvh;
+  }
+}
+
 html[data-theme="dark"] {
   --background: #111111;
   --foreground: #ffffff;
@@ -4446,6 +4453,27 @@ html[data-theme="dark"] .theme-toggle {
     height: var(--app-viewport-height);
     min-height: var(--app-viewport-height);
     max-height: var(--app-viewport-height);
+  }
+
+  /* Keep moving images on stable layers in mobile WebKit. */
+  .works-page .project-gallery.is-works-camera-ready .project-card,
+  .works-page .project-gallery.is-works-camera-ready .project-card:hover {
+    opacity: 1;
+    transition: none;
+  }
+
+  .works-page .project-gallery.is-works-camera-ready .project-media,
+  .works-page .project-gallery.is-works-camera-ready .project-info {
+    opacity: var(--works-camera-card-opacity);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: opacity;
+    transition: opacity var(--works-camera-transition-duration) var(--works-camera-transition-easing);
+  }
+
+  .works-page .project-gallery.is-works-camera-ready .project-card[data-works-entry-priority="true"] .project-info {
+    opacity: 1;
   }
 
   .works-page {
