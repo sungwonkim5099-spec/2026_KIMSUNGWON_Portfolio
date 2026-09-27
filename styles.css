@@ -1924,12 +1924,13 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main {
 /* Elsewhere / Calmato Page 01 - Cinematic Intro */
 .calmato-dissolve-stage > .calmato-hero--cinematic {
   /* VS Code Edit: Page 01 image and desktop layout controls. */
-  /* Light falls back to the dark image until the light asset is added. */
+  /* Both theme images fill the exact Page 01 stage at every viewport size. */
   --calmato-hero-background-light-image:
     url("assets/elsewhere/elsewhere_calmato_background_light.jpg"),
     url("assets/elsewhere/elsewhere_calmato_background_dark.jpg");
   --calmato-hero-background-dark-image: url("assets/elsewhere/elsewhere_calmato_background_dark.jpg");
   --calmato-hero-background-image: var(--calmato-hero-background-light-image);
+  --calmato-hero-background-color: #b2afa4;
   --calmato-hero-background-size: cover;
   --calmato-hero-background-position: 60% center;
   --calmato-hero-image-overlay: rgba(0, 0, 0, 0.2);
@@ -1950,14 +1951,19 @@ body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 100%;
+  max-block-size: 100%;
   justify-content: flex-start;
   padding: 0 var(--calmato-hero-padding-inline-end) 0 var(--calmato-hero-x);
   color: #ffffff;
-  background: #111111;
+  background: var(--calmato-hero-background-color);
 }
 
 html[data-theme="dark"] .calmato-dissolve-stage > .calmato-hero--cinematic {
   --calmato-hero-background-image: var(--calmato-hero-background-dark-image);
+  --calmato-hero-background-color: #050505;
 }
 
 .calmato-hero--cinematic::before,
@@ -1965,11 +1971,14 @@ html[data-theme="dark"] .calmato-dissolve-stage > .calmato-hero--cinematic {
   content: "";
   position: absolute;
   inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
   pointer-events: none;
 }
 
 .calmato-hero--cinematic::before {
   z-index: 0;
+  background-color: var(--calmato-hero-background-color);
   background-image: var(--calmato-hero-background-image);
   background-position: var(--calmato-hero-background-position);
   background-repeat: no-repeat;
