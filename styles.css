@@ -1,4 +1,5 @@
 :root {
+  --app-viewport-height: 100svh;
   --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo",
     "Noto Sans KR", "Pretendard", system-ui, sans-serif;
   --background: #ffffff;
@@ -754,7 +755,7 @@ html[data-theme="dark"] .works-page {
   transition-delay: 0ms;
 }
 
-.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared .project-card:not(.is-works-entrance-anchor) {
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared .project-card:not(.is-works-entrance-anchor):not([data-works-entry-priority="true"]) {
   opacity: 0;
   filter: blur(var(--works-reveal-blur));
   transition:
@@ -768,7 +769,7 @@ html[data-theme="dark"] .works-page {
   filter: blur(0);
 }
 
-.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared.is-works-entrance-revealing .project-card:not(.is-works-entrance-anchor) {
+.works-page .project-gallery.is-works-camera-ready .project-grid.is-works-entrance-prepared.is-works-entrance-revealing .project-card:not(.is-works-entrance-anchor):not([data-works-entry-priority="true"]) {
   opacity: var(--works-camera-card-opacity);
   filter: blur(0);
   transition-delay: var(--works-reveal-delay, 0ms);
@@ -776,6 +777,16 @@ html[data-theme="dark"] .works-page {
 
 .works-page .project-gallery.is-works-camera-ready .project-card:hover {
   opacity: var(--works-camera-card-opacity);
+}
+
+/* Priority labels render immediately; their images still follow camera focus. */
+.works-page .project-gallery.is-works-camera-ready .project-card[data-works-entry-priority="true"] {
+  opacity: 1;
+}
+
+.works-page .project-gallery.is-works-camera-ready .project-card[data-works-entry-priority="true"] .project-media {
+  opacity: var(--works-camera-card-opacity);
+  transition: opacity var(--works-camera-transition-duration) var(--works-camera-transition-easing);
 }
 
 .works-page .project-gallery.is-works-camera-ready .project-media {
@@ -4169,8 +4180,9 @@ html[data-theme="dark"] .theme-toggle {
   }
 
   .elsewhere-page .elsewhere-main {
-    /* Match About's stable small viewport while browser chrome expands or collapses. */
-    height: 100svh;
+    height: var(--app-viewport-height);
+    min-height: var(--app-viewport-height);
+    max-height: var(--app-viewport-height);
     scroll-snap-type: y mandatory;
   }
 
@@ -4181,31 +4193,31 @@ html[data-theme="dark"] .theme-toggle {
   }
 
   .elsewhere-page .elsewhere-snap-root {
-    height: 400svh;
-    min-height: 400svh;
+    height: calc(var(--app-viewport-height) * 4);
+    min-height: calc(var(--app-viewport-height) * 4);
     overflow: visible;
   }
 
   .elsewhere-page .calmato-dissolve-stage,
   .elsewhere-page .calmato-snap-point {
-    height: 100svh;
+    height: var(--app-viewport-height);
   }
 
   .elsewhere-page .calmato-dissolve-stage > .elsewhere-snap-panel,
   .elsewhere-page .calmato-closing-content,
   .elsewhere-page #elsewhere-panel-unsplash,
   .elsewhere-page .unsplash-gallery {
-    min-height: 100svh;
+    min-height: var(--app-viewport-height);
   }
 
   .elsewhere-page .calmato-dissolve-stage > .elsewhere-snap-panel {
-    height: 100svh;
+    height: var(--app-viewport-height);
   }
 
   .elsewhere-page .elsewhere-snap-panel {
-    block-size: 100svh;
-    min-block-size: 100svh;
-    max-block-size: 100svh;
+    block-size: var(--app-viewport-height);
+    min-block-size: var(--app-viewport-height);
+    max-block-size: var(--app-viewport-height);
     scroll-snap-align: none;
     scroll-snap-stop: normal;
   }
@@ -4426,12 +4438,14 @@ html[data-theme="dark"] .theme-toggle {
 ========================= */
 @media (max-width: 833px) {
   .works-page .works-main {
-    min-height: 100svh;
+    height: var(--app-viewport-height);
+    min-height: var(--app-viewport-height);
   }
 
   .works-page .project-gallery.is-works-camera-ready {
-    height: 100svh;
-    min-height: 100svh;
+    height: var(--app-viewport-height);
+    min-height: var(--app-viewport-height);
+    max-height: var(--app-viewport-height);
   }
 
   .works-page {

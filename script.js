@@ -7,6 +7,19 @@
   const scriptUrl = document.currentScript?.src || new URL("./script.js", document.baseURI).href;
   const assetUrl = (fileName) => new URL(`./assets/${fileName}`, scriptUrl).href;
 
+  const syncAppViewportHeight = () => {
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    if (!Number.isFinite(viewportHeight) || viewportHeight <= 0) return;
+
+    document.documentElement.style.setProperty(
+      "--app-viewport-height",
+      `${Math.round(viewportHeight * 100) / 100}px`,
+    );
+  };
+
+  // Works and Elsewhere consume this before first paint on narrow viewports.
+  syncAppViewportHeight();
+
   const getStoredTheme = () => {
     try {
       return window.localStorage.getItem(THEME_STORAGE_KEY) === DARK_THEME ? DARK_THEME : LIGHT_THEME;
@@ -40,6 +53,17 @@
     const projectGrid = document.querySelector("[data-project-grid]");
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (document.body.classList.contains("works-page")) {
+      let viewportSyncFrame = 0;
+      const scheduleViewportSync = () => {
+        window.cancelAnimationFrame(viewportSyncFrame);
+        viewportSyncFrame = window.requestAnimationFrame(syncAppViewportHeight);
+      };
+
+      window.addEventListener("resize", scheduleViewportSync, { passive: true });
+      window.visualViewport?.addEventListener("resize", scheduleViewportSync, { passive: true });
+    }
     const ensureThemeToggle = () => {
       const existingToggle = document.querySelector("[data-theme-toggle]");
       if (existingToggle) return existingToggle;
@@ -158,6 +182,7 @@
 
         return allCards
           .slice(1)
+          .filter((card) => card.dataset.worksEntryPriority !== "true")
           .map((card, index) => {
             const cardCenterX = card.offsetLeft + card.offsetWidth / 2;
             const cardCenterY = card.offsetTop + card.offsetHeight / 2;
@@ -2820,6 +2845,7 @@
       });
 
       const syncCalmatoViewport = () => {
+        syncAppViewportHeight();
         syncCalmatoDissolveMetrics();
         requestCalmatoDissolve();
         scheduleCalmatoScrollHint();
