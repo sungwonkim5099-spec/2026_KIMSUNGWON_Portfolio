@@ -4174,6 +4174,14 @@ html[data-theme="dark"] .theme-toggle {
    one visual viewport so adjacent panel content cannot bleed into it.
 ========================= */
 @media (max-width: 833px) {
+  body.works-page,
+  body.elsewhere-page {
+    /* Keep fullscreen app surfaces behind Safari's floating bottom toolbar. */
+    --app-viewport-height: 100vh;
+    height: var(--app-viewport-height);
+    min-height: var(--app-viewport-height);
+  }
+
   .elsewhere-page {
     /* VS Code Edit: tune the Calmato hero without affecting desktop/tablet. */
     --calmato-mobile-hero-label-size: 10px;
@@ -4311,6 +4319,15 @@ html[data-theme="dark"] .theme-toggle {
 
   .elsewhere-page .calmato-closing-link {
     font-size: var(--calmato-mobile-closing-link-size);
+  }
+}
+
+@supports (height: 100lvh) {
+  @media (max-width: 833px) {
+    body.works-page,
+    body.elsewhere-page {
+      --app-viewport-height: 100lvh;
+    }
   }
 }
 
