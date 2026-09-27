@@ -245,6 +245,8 @@
       };
       let activeIndex = 0;
       let wheelLockedUntil = 0;
+      let wheelGestureActive = false;
+      let wheelGestureTimer = 0;
       let suppressCardClickUntil = 0;
       let touchGesture = null;
       let isWorksEntranceActive = false;
@@ -394,31 +396,50 @@
         const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode);
         const threshold = getCssNumber("--works-camera-wheel-threshold", 10);
         const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * cameraConfig.wheelAxisBias;
+        const primaryDelta = isHorizontal ? deltaX : deltaY;
+        const gestureEndDelay = getCssNumber("--works-camera-wheel-gesture-end-delay", 180);
 
-        if (!isHorizontal || Math.abs(deltaX) < threshold) return;
+        if (Math.abs(primaryDelta) < 0.5) return;
+        event.preventDefault();
+
+        window.clearTimeout(wheelGestureTimer);
+        wheelGestureTimer = window.setTimeout(() => {
+          wheelGestureActive = false;
+          wheelGestureTimer = 0;
+        }, gestureEndDelay);
+
+        if (Math.abs(primaryDelta) < threshold) return;
+
         if (isWorksEntranceActive) {
-          event.preventDefault();
           return;
         }
 
-        const canMove = getTargetIndex(activeIndex, deltaX > 0 ? 1 : -1, 0) !== activeIndex;
-
-        if (!canMove) return;
-
-        event.preventDefault();
-
-        if (performance.now() < wheelLockedUntil) return;
-
+        const now = performance.now();
         const cooldown = getCssNumber("--works-camera-wheel-cooldown", 430);
-        wheelLockedUntil = performance.now() + cooldown;
-        moveCamera(deltaX > 0 ? 1 : -1, 0);
+
+        if (wheelGestureActive) {
+          wheelLockedUntil = Math.max(wheelLockedUntil, now + cooldown);
+          return;
+        }
+
+        wheelGestureActive = true;
+        if (now < wheelLockedUntil) {
+          wheelLockedUntil = now + cooldown;
+          return;
+        }
+
+        const columnDelta = isHorizontal ? (primaryDelta > 0 ? 1 : -1) : 0;
+        const rowDelta = isHorizontal ? 0 : primaryDelta > 0 ? 1 : -1;
+
+        wheelLockedUntil = now + cooldown;
+        moveCamera(columnDelta, rowDelta);
       };
 
       const onKeyDown = (event) => {
         if (!isCameraEnabled() || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
 
         if (isWorksEntranceActive) {
-          if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
+          if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
             event.preventDefault();
           }
           return;
@@ -427,12 +448,27 @@
         const directions = {
           ArrowLeft: [-1, 0],
           ArrowRight: [1, 0],
+          ArrowUp: [0, -1],
+          ArrowDown: [0, 1],
         };
         const direction = directions[event.key];
 
         if (direction && moveCamera(direction[0], direction[1])) {
           event.preventDefault();
           return;
+        }
+
+        if (event.key === "Home" && activeIndex !== 0) {
+          event.preventDefault();
+          setActiveIndex(0);
+        }
+
+        if (event.key === "End") {
+          const lastIndex = cards().length - 1;
+          if (activeIndex !== lastIndex) {
+            event.preventDefault();
+            setActiveIndex(lastIndex);
+          }
         }
       };
 
@@ -486,12 +522,14 @@
         const threshold = getCssNumber("--works-camera-swipe-threshold", 28);
         touchGesture = null;
 
-        if (Math.abs(deltaX) < threshold) return;
+        if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < threshold) return;
 
         const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * cameraConfig.wheelAxisBias;
-        if (!isHorizontal) return;
-
-        moveCamera(deltaX < 0 ? 1 : -1, 0);
+        if (isHorizontal) {
+          moveCamera(deltaX < 0 ? 1 : -1, 0);
+        } else {
+          moveCamera(0, deltaY < 0 ? 1 : -1);
+        }
 
         suppressCardClickUntil = performance.now() + 420;
       };
@@ -993,11 +1031,18 @@
     const isElsewhereSubnavHidden = () =>
       elsewhereSubnavs.some((subnav) => subnav.classList.contains("is-hidden"));
 
-    const setElsewherePanel = (nextPanel) => {
+    const setElsewherePanel = (nextPanel, { force = false, immediate = false, syncCalmato = true } = {}) => {
       if (!elsewhereTabs.length || !elsewherePanels.length) return;
-      if (!["calmato", "unsplash"].includes(nextPanel) || nextPanel === elsewhereActivePanel) return;
+      if (!["calmato", "unsplash"].includes(nextPanel)) return;
+      if (!force && nextPanel === elsewhereActivePanel) return;
 
       const isMovingToRight = nextPanel === "unsplash";
+
+      if (immediate) {
+        elsewherePanels.forEach((panel) => {
+          panel.style.transition = "none";
+        });
+      }
 
       elsewhereActivePanel = nextPanel;
       elsewhereTabs.forEach((tab) => {
@@ -1017,18 +1062,19 @@
       elsewhereSnapNav?.classList.toggle("is-hidden", nextPanel !== "calmato");
       if (nextPanel !== "calmato") clearCalmatoScrollHint();
 
-      if (nextPanel === "calmato") {
-        window.requestAnimationFrame(() => {
-          setCalmatoPage(Math.max(calmatoDominantIndex, 0), { immediate: true });
-          scheduleCalmatoScrollHint();
+      if (nextPanel === "calmato" && syncCalmato) {
+        setCalmatoPage(Math.max(calmatoDominantIndex, 0), { immediate: true });
+      }
+
+      if (immediate) {
+        elsewherePanels[0]?.parentElement?.getBoundingClientRect();
+        elsewherePanels.forEach((panel) => {
+          panel.style.removeProperty("transition");
         });
       }
     };
 
     const requestedElsewherePanel = new URLSearchParams(window.location.search).get("channel");
-    if (["calmato", "unsplash"].includes(requestedElsewherePanel)) {
-      window.requestAnimationFrame(() => setElsewherePanel(requestedElsewherePanel));
-    }
 
     elsewhereTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
@@ -2571,14 +2617,13 @@
 
       if (immediate || prefersReducedMotion || currentIndex === nextIndex) {
         calmatoDissolveStage.classList.add("is-calmato-motion-disabled");
+        calmatoDissolveStage.style.removeProperty("--calmato-dissolve-leaving-translate-x");
+        calmatoDissolveStage.style.removeProperty("--calmato-dissolve-entering-translate-x");
         showOnlyCalmatoPanel(nextIndex);
         setCalmatoDominantIndex(nextIndex);
         calmatoDissolveStage.getBoundingClientRect();
-        calmatoTransitionFrame = window.requestAnimationFrame(() => {
-          calmatoTransitionFrame = 0;
-          calmatoDissolveStage.classList.remove("is-calmato-motion-disabled");
-          scheduleCalmatoScrollHint();
-        });
+        calmatoDissolveStage.classList.remove("is-calmato-motion-disabled");
+        scheduleCalmatoScrollHint();
         return;
       }
 
@@ -2773,7 +2818,33 @@
         elsewhereSnapRoot.addEventListener(eventName, scheduleCalmatoScrollHint, { passive: true });
       });
 
-      setCalmatoPage(0, { immediate: true });
+      const initializeElsewhereState = () => {
+        window.clearTimeout(calmatoWheelGestureTimer);
+        calmatoWheelGestureTimer = 0;
+        calmatoWheelGestureActive = false;
+        calmatoWheelLockedUntil = 0;
+        setCalmatoPage(0, { immediate: true });
+
+        const initialPanel = ["calmato", "unsplash"].includes(requestedElsewherePanel)
+          ? requestedElsewherePanel
+          : "calmato";
+        setElsewherePanel(initialPanel, {
+          force: true,
+          immediate: true,
+          syncCalmato: false,
+        });
+      };
+
+      const preserveCleanElsewhereState = () => {
+        initializeElsewhereState();
+        clearCalmatoScrollHint();
+      };
+
+      initializeElsewhereState();
+      window.addEventListener("pagehide", preserveCleanElsewhereState);
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) initializeElsewhereState();
+      });
     }
 
     themeToggle?.addEventListener("click", () => {

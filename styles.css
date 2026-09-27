@@ -606,6 +606,7 @@ html[data-theme="dark"] .footer-mark {
     0 14px 34px rgba(0, 0, 0, 0.2);
   --works-camera-wheel-threshold: 10;
   --works-camera-wheel-cooldown: 400ms;
+  --works-camera-wheel-gesture-end-delay: 180ms;
   --works-camera-swipe-threshold: 28px;
 }
 
@@ -677,7 +678,7 @@ html[data-theme="dark"] .works-page {
   padding: 0;
   overflow: visible;
   isolation: isolate;
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .works-page .project-gallery.is-works-camera-ready:focus-visible {
