@@ -109,6 +109,23 @@ body.works-page,
 body.elsewhere-page {
   overflow-x: hidden;
   overflow-y: auto;
+  isolation: isolate;
+}
+
+/* Visual-only underlay: covers iOS browser-chrome areas without resizing content. */
+body.works-page::before,
+body.elsewhere-page::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  pointer-events: none;
+  background: var(--background);
 }
 
 a {
@@ -1898,6 +1915,35 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 }
 
 /* Elsewhere / Calmato Page 01 - Cinematic Intro */
+body.elsewhere-page {
+  --elsewhere-hero-underlay-light-image:
+    url("assets/elsewhere/elsewhere_calmato_background_light.jpg"),
+    url("assets/elsewhere/elsewhere_calmato_background_dark.jpg");
+  --elsewhere-hero-underlay-dark-image: url("assets/elsewhere/elsewhere_calmato_background_dark.jpg");
+  --elsewhere-hero-underlay-image: var(--elsewhere-hero-underlay-light-image);
+  --elsewhere-hero-underlay-color: #b2afa4;
+  --elsewhere-hero-underlay-position: 60% center;
+  --elsewhere-hero-underlay-overlay: rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] body.elsewhere-page {
+  --elsewhere-hero-underlay-image: var(--elsewhere-hero-underlay-dark-image);
+  --elsewhere-hero-underlay-color: #050505;
+}
+
+body.elsewhere-page:has(.calmato-hero--cinematic.is-visible)::before {
+  background-color: var(--elsewhere-hero-underlay-color);
+  background-image:
+    linear-gradient(
+      var(--elsewhere-hero-underlay-overlay),
+      var(--elsewhere-hero-underlay-overlay)
+    ),
+    var(--elsewhere-hero-underlay-image);
+  background-position: var(--elsewhere-hero-underlay-position);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .calmato-dissolve-stage > .calmato-hero--cinematic {
   /* VS Code Edit: Page 01 image and desktop layout controls. */
   /* Both theme images fill the exact Page 01 stage at every viewport size. */
@@ -4022,14 +4068,6 @@ html[data-theme="dark"] .theme-toggle {
    These values only tune size and spacing; the desktop/tablet design stays untouched.
 ========================= */
 @media (max-width: 833px) {
-  /* Paint fullscreen surfaces against Safari's large viewport from first render.
-     This is a minimum only: it does not recreate the removed viewport lock. */
-  .works-page .works-main,
-  .elsewhere-page .elsewhere-main {
-    min-height: 100vh;
-    min-height: 100lvh;
-  }
-
   /* Keep the off-canvas panel transition from widening the mobile scroll area. */
   .elsewhere-page .elsewhere-panel-stage {
     overflow-x: clip;
@@ -4273,6 +4311,10 @@ html[data-theme="dark"] .theme-toggle {
    These values affect only the cinematic intro panel.
 ========================= */
 @media (min-width: 834px) and (max-width: 1439px) {
+  body.elsewhere-page {
+    --elsewhere-hero-underlay-position: 52% center;
+  }
+
   /* Keep the inactive panel transition inside the viewport at the tablet boundary. */
   .elsewhere-page .elsewhere-panel-stage {
     overflow-x: clip;
@@ -4291,6 +4333,11 @@ html[data-theme="dark"] .theme-toggle {
 }
 
 @media (max-width: 833px) {
+  body.elsewhere-page {
+    --elsewhere-hero-underlay-position: 50% center;
+    --elsewhere-hero-underlay-overlay: rgba(0, 0, 0, 0.3);
+  }
+
   .elsewhere-page .calmato-dissolve-stage {
     touch-action: pan-y;
   }
