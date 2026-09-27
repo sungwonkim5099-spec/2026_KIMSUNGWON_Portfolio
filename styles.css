@@ -940,17 +940,25 @@ html[data-theme="dark"] .works-page {
 
 /* Elsewhere - Channel navigation */
 .elsewhere-main {
-  min-height: 100%;
-  display: grid;
+  height: 100svh;
+  min-height: 0;
+  max-height: 100svh;
   margin: 0;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
   background: var(--background);
+}
+
+.elsewhere-main::-webkit-scrollbar {
+  display: none;
 }
 
 .elsewhere-content {
   position: relative;
-  display: grid;
-  min-height: 100%;
   margin: 0;
   padding: 0;
 }
@@ -1761,16 +1769,16 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
   }
 }
 
-/* Elsewhere / Calmato horizontal dissolve and slide transition */
+/* Elsewhere / Calmato scroll-driven dissolve and slide transition */
 .elsewhere-panel-stage {
-  /* VS Code Edit: Calmato horizontal panel and page-indicator controls. */
+  /* VS Code Edit: Calmato dissolve and page-indicator controls. */
+  --calmato-dissolve-scroll-distance: 1;
+  --calmato-dissolve-progress-power: 1;
   --calmato-dissolve-leaving-scale: 0;
   --calmato-dissolve-leaving-translate-x: -52px;
   --calmato-dissolve-entering-translate-x: 52px;
-  --calmato-panel-duration: 680ms;
-  --calmato-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --calmato-indicator-switch-threshold: 0.55;
   --calmato-wheel-threshold: 8;
-  --calmato-wheel-cooldown: 680ms;
   --calmato-wheel-gesture-end-delay: 180ms;
   --calmato-indicator-bottom: 28px;
   --calmato-indicator-gap: 14px;
@@ -1797,63 +1805,70 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 .elsewhere-snap-root {
   position: relative;
   display: grid;
-  min-height: 100%;
+  height: 400svh;
+  min-height: 400svh;
   overflow: visible;
   background: var(--background);
 }
 
-.calmato-dissolve-stage {
-  position: relative;
-  display: grid;
+.calmato-snap-track {
+  grid-area: 1 / 1;
   min-height: 100%;
-  overflow: visible;
+  pointer-events: none;
+}
+
+.calmato-dissolve-stage {
+  grid-area: 1 / 1;
+  align-self: start;
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
   z-index: 1;
 }
 
+.calmato-snap-point {
+  display: block;
+  height: 100svh;
+  pointer-events: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 .calmato-dissolve-stage > .elsewhere-snap-panel {
-  position: relative;
-  grid-area: 1 / 1;
-  min-width: 0;
+  position: absolute;
+  inset: 0;
+  height: 100svh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 0;
-  opacity: 0;
-  visibility: hidden;
+  opacity: var(--calmato-dissolve-opacity, 0);
   pointer-events: none;
-  transform: translateX(var(--calmato-dissolve-entering-translate-x)) scale(1);
-  transition:
-    opacity var(--calmato-panel-duration) var(--calmato-panel-ease),
-    transform var(--calmato-panel-duration) var(--calmato-panel-ease),
-    visibility 0s linear var(--calmato-panel-duration);
+  transform: translateX(var(--calmato-dissolve-translate-x, 0px)) scale(var(--calmato-dissolve-scale, 1));
   will-change: opacity, transform;
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
   background: var(--background);
 }
 
 .calmato-dissolve-stage > #calmato-closing {
-  position: relative;
+  position: absolute;
+  inset: 0;
+}
+
+.elsewhere-snap-panel[data-elsewhere-snap-panel="0"] {
+  --calmato-dissolve-opacity: 1;
+  z-index: 1;
 }
 
 .elsewhere-snap-panel.is-visible {
-  z-index: 2;
-  opacity: 1;
-  visibility: visible;
   pointer-events: auto;
-  transform: translateX(0) scale(1);
-  transition-delay: 0s;
 }
 
-.elsewhere-snap-panel.is-calmato-leaving {
-  z-index: 1;
-  opacity: 0;
-  visibility: visible;
-  pointer-events: none;
-  transform: translateX(var(--calmato-dissolve-leaving-translate-x))
-    scale(calc(1 + var(--calmato-dissolve-leaving-scale)));
-}
-
-.calmato-dissolve-stage.is-calmato-motion-disabled > .elsewhere-snap-panel {
-  transition: none;
+body:has([data-elsewhere-panel="calmato"].is-active) .elsewhere-main {
+  scroll-snap-type: y mandatory;
 }
 
 .elsewhere-snap-nav {
@@ -2089,6 +2104,12 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
 
 body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible) .elsewhere-snap-dot.is-active {
   opacity: 1;
+}
+
+html[data-theme="light"]
+  body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinematic.is-visible)
+  .calmato-scroll-hint {
+  color: #ffffff;
 }
 
 /* =========================
@@ -4008,7 +4029,9 @@ html[data-theme="dark"] .theme-toggle {
     --theme-toggle-hidden-y: 0;
   }
 
-  html {
+  html,
+  .elsewhere-main,
+  .elsewhere-snap-root {
     scroll-behavior: auto;
   }
 
