@@ -924,6 +924,11 @@ html[data-theme="dark"] .works-page {
   margin: 0 0 var(--project-nav-section-gap);
 }
 
+.project-adjacent-nav--bottom {
+  margin: 0;
+  padding: 0 var(--project-page-x) var(--project-section-gap);
+}
+
 .project-adjacent-link {
   width: min(42%, 320px);
   display: grid;

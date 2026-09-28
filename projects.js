@@ -84,21 +84,15 @@ const projectSource = [
   },
 ];
 
-let projectOrder = 0;
-
-window.PORTFOLIO_PROJECTS = projectSource.map((project) => {
-  if (project.sequence === false) {
-    return { ...project, order: null, number: null };
-  }
-
-  projectOrder += 1;
+window.PORTFOLIO_PROJECTS = projectSource.map((project, index) => {
+  const order = index + 1;
   return {
     ...project,
-    order: projectOrder,
-    number: String(projectOrder).padStart(2, "0"),
+    order,
+    number: String(order).padStart(2, "0"),
   };
 });
 
 window.PORTFOLIO_PROJECT_SEQUENCE = window.PORTFOLIO_PROJECTS.filter(
-  (project) => project.order !== null,
+  (project) => project.sequence !== false,
 );

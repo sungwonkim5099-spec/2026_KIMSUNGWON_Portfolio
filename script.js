@@ -80,7 +80,9 @@
 
     const initializeProjectDetailNavigation = () => {
       const hero = document.querySelector(".project-page .project-detail-hero");
-      if (!hero || projectSequence.length < 2 || hero.querySelector("[data-project-adjacent-nav]")) return;
+      const imageStack = document.querySelector(".project-page .project-image-stack");
+      if (!hero || !imageStack || projectSequence.length < 2) return;
+      if (document.querySelector("[data-project-adjacent-nav]")) return;
 
       const normalizedPath = decodeURIComponent(window.location.pathname)
         .replace(/\/index\.html$/i, "")
@@ -137,15 +139,20 @@
         return link;
       };
 
-      const navigation = document.createElement("nav");
-      navigation.className = "project-adjacent-nav";
-      navigation.dataset.projectAdjacentNav = "";
-      navigation.setAttribute("aria-label", "Adjacent projects");
-      navigation.append(
-        createAdjacentLink(previousProject, "previous"),
-        createAdjacentLink(nextProject, "next"),
-      );
-      hero.prepend(navigation);
+      const createNavigation = (placement) => {
+        const navigation = document.createElement("nav");
+        navigation.className = `project-adjacent-nav project-adjacent-nav--${placement}`;
+        navigation.dataset.projectAdjacentNav = placement;
+        navigation.setAttribute("aria-label", `Adjacent projects at ${placement}`);
+        navigation.append(
+          createAdjacentLink(previousProject, "previous"),
+          createAdjacentLink(nextProject, "next"),
+        );
+        return navigation;
+      };
+
+      hero.prepend(createNavigation("top"));
+      imageStack.insertAdjacentElement("afterend", createNavigation("bottom"));
     };
 
     initializeProjectDetailNavigation();
