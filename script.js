@@ -2896,18 +2896,30 @@
       applyTheme(event.newValue === DARK_THEME ? DARK_THEME : LIGHT_THEME, themeToggle);
     });
 
-    let themeToggleRevealTimer = 0;
-    const showThemeToggle = () => {
-      themeToggle?.classList.remove("is-scroll-hidden");
+    const readCssTime = (propertyName, fallback) => {
+      const token = getComputedStyle(document.documentElement).getPropertyValue(propertyName).trim();
+      const value = Number.parseFloat(token);
+      if (!Number.isFinite(value)) return fallback;
+      return token.endsWith("ms") ? value : value * 1000;
     };
-    const handleThemeToggleScroll = () => {
-      if (!themeToggle) return;
-      themeToggle.classList.add("is-scroll-hidden");
-      window.clearTimeout(themeToggleRevealTimer);
-      themeToggleRevealTimer = window.setTimeout(showThemeToggle, 1000);
+    const floatingControls = [themeToggle, floatingNavShell].filter(Boolean);
+    const floatingControlsRevealDelay = readCssTime("--floating-ui-reveal-delay", 1000);
+    let floatingControlsRevealTimer = 0;
+
+    const showFloatingControls = () => {
+      floatingControls.forEach((control) => control.classList.remove("is-scroll-hidden"));
+    };
+    const handleFloatingControlsActivity = () => {
+      if (floatingControls.length === 0) return;
+      floatingControls.forEach((control) => control.classList.add("is-scroll-hidden"));
+      window.clearTimeout(floatingControlsRevealTimer);
+      floatingControlsRevealTimer = window.setTimeout(showFloatingControls, floatingControlsRevealDelay);
     };
 
-    window.addEventListener("scroll", handleThemeToggleScroll, { passive: true });
+    window.addEventListener("scroll", handleFloatingControlsActivity, { passive: true });
+    document.addEventListener("scroll", handleFloatingControlsActivity, { passive: true, capture: true });
+    window.addEventListener("wheel", handleFloatingControlsActivity, { passive: true, capture: true });
+    window.addEventListener("touchmove", handleFloatingControlsActivity, { passive: true, capture: true });
 
 }; // onReady 끝
 

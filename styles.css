@@ -39,10 +39,16 @@
   --nav-indicator-duration: 420ms;
   --nav-indicator-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --nav-item-duration: 180ms;
+  --floating-ui-fade-duration: 400ms;
+  --floating-ui-motion-duration: 550ms;
+  --floating-ui-fade-ease: ease-in-out;
+  --floating-ui-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --floating-ui-reveal-delay: 1000ms;
+  --floating-ui-hidden-distance: 14px;
   --theme-toggle-background: rgba(255, 255, 255, 0.75);
   --theme-toggle-border: rgba(0, 0, 0, 0.12);
   --theme-toggle-color: #111111;
-  --theme-toggle-hidden-y: 14px;
+  --theme-toggle-hidden-y: var(--floating-ui-hidden-distance);
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
@@ -3975,8 +3981,8 @@ html[data-theme="dark"] .calmato-video-controls {
   transform: translateY(var(--theme-toggle-y)) scale(var(--theme-toggle-scale));
 
 transition:
-  opacity 0.25s ease,
-  transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+  opacity var(--floating-ui-fade-duration) var(--floating-ui-fade-ease),
+  transform var(--floating-ui-motion-duration) var(--floating-ui-motion-ease),
   background 0.25s ease,
   border-color 0.25s ease;
 }
@@ -4054,7 +4060,7 @@ html[data-theme="dark"] .theme-toggle {
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --theme-toggle-hidden-y: 0;
+    --floating-ui-hidden-distance: 0px;
   }
 
   html,
@@ -5050,7 +5056,6 @@ html[data-theme="dark"] .theme-toggle {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-shell,
   .nav-shell .elsewhere-nav-item > .elsewhere-subnav,
   .nav-selection-indicator,
   .mobile-menu {
@@ -5073,6 +5078,7 @@ html[data-theme="dark"] .theme-toggle {
 }
 
 .nav-shell {
+  --nav-scroll-visibility-y: 0px;
   position: fixed;
   top: max(var(--nav-pill-top), var(--safe-area-top));
   /* Center against the visual viewport even when a scrollbar gutter is reserved. */
@@ -5090,14 +5096,23 @@ html[data-theme="dark"] .theme-toggle {
   border: 1px solid var(--nav-pill-border);
   border-radius: var(--nav-pill-radius);
   box-shadow: var(--nav-pill-shadow);
-  transform: translateX(-50%);
+  opacity: 1;
+  transform: translate(-50%, var(--nav-scroll-visibility-y));
   backdrop-filter: saturate(150%) blur(var(--nav-pill-blur));
   -webkit-backdrop-filter: saturate(150%) blur(var(--nav-pill-blur));
   pointer-events: auto;
   transition:
+    opacity var(--floating-ui-fade-duration) var(--floating-ui-fade-ease),
+    transform var(--floating-ui-motion-duration) var(--floating-ui-motion-ease),
     background var(--nav-pill-duration) var(--nav-pill-ease),
     border-color var(--nav-pill-duration) var(--nav-pill-ease),
     box-shadow var(--nav-pill-duration) var(--nav-pill-ease);
+}
+
+.nav-shell.is-scroll-hidden {
+  --nav-scroll-visibility-y: calc(-1 * var(--floating-ui-hidden-distance));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .nav-mode {
@@ -5315,8 +5330,7 @@ html[data-theme="dark"] .theme-toggle {
 
 @media (prefers-reduced-motion: reduce) {
   .nav-mode,
-  .nav-selection-indicator,
-  .nav-shell {
+  .nav-selection-indicator {
     transition-duration: 0.01ms;
   }
 }
