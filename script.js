@@ -1127,12 +1127,6 @@
         const deltaY = touch.clientY - elsewhereTouchStartY;
         const isHorizontalSwipe = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4;
         if (isHorizontalSwipe) {
-          if (
-            window.matchMedia("(max-width: 833px)").matches &&
-            elsewhereActivePanel === "calmato"
-          ) {
-            return;
-          }
           setElsewherePanel(deltaX < 0 ? "unsplash" : "calmato");
         }
       },
@@ -2283,16 +2277,6 @@
 
       unsplashCarousel.addEventListener("pointerup", endUnsplashPointer);
       unsplashCarousel.addEventListener("pointercancel", endUnsplashPointer);
-
-      ["touchstart", "touchmove", "touchend"].forEach((eventName) => {
-        unsplashCarousel.addEventListener(
-          eventName,
-          (event) => {
-            event.stopPropagation();
-          },
-          { passive: true }
-        );
-      });
 
       const unsplashPanelObserver = new MutationObserver(() => {
         if (isUnsplashPanelActive()) {
