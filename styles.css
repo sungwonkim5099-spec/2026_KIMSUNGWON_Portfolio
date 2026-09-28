@@ -320,6 +320,17 @@ html[data-theme="dark"] .footer-mark {
   text-align: center;
 }
 
+@media (min-width: 834px) {
+  .about-page .about-panel {
+    justify-content: flex-start;
+  }
+
+  .about-page .about-copy {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
 .about-copy p {
   margin: 0;
   white-space: pre-line;
