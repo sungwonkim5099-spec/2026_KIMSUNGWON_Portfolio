@@ -591,8 +591,6 @@
     const ELSEWHERE_PILL_ENTRY_KEY = "portfolio:elsewhere-pill-entry";
     const ELSEWHERE_PILL_ENTRY_MAX_AGE = 3000;
     let elsewhereActivePanel = "calmato";
-    let elsewhereTouchStartX = 0;
-    let elsewhereTouchStartY = 0;
     let syncNavSelectionIndicators = () => {};
 
     const isElsewhereDestination = (destination) =>
@@ -1094,44 +1092,7 @@
       tab.addEventListener("click", () => {
         setElsewherePanel(tab.dataset.elsewhereTab || "calmato");
       });
-
-      tab.addEventListener("keydown", (event) => {
-        if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
-        event.preventDefault();
-        const nextPanel = event.key === "ArrowRight" ? "unsplash" : "calmato";
-        setElsewherePanel(nextPanel);
-        tab.closest("[data-elsewhere-subnav]")
-          ?.querySelector(`[data-elsewhere-tab="${nextPanel}"]`)
-          ?.focus();
-      });
     });
-
-    elsewhere?.addEventListener(
-      "touchstart",
-      (event) => {
-        const touch = event.touches[0];
-        if (!touch) return;
-        elsewhereTouchStartX = touch.clientX;
-        elsewhereTouchStartY = touch.clientY;
-      },
-      { passive: true }
-    );
-
-    elsewhere?.addEventListener(
-      "touchend",
-      (event) => {
-        const touch = event.changedTouches[0];
-        if (!touch) return;
-
-        const deltaX = touch.clientX - elsewhereTouchStartX;
-        const deltaY = touch.clientY - elsewhereTouchStartY;
-        const isHorizontalSwipe = Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4;
-        if (isHorizontalSwipe) {
-          setElsewherePanel(deltaX < 0 ? "unsplash" : "calmato");
-        }
-      },
-      { passive: true }
-    );
 
     // Elsewhere / Unsplash Carousel
     // VS Code Edit: 이미지 추가 후 src에 실제 확장자를 포함한 경로를 입력하세요.
@@ -2751,20 +2712,16 @@
           if (elsewhereActivePanel !== "calmato" || event.ctrlKey) return;
 
           const lineScale = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : 1;
-          const deltaX = event.deltaX * (
-            event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? window.innerWidth : lineScale
-          );
-          const deltaY = event.deltaY * (
+          const wheelDelta = event.deltaY * (
             event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? window.innerHeight : lineScale
           );
-          const dominantDelta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
           const threshold = Math.max(readCalmatoDissolveNumber("--calmato-wheel-threshold", 8), 0);
           const gestureEndDelay = Math.max(
             getCssMilliseconds(elsewhereSnapRoot, "--calmato-wheel-gesture-end-delay", 180),
             0
           );
 
-          if (Math.abs(dominantDelta) < 0.5) return;
+          if (Math.abs(wheelDelta) < 0.5) return;
           event.preventDefault();
 
           window.clearTimeout(calmatoWheelGestureTimer);
@@ -2778,11 +2735,11 @@
 
           if (
             calmatoWheelAccumulatedDelta !== 0 &&
-            Math.sign(calmatoWheelAccumulatedDelta) !== Math.sign(dominantDelta)
+            Math.sign(calmatoWheelAccumulatedDelta) !== Math.sign(wheelDelta)
           ) {
-            calmatoWheelAccumulatedDelta = dominantDelta;
+            calmatoWheelAccumulatedDelta = wheelDelta;
           } else {
-            calmatoWheelAccumulatedDelta += dominantDelta;
+            calmatoWheelAccumulatedDelta += wheelDelta;
           }
 
           if (Math.abs(calmatoWheelAccumulatedDelta) < threshold) return;
@@ -2842,7 +2799,7 @@
             calmatoMobileSwipe.axis = Math.abs(deltaX) > Math.abs(deltaY) ? "horizontal" : "vertical";
           }
 
-          if (calmatoMobileSwipe.axis === "vertical") event.preventDefault();
+          if (calmatoMobileSwipe.axis) event.preventDefault();
         },
         { passive: false }
       );
@@ -2854,11 +2811,11 @@
           const touch = event.changedTouches[0];
           const swipe = calmatoMobileSwipe;
           calmatoMobileSwipe = null;
-          if (!touch || swipe.axis !== "vertical") return;
+          if (!touch || swipe.axis !== "horizontal") return;
 
-          const deltaY = touch.clientY - swipe.startY;
-          if (Math.abs(deltaY) < 56) return;
-          scrollToCalmatoPage(swipe.startIndex + (deltaY < 0 ? 1 : -1));
+          const deltaX = touch.clientX - swipe.startX;
+          if (Math.abs(deltaX) < 56) return;
+          scrollToCalmatoPage(swipe.startIndex + (deltaX < 0 ? 1 : -1));
         },
         { passive: true }
       );

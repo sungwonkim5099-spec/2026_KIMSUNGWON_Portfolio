@@ -4379,7 +4379,7 @@ html[data-theme="dark"] .theme-toggle {
   }
 
   .elsewhere-page .calmato-dissolve-stage {
-    touch-action: pan-y;
+    touch-action: none;
   }
 
   .elsewhere-page .calmato-hero--cinematic {
