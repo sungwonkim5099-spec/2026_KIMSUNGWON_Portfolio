@@ -39,6 +39,9 @@
   const onReady = () => {
     const projectGrid = document.querySelector("[data-project-grid]");
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
+    const projectSequence = Array.isArray(window.PORTFOLIO_PROJECT_SEQUENCE)
+      ? window.PORTFOLIO_PROJECT_SEQUENCE
+      : projects.filter((project) => project.order !== null);
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ensureThemeToggle = () => {
@@ -74,6 +77,78 @@
       if (/^(https?:|mailto:|tel:|\/|\.{1,2}\/)/.test(value)) return value;
       return `${rootPrefix}${value}`;
     };
+
+    const initializeProjectDetailNavigation = () => {
+      const hero = document.querySelector(".project-page .project-detail-hero");
+      if (!hero || projectSequence.length < 2 || hero.querySelector("[data-project-adjacent-nav]")) return;
+
+      const normalizedPath = decodeURIComponent(window.location.pathname)
+        .replace(/\/index\.html$/i, "")
+        .replace(/\/+$/, "");
+      const currentSlug = normalizedPath.split("/").filter(Boolean).at(-1) || "";
+      const currentIndex = projectSequence.findIndex((project) => project.slug === currentSlug);
+      if (currentIndex < 0) return;
+
+      const previousProject = projectSequence[
+        (currentIndex - 1 + projectSequence.length) % projectSequence.length
+      ];
+      const nextProject = projectSequence[(currentIndex + 1) % projectSequence.length];
+
+      const createAdjacentLink = (project, direction) => {
+        const isPrevious = direction === "previous";
+        const link = document.createElement("a");
+        link.className = `project-adjacent-link project-adjacent-link--${direction}`;
+        link.href = new URL(project.href, scriptUrl).href;
+        link.dataset.projectDirection = direction;
+        link.dataset.projectSlug = project.slug;
+        link.setAttribute(
+          "aria-label",
+          `${isPrevious ? "Previous" : "Next"} project: ${project.title}`,
+        );
+
+        const arrow = document.createElement("span");
+        arrow.className = "project-adjacent-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.textContent = isPrevious ? "←" : "→";
+
+        const content = document.createElement("span");
+        content.className = "project-adjacent-content";
+
+        const label = document.createElement("span");
+        label.className = "project-adjacent-label";
+        label.textContent = isPrevious ? "PREVIOUS PROJECT" : "NEXT PROJECT";
+
+        const number = document.createElement("span");
+        number.className = "project-adjacent-number";
+        number.textContent = project.number;
+
+        const name = document.createElement("span");
+        name.className = "project-adjacent-name";
+        name.textContent = project.title;
+
+        const type = document.createElement("span");
+        type.className = "project-adjacent-type";
+        type.textContent = project.projectType;
+
+        content.append(label, number, name, type);
+        if (isPrevious) link.append(arrow, content);
+        else link.append(content, arrow);
+
+        return link;
+      };
+
+      const navigation = document.createElement("nav");
+      navigation.className = "project-adjacent-nav";
+      navigation.dataset.projectAdjacentNav = "";
+      navigation.setAttribute("aria-label", "Adjacent projects");
+      navigation.append(
+        createAdjacentLink(previousProject, "previous"),
+        createAdjacentLink(nextProject, "next"),
+      );
+      hero.prepend(navigation);
+    };
+
+    initializeProjectDetailNavigation();
 
     const renderProjectCards = () => {
       if (!projectGrid || projects.length === 0) return;
