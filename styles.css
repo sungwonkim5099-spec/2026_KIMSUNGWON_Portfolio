@@ -111,6 +111,16 @@ body.project-page {
   overflow-y: auto;
 }
 
+body.project-page {
+  --project-page-x: 4.5vw;
+  --project-hero-start: clamp(172px, 20svh, 220px);
+  --project-eyebrow-gap: 60px;
+  --project-title-description-gap: 40px;
+  --project-description-paragraph-gap: 14px;
+  --project-hero-media-gap: 60px;
+  --project-section-gap: 100px;
+}
+
 body.works-page,
 body.elsewhere-page {
   overflow-x: hidden;
@@ -892,54 +902,104 @@ html[data-theme="dark"] .works-page {
 }
 
 .project-detail-hero {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: var(--project-eyebrow-gap);
+  padding: var(--project-hero-start) var(--project-page-x) 0;
+}
+
+.project-hero-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.project-category,
+.project-year {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.project-hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  align-items: start;
+  column-gap: clamp(72px, 10vw, 160px);
+}
+
+.project-hero-copy {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 160px var(--panel-x) 0;
+  align-items: flex-start;
 }
 
 .project-title-group {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .project-title-group h1 {
   margin: 0;
   color: var(--foreground);
   font-family: "Apple SD Gothic Neo", var(--font-system);
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 72px;
+  font-weight: 500;
+  line-height: 78px;
+  letter-spacing: -2.2px;
+  overflow-wrap: break-word;
 }
 
-.project-description {
-  width: min(790px, 100%);
+.project-subtitle {
   margin: 0;
   color: var(--foreground);
   font-family: "Apple SD Gothic Neo", var(--font-system);
-  font-size: 16px;
-  font-weight: 450;
-  line-height: 1.5;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 30px;
+}
+
+.project-description {
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--project-description-paragraph-gap);
+  margin: var(--project-title-description-gap) 0 0;
+  color: var(--foreground);
+  font-family: "Apple SD Gothic Neo", var(--font-system);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+.project-description-paragraph {
+  display: block;
 }
 
 .project-meta {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px 40px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 28px;
   margin: 0;
   padding: 0;
   color: var(--foreground);
-  font-size: 14px;
-  font-weight: 450;
-  line-height: 1.2;
 }
 
 .project-meta-item {
   display: flex;
-  gap: 4px;
-  align-items: center;
-  white-space: nowrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .project-meta dt,
@@ -947,10 +1007,99 @@ html[data-theme="dark"] .works-page {
   margin: 0;
 }
 
+.project-meta dt {
+  color: var(--foreground-muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.project-meta dd {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+@media (min-width: 834px) and (max-width: 1439px) {
+  body.project-page {
+    --project-page-x: var(--panel-x);
+  }
+
+  .project-hero-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 240px);
+    column-gap: clamp(48px, 7vw, 96px);
+  }
+
+  .project-title-group h1 {
+    font-size: 56px;
+    line-height: 62px;
+    letter-spacing: -1.8px;
+  }
+
+  .project-subtitle {
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .project-description {
+    width: min(540px, 100%);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .project-meta dd {
+    font-size: 13px;
+    line-height: 19px;
+  }
+}
+
+@media (max-width: 833px) {
+  body.project-page {
+    --project-page-x: var(--panel-x);
+  }
+
+  .project-detail-hero {
+    padding: var(--project-hero-start) var(--project-page-x) 0;
+  }
+
+  .project-hero-layout {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 56px;
+  }
+
+  .project-title-group h1 {
+    font-size: 42px;
+    line-height: 46px;
+    letter-spacing: -1.3px;
+  }
+
+  .project-subtitle {
+    font-size: 17px;
+    line-height: 24px;
+  }
+
+  .project-description {
+    width: min(100%, 560px);
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  .project-meta {
+    gap: 24px;
+  }
+
+  .project-meta dd {
+    font-size: 12px;
+    line-height: 18px;
+  }
+}
+
 .project-image-stack {
   display: flex;
   flex-direction: column;
-  padding: 120px var(--panel-x);
+  gap: 0;
+  padding: var(--project-hero-media-gap) var(--project-page-x) var(--project-section-gap);
 }
 
 .project-image-frame {
@@ -3325,23 +3474,6 @@ html[data-theme="dark"] .calmato-video-controls {
     padding-bottom: 60px;
   }
 
-  .project-detail-hero {
-    padding-top: 144px;
-  }
-
-  .project-title-group h1 {
-    font-size: 28px;
-  }
-
-  .project-description {
-    font-size: 15px;
-  }
-
-  .project-image-stack {
-    padding-top: 96px;
-    padding-bottom: 96px;
-  }
-
   .project-detail-footer {
     padding-top: 60px;
     padding-bottom: 60px;
@@ -3642,36 +3774,6 @@ html[data-theme="dark"] .calmato-video-controls {
     padding-bottom: 60px;
   }
 
-  .project-detail-hero {
-    gap: 32px;
-    padding-top: 104px;
-  }
-
-  .project-title-group {
-    gap: 24px;
-  }
-
-  .project-title-group h1 {
-    font-size: 22px;
-    line-height: 1.32;
-  }
-
-  .project-description {
-    font-size: 13px;
-    line-height: 1.6;
-  }
-
-  .project-meta {
-    flex-direction: column;
-    gap: 10px;
-    font-size: 12px;
-  }
-
-  .project-image-stack {
-    padding-top: 64px;
-    padding-bottom: 64px;
-  }
-
   .project-detail-footer {
     padding-top: 60px;
     padding-bottom: 60px;
@@ -3772,31 +3874,6 @@ html[data-theme="dark"] .calmato-video-controls {
   width: 100%;
   height: auto;
   object-fit: contain;
-}
-/* 기본: Desktop + Tablet */
-
-.project-description-mobile {
-
-  display: none;
-
-}
-
-/* Mobile: 833px 이하 */
-
-@media (max-width: 833px) {
-
-  .project-description-desktop {
-
-    display: none;
-
-  }
-
-  .project-description-mobile {
-
-    display: block;
-
-  }
-
 }
 /* ===== MOBILE MENU ===== */
 @media (max-width: 833px) {
