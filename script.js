@@ -1,75 +1,13 @@
 (() => {
-  const THEME_STORAGE_KEY = "theme";
-  const DARK_THEME = "dark";
-  const LIGHT_THEME = "light";
-  const DARK_LABEL = "라이트 모드로 전환";
-  const LIGHT_LABEL = "다크 모드로 전환";
   const scriptUrl = document.currentScript?.src || new URL("./script.js", document.baseURI).href;
-  const assetUrl = (fileName) => new URL(`./assets/${fileName}`, scriptUrl).href;
-
-  const getStoredTheme = () => {
-    try {
-      return window.localStorage.getItem(THEME_STORAGE_KEY) === DARK_THEME ? DARK_THEME : LIGHT_THEME;
-    } catch {
-      return LIGHT_THEME;
-    }
-  };
-
-  const storeTheme = (theme) => {
-    try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    } catch {
-      // Theme still works for the current page if storage is unavailable.
-    }
-  };
-
-  const applyTheme = (theme, toggle = document.querySelector("[data-theme-toggle]")) => {
-    const nextTheme = theme === DARK_THEME ? DARK_THEME : LIGHT_THEME;
-    document.documentElement.dataset.theme = nextTheme;
-    document.documentElement.style.colorScheme = nextTheme;
-    document.querySelector("meta[name='theme-color'][data-theme-color]")?.setAttribute(
-      "content",
-      nextTheme === DARK_THEME ? "#111111" : "#ffffff",
-    );
-    toggle?.setAttribute("aria-label", nextTheme === DARK_THEME ? DARK_LABEL : LIGHT_LABEL);
-  };
-
-  applyTheme(getStoredTheme(), null);
 
   const onReady = () => {
     const projectGrid = document.querySelector("[data-project-grid]");
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
     const projectSequence = Array.isArray(window.PORTFOLIO_PROJECT_SEQUENCE)
       ? window.PORTFOLIO_PROJECT_SEQUENCE
-      : projects.filter((project) => project.order !== null);
+      : projects.filter((project) => project.sequence !== false);
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const ensureThemeToggle = () => {
-      const existingToggle = document.querySelector("[data-theme-toggle]");
-      if (existingToggle) return existingToggle;
-
-      const toggle = document.createElement("button");
-      toggle.className = "theme-toggle";
-      toggle.type = "button";
-      toggle.setAttribute("data-theme-toggle", "");
-
-      const sunIcon = document.createElement("img");
-      sunIcon.className = "theme-icon theme-icon-sun";
-      sunIcon.src = assetUrl("icon-sun.png");
-      sunIcon.alt = "";
-
-      const moonIcon = document.createElement("img");
-      moonIcon.className = "theme-icon theme-icon-moon";
-      moonIcon.src = assetUrl("icon-moon.png");
-      moonIcon.alt = "";
-
-      toggle.append(sunIcon, moonIcon);
-      document.body.append(toggle);
-      return toggle;
-    };
-
-    const themeToggle = ensureThemeToggle();
-    applyTheme(getStoredTheme(), themeToggle);
 
     const resolveProjectPath = (value, rootPrefix) => {
       if (!value) return "#";
@@ -78,83 +16,37 @@
       return `${rootPrefix}${value}`;
     };
 
-    const initializeProjectDetailNavigation = () => {
+    const initializeProjectCoverMedia = () => {
+      const coverMedia = document.querySelector(
+        ".project-page .project-image-stack > .project-image-frame:first-child > :is(img, video)",
+      );
+      if (!coverMedia) return;
+
+      if (coverMedia instanceof HTMLImageElement) {
+        coverMedia.loading = "eager";
+        coverMedia.fetchPriority = "high";
+      } else if (coverMedia instanceof HTMLVideoElement) {
+        coverMedia.preload = "auto";
+      }
+    };
+
+    const initializeProjectDetailMetadata = () => {
       const hero = document.querySelector(".project-page .project-detail-hero");
-      const imageStack = document.querySelector(".project-page .project-image-stack");
-      if (!hero || !imageStack || projectSequence.length < 2) return;
-      if (document.querySelector("[data-project-adjacent-nav]")) return;
+      if (!hero || projects.length === 0) return;
 
       const normalizedPath = decodeURIComponent(window.location.pathname)
         .replace(/\/index\.html$/i, "")
         .replace(/\/+$/, "");
       const currentSlug = normalizedPath.split("/").filter(Boolean).at(-1) || "";
-      const currentIndex = projectSequence.findIndex((project) => project.slug === currentSlug);
-      if (currentIndex < 0) return;
-
-      const currentProject = projectSequence[currentIndex];
-      const previousProject = projectSequence[
-        (currentIndex - 1 + projectSequence.length) % projectSequence.length
-      ];
-      const nextProject = projectSequence[(currentIndex + 1) % projectSequence.length];
-
-      const createAdjacentLink = (project, direction) => {
-        const isPrevious = direction === "previous";
-        const link = document.createElement("a");
-        link.className = `project-adjacent-link project-adjacent-link--${direction}`;
-        link.href = new URL(project.href, scriptUrl).href;
-        link.dataset.projectDirection = direction;
-        link.dataset.projectSlug = project.slug;
-        link.setAttribute(
-          "aria-label",
-          `${isPrevious ? "Previous" : "Next"} project: ${project.title}`,
-        );
-
-        const arrow = document.createElement("span");
-        arrow.className = "project-adjacent-arrow";
-        arrow.setAttribute("aria-hidden", "true");
-        arrow.textContent = isPrevious ? "←" : "→";
-
-        const content = document.createElement("span");
-        content.className = "project-adjacent-content";
-
-        const number = document.createElement("span");
-        number.className = "project-adjacent-number";
-        number.textContent = project.number;
-
-        const name = document.createElement("span");
-        name.className = "project-adjacent-name";
-        name.textContent = project.title;
-
-        const type = document.createElement("span");
-        type.className = "project-adjacent-type";
-        type.textContent = project.projectType;
-
-        const primary = document.createElement("span");
-        primary.className = "project-adjacent-primary";
-        if (isPrevious) primary.append(number, name);
-        else primary.append(name, number);
-
-        content.append(primary, type);
-        if (isPrevious) link.append(arrow, content);
-        else link.append(content, arrow);
-
-        return link;
-      };
-
-      const createNavigation = (placement) => {
-        const navigation = document.createElement("nav");
-        navigation.className = `project-adjacent-nav project-adjacent-nav--${placement}`;
-        navigation.dataset.projectAdjacentNav = placement;
-        navigation.setAttribute("aria-label", `Adjacent projects at ${placement}`);
-        navigation.append(
-          createAdjacentLink(previousProject, "previous"),
-          createAdjacentLink(nextProject, "next"),
-        );
-        return navigation;
-      };
+      const currentProject = projects.find((project) => project.slug === currentSlug);
+      if (!currentProject) return;
 
       const projectMeta = hero.querySelector(".project-meta");
-      if (projectMeta && currentProject.projectOwnership) {
+      if (
+        projectMeta
+        && currentProject.projectOwnership
+        && !projectMeta.querySelector("[data-project-type-meta]")
+      ) {
         const projectTypeItem = document.createElement("div");
         projectTypeItem.className = "project-meta-item";
         projectTypeItem.dataset.projectTypeMeta = "";
@@ -168,10 +60,268 @@
         projectTypeItem.append(label, value);
         projectMeta.append(projectTypeItem);
       }
-
-      imageStack.insertAdjacentElement("afterend", createNavigation("bottom"));
     };
 
+    const initializeProjectInfoExperience = () => {
+      const hero = document.querySelector(".project-page .project-detail-hero");
+      const coverFrame = document.querySelector(
+        ".project-page .project-image-stack > .project-image-frame:first-child",
+      );
+      if (!hero || !coverFrame || document.querySelector("[data-project-info-trigger]")) return;
+
+      const titleSource = hero.querySelector(".project-title-group h1");
+      const subtitleSource = hero.querySelector(".project-subtitle");
+      const descriptionSource = hero.querySelector(".project-description");
+      const metaSource = hero.querySelector(".project-meta");
+      if (!titleSource || !subtitleSource || !descriptionSource || !metaSource) return;
+
+      const identity = document.createElement("div");
+      identity.className = "project-cover-identity";
+      identity.setAttribute("aria-hidden", "true");
+
+      const coverTitle = document.createElement("p");
+      coverTitle.className = "project-cover-title";
+      coverTitle.textContent = titleSource.textContent.trim();
+
+      const coverSubtitle = document.createElement("p");
+      coverSubtitle.className = "project-cover-subtitle";
+      coverSubtitle.textContent = subtitleSource.textContent.trim();
+
+      const durationItem = Array.from(metaSource.querySelectorAll(".project-meta-item")).find(
+        (item) => item.querySelector("dt")?.textContent.trim().toUpperCase() === "DURATION",
+      );
+      const projectYear = durationItem?.querySelector("dd")?.textContent.match(/\b(?:19|20)\d{2}\b/)?.[0];
+      const coverYear = document.createElement("p");
+      coverYear.className = "project-cover-year";
+      coverYear.textContent = projectYear || "";
+      identity.append(coverTitle, coverSubtitle, coverYear);
+
+      const layerId = "project-information-layer";
+      const layerTitleId = "project-information-title";
+      const layerDescriptionId = "project-information-description";
+
+      const trigger = document.createElement("button");
+      trigger.className = "project-info-trigger";
+      trigger.type = "button";
+      trigger.dataset.projectInfoTrigger = "";
+      trigger.setAttribute("aria-controls", layerId);
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.setAttribute("aria-label", "Open project information");
+
+      const triggerLabel = document.createElement("span");
+      triggerLabel.textContent = "Info";
+      trigger.append(triggerLabel);
+
+      const readabilityGradient = document.createElement("div");
+      readabilityGradient.className = "project-info-readability-gradient";
+      readabilityGradient.setAttribute("aria-hidden", "true");
+
+      const closeLink = document.createElement("a");
+      closeLink.className = "project-close";
+      closeLink.href = new URL("./works/", scriptUrl).href;
+      closeLink.setAttribute("aria-label", "Close project");
+      closeLink.textContent = "×";
+
+      const layer = document.createElement("section");
+      layer.className = "project-info-layer";
+      layer.id = layerId;
+      layer.dataset.projectInfoLayer = "";
+      layer.setAttribute("role", "dialog");
+      layer.setAttribute("aria-modal", "true");
+      layer.setAttribute("aria-labelledby", layerTitleId);
+      layer.setAttribute("aria-describedby", layerDescriptionId);
+      layer.setAttribute("aria-hidden", "true");
+      layer.setAttribute("inert", "");
+
+      const gradient = document.createElement("div");
+      gradient.className = "project-info-gradient";
+      gradient.setAttribute("aria-hidden", "true");
+
+      const content = document.createElement("div");
+      content.className = "project-info-content";
+
+      const copy = document.createElement("div");
+      copy.className = "project-info-copy";
+
+      const infoTitle = document.createElement("h2");
+      infoTitle.className = "project-info-title";
+      infoTitle.id = layerTitleId;
+      infoTitle.textContent = titleSource.textContent.trim();
+
+      const infoSubtitle = document.createElement("p");
+      infoSubtitle.className = "project-info-subtitle";
+      infoSubtitle.textContent = subtitleSource.textContent.trim();
+
+      const infoDescription = document.createElement("div");
+      infoDescription.className = "project-info-description";
+      infoDescription.id = layerDescriptionId;
+      descriptionSource.querySelectorAll(".project-description-paragraph").forEach((paragraph) => {
+        const item = document.createElement("p");
+        item.innerHTML = paragraph.innerHTML;
+        infoDescription.append(item);
+      });
+      copy.append(infoTitle, infoSubtitle, infoDescription);
+
+      const infoMeta = document.createElement("dl");
+      infoMeta.className = "project-info-meta";
+      metaSource.querySelectorAll(".project-meta-item").forEach((sourceItem) => {
+        const labelSource = sourceItem.querySelector("dt");
+        const valueSource = sourceItem.querySelector("dd");
+        if (!labelSource || !valueSource) return;
+
+        const item = document.createElement("div");
+        item.className = "project-info-meta-item";
+        const label = document.createElement("dt");
+        const value = document.createElement("dd");
+        label.textContent = labelSource.textContent.trim();
+        value.textContent = valueSource.textContent.trim();
+        item.append(label, value);
+        infoMeta.append(item);
+      });
+
+      content.append(copy, infoMeta);
+      layer.append(gradient, content);
+      document.body.append(identity, readabilityGradient, closeLink, trigger, layer);
+
+      let isOpen = false;
+      const setOpen = (nextOpen, { restoreFocus = true } = {}) => {
+        isOpen = Boolean(nextOpen);
+        document.documentElement.classList.toggle("is-project-info-open", isOpen);
+        document.body.classList.toggle("is-project-info-open", isOpen);
+        trigger.setAttribute("aria-expanded", String(isOpen));
+        trigger.setAttribute(
+          "aria-label",
+          isOpen ? "Close project information" : "Open project information",
+        );
+        triggerLabel.textContent = isOpen ? "Close" : "Info";
+        layer.setAttribute("aria-hidden", String(!isOpen));
+        layer.toggleAttribute("inert", !isOpen);
+
+        if (isOpen) {
+          window.requestAnimationFrame(() => trigger.focus({ preventScroll: true }));
+        } else if (restoreFocus) {
+          trigger.focus({ preventScroll: true });
+        }
+      };
+
+      trigger.addEventListener("click", () => setOpen(!isOpen));
+      gradient.addEventListener("click", () => setOpen(false));
+
+      const preventBackgroundScroll = (event) => {
+        if (event.target.closest(".project-info-content")) return;
+        event.preventDefault();
+      };
+      layer.addEventListener("wheel", preventBackgroundScroll, { passive: false });
+      layer.addEventListener("touchmove", preventBackgroundScroll, { passive: false });
+
+      document.addEventListener("keydown", (event) => {
+        if (!isOpen) return;
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          setOpen(false);
+        }
+      });
+    };
+
+    const initializeProjectDetailNavigation = () => {
+      const imageStack = document.querySelector(".project-page .project-image-stack");
+      if (!imageStack || projectSequence.length < 2) return;
+      if (document.querySelector("[data-project-adjacent-nav]")) return;
+
+      const normalizedPath = decodeURIComponent(window.location.pathname)
+        .replace(/\/index\.html$/i, "")
+        .replace(/\/+$/, "");
+      const currentSlug = normalizedPath.split("/").filter(Boolean).at(-1) || "";
+      const currentIndex = projectSequence.findIndex((project) => project.slug === currentSlug);
+      if (currentIndex < 0) return;
+
+      const previousProject = projectSequence[
+        (currentIndex - 1 + projectSequence.length) % projectSequence.length
+      ];
+      const nextProject = projectSequence[(currentIndex + 1) % projectSequence.length];
+
+      const createAdjacentLink = (project, direction) => {
+        const isPrevious = direction === "previous";
+        const link = document.createElement("a");
+        link.className = `project-adjacent-link project-adjacent-link--${direction}`;
+        link.href = new URL(project.href, scriptUrl).href;
+        link.setAttribute(
+          "aria-label",
+          `${isPrevious ? "Previous" : "Next"} project: ${project.title}`,
+        );
+
+        const arrow = document.createElement("span");
+        arrow.className = "project-adjacent-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.textContent = isPrevious ? "←" : "→";
+
+        const content = document.createElement("span");
+        content.className = "project-adjacent-content";
+
+        const primary = document.createElement("span");
+        primary.className = "project-adjacent-primary";
+
+        const number = document.createElement("span");
+        number.className = "project-adjacent-number";
+        number.textContent = project.number;
+
+        const name = document.createElement("span");
+        name.className = "project-adjacent-name";
+        name.textContent = project.title;
+
+        const type = document.createElement("span");
+        type.className = "project-adjacent-type";
+        type.textContent = project.projectType;
+
+        if (isPrevious) primary.append(number, name);
+        else primary.append(name, number);
+        content.append(primary, type);
+
+        if (isPrevious) link.append(arrow, content);
+        else link.append(content, arrow);
+        return link;
+      };
+
+      const endRegion = document.createElement("section");
+      endRegion.className = "project-adjacent-end";
+      endRegion.dataset.projectAdjacentEnd = "";
+
+      const sentinel = document.createElement("span");
+      sentinel.className = "project-adjacent-sentinel";
+      sentinel.setAttribute("aria-hidden", "true");
+
+      const navigation = document.createElement("nav");
+      navigation.className = "project-adjacent-nav project-adjacent-nav--bottom";
+      navigation.dataset.projectAdjacentNav = "bottom";
+      navigation.setAttribute("aria-label", "Adjacent projects");
+      navigation.append(
+        createAdjacentLink(previousProject, "previous"),
+        createAdjacentLink(nextProject, "next"),
+      );
+
+      endRegion.append(sentinel, navigation);
+      imageStack.insertAdjacentElement("afterend", endRegion);
+
+      const setVisible = (isVisible) => {
+        navigation.classList.toggle("is-visible", isVisible);
+      };
+
+      if (!("IntersectionObserver" in window)) {
+        setVisible(true);
+        return;
+      }
+
+      const observer = new IntersectionObserver(
+        ([entry]) => setVisible(entry.isIntersecting),
+        { threshold: 0 },
+      );
+      observer.observe(sentinel);
+    };
+
+    initializeProjectCoverMedia();
+    initializeProjectDetailMetadata();
+    initializeProjectInfoExperience();
     initializeProjectDetailNavigation();
 
     const renderProjectCards = () => {
@@ -2984,24 +3134,13 @@
       });
     }
 
-    themeToggle?.addEventListener("click", () => {
-      const nextTheme = document.documentElement.dataset.theme === DARK_THEME ? LIGHT_THEME : DARK_THEME;
-      applyTheme(nextTheme, themeToggle);
-      storeTheme(nextTheme);
-    });
-
-    window.addEventListener("storage", (event) => {
-      if (event.key !== THEME_STORAGE_KEY) return;
-      applyTheme(event.newValue === DARK_THEME ? DARK_THEME : LIGHT_THEME, themeToggle);
-    });
-
     const readCssTime = (propertyName, fallback) => {
       const token = getComputedStyle(document.documentElement).getPropertyValue(propertyName).trim();
       const value = Number.parseFloat(token);
       if (!Number.isFinite(value)) return fallback;
       return token.endsWith("ms") ? value : value * 1000;
     };
-    const floatingControls = [themeToggle, floatingNavShell].filter(Boolean);
+    const floatingControls = [floatingNavShell].filter(Boolean);
     const floatingControlsRevealDelay = readCssTime("--floating-ui-reveal-delay", 1000);
     let floatingControlsRevealTimer = 0;
 
