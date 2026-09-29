@@ -319,10 +319,87 @@
       observer.observe(sentinel);
     };
 
+    const initializeProjectDetailSmoothScroll = () => {
+      if (!document.body.classList.contains("project-page")) return;
+
+      const desktopQuery = window.matchMedia("(min-width: 834px)");
+      const lenisVersion = "1.3.26";
+      const lenisModuleUrl = `https://unpkg.com/lenis@${lenisVersion}/dist/lenis.mjs`;
+      const lenisStylesUrl = `https://unpkg.com/lenis@${lenisVersion}/dist/lenis.css`;
+      let lenis = null;
+      let lenisModulePromise = null;
+      let isPageActive = true;
+
+      const ensureLenisStyles = () => {
+        if (document.querySelector("[data-project-lenis-styles]")) return;
+
+        const stylesheet = document.createElement("link");
+        stylesheet.rel = "stylesheet";
+        stylesheet.href = lenisStylesUrl;
+        stylesheet.dataset.projectLenisStyles = "";
+        document.head.append(stylesheet);
+      };
+
+      const destroyLenis = () => {
+        lenis?.destroy();
+        lenis = null;
+      };
+
+      const startLenis = async () => {
+        if (!isPageActive || !desktopQuery.matches || lenis) return;
+
+        ensureLenisStyles();
+        lenisModulePromise ||= import(lenisModuleUrl);
+
+        try {
+          const { default: Lenis } = await lenisModulePromise;
+          if (!isPageActive || !desktopQuery.matches || lenis) return;
+
+          lenis = new Lenis({
+            duration: 2.6,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            orientation: "vertical",
+            gestureOrientation: "vertical",
+            smoothWheel: true,
+            syncTouch: false,
+            respectReducedMotion: false,
+            autoRaf: true,
+            prevent: (node) =>
+              node instanceof Element && Boolean(node.closest(".project-info-layer")),
+          });
+        } catch (error) {
+          console.warn("Project detail smooth scroll could not start.", error);
+        }
+      };
+
+      const handleBreakpointChange = () => {
+        if (desktopQuery.matches) startLenis();
+        else destroyLenis();
+      };
+      const handlePageHide = () => {
+        isPageActive = false;
+        destroyLenis();
+      };
+      const handlePageShow = () => {
+        isPageActive = true;
+        startLenis();
+      };
+
+      desktopQuery.addEventListener("change", handleBreakpointChange);
+      window.addEventListener("pagehide", handlePageHide);
+      window.addEventListener("pageshow", handlePageShow);
+      document.querySelector(".project-close")?.addEventListener("click", destroyLenis, {
+        once: true,
+      });
+
+      startLenis();
+    };
+
     initializeProjectCoverMedia();
     initializeProjectDetailMetadata();
     initializeProjectInfoExperience();
     initializeProjectDetailNavigation();
+    initializeProjectDetailSmoothScroll();
 
     const renderProjectCards = () => {
       if (!projectGrid || projects.length === 0) return;
