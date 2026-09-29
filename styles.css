@@ -105,6 +105,14 @@ body.project-page {
   --project-cover-meta-top: clamp(24px, 3vw, 42px);
   --project-info-duration: var(--nav-pill-duration);
   --project-info-ease: var(--nav-pill-ease);
+  --project-info-gradient: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.45) 20%,
+    rgba(0, 0, 0, 0.85) 42%,
+    rgba(0, 0, 0, 0.98) 70%,
+    rgb(0, 0, 0) 100%
+  );
   --project-info-bottom: max(20px, var(--safe-area-bottom));
   --project-info-readability-height: clamp(84px, 13vh, 140px);
   --project-close-size: 42px;
@@ -1360,14 +1368,7 @@ html.is-project-entry-zoom-running
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: linear-gradient(
-     to bottom,
-  rgba(0, 0, 0, 0.10) 0%,
-  rgba(0, 0, 0, 0.45) 20%,
-  rgba(0, 0, 0, 0.85) 42%,
-  rgba(0, 0, 0, 0.98) 70%,
-  rgba(0, 0, 0, 1) 100%
-);
+  background: var(--project-info-gradient);
   cursor: default;
   touch-action: none;
   opacity: 0;
@@ -1616,6 +1617,14 @@ body.is-project-info-open .project-info-content {
   body.project-page {
     --project-cover-meta-top: 18px;
     --project-info-bottom: max(16px, var(--safe-area-bottom));
+    --project-info-gradient: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0.45) 10%,
+      rgba(0, 0, 0, 0.85) 21%,
+      rgba(0, 0, 0, 0.98) 36%,
+      rgb(0, 0, 0) 100%
+    );
     --project-adjacent-x: 20px;
     --project-adjacent-y: 56px;
   }
