@@ -91,6 +91,7 @@
       const currentIndex = projectSequence.findIndex((project) => project.slug === currentSlug);
       if (currentIndex < 0) return;
 
+      const currentProject = projectSequence[currentIndex];
       const previousProject = projectSequence[
         (currentIndex - 1 + projectSequence.length) % projectSequence.length
       ];
@@ -116,10 +117,6 @@
         const content = document.createElement("span");
         content.className = "project-adjacent-content";
 
-        const label = document.createElement("span");
-        label.className = "project-adjacent-label";
-        label.textContent = isPrevious ? "PREVIOUS PROJECT" : "NEXT PROJECT";
-
         const number = document.createElement("span");
         number.className = "project-adjacent-number";
         number.textContent = project.number;
@@ -132,7 +129,12 @@
         type.className = "project-adjacent-type";
         type.textContent = project.projectType;
 
-        content.append(label, number, name, type);
+        const primary = document.createElement("span");
+        primary.className = "project-adjacent-primary";
+        if (isPrevious) primary.append(number, name);
+        else primary.append(name, number);
+
+        content.append(primary, type);
         if (isPrevious) link.append(arrow, content);
         else link.append(content, arrow);
 
@@ -150,6 +152,22 @@
         );
         return navigation;
       };
+
+      const projectMeta = hero.querySelector(".project-meta");
+      if (projectMeta && currentProject.projectOwnership) {
+        const projectTypeItem = document.createElement("div");
+        projectTypeItem.className = "project-meta-item";
+        projectTypeItem.dataset.projectTypeMeta = "";
+
+        const label = document.createElement("dt");
+        label.textContent = "PROJECT TYPE";
+
+        const value = document.createElement("dd");
+        value.textContent = currentProject.projectOwnership;
+
+        projectTypeItem.append(label, value);
+        projectMeta.append(projectTypeItem);
+      }
 
       hero.prepend(createNavigation("top"));
       imageStack.insertAdjacentElement("afterend", createNavigation("bottom"));
