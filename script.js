@@ -169,7 +169,6 @@
         projectMeta.append(projectTypeItem);
       }
 
-      hero.prepend(createNavigation("top"));
       imageStack.insertAdjacentElement("afterend", createNavigation("bottom"));
     };
 

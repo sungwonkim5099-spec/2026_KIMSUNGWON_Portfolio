@@ -19,7 +19,7 @@
   --nav-pill-padding-x: 4px;
   --nav-pill-gap: 4px;
   --nav-pill-radius: 999px;
-  --nav-pill-top: 24px;
+  --nav-pill-top: 28px;
   --nav-pill-font-size: 13px;
   --nav-pill-font-weight: 590;
   --nav-pill-bg: rgba(255, 255, 255, 0.72);
@@ -54,6 +54,18 @@
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --panel-x: 80px;
   --header-height: 100px;
+}
+
+@media (min-width: 834px) and (max-width: 1439px) {
+  :root {
+    --nav-pill-top: 24px;
+  }
+}
+
+@media (max-width: 833px) {
+  :root {
+    --nav-pill-top: 16px;
+  }
 }
 
 html[data-theme="dark"] {
@@ -113,8 +125,7 @@ body.project-page {
 
 body.project-page {
   --project-page-x: 4.5vw;
-  --project-prevnext-top-gap: 80px;
-  --project-prevnext-hero-gap: 100px;
+  --project-hero-top-gap: 100px;
   --project-title-description-gap: 40px;
   --project-description-paragraph-gap: 14px;
   --project-hero-media-gap: 60px;
@@ -197,7 +208,6 @@ img {
 
 .nav-shell {
   position: fixed;
-  top: var(--nav-pill-top);
   left: 50%;
   z-index: 1;
   width: fit-content;
@@ -915,10 +925,10 @@ html[data-theme="dark"] .works-page {
 
 .project-detail-hero {
   display: grid;
-  grid-template-rows: repeat(2, auto);
+  grid-template-rows: auto;
   align-content: start;
   row-gap: 0;
-  padding: calc(var(--nav-pill-top) + var(--nav-pill-height) + var(--project-prevnext-top-gap))
+  padding: calc(var(--safe-area-top) + var(--nav-pill-top) + var(--nav-pill-height) + var(--project-hero-top-gap))
     var(--project-page-x) 0;
 }
 
@@ -929,10 +939,6 @@ html[data-theme="dark"] .works-page {
   justify-content: space-between;
   gap: clamp(32px, 8vw, 120px);
   margin: 0;
-}
-
-.project-adjacent-nav--top {
-  margin-bottom: var(--project-prevnext-hero-gap);
 }
 
 .project-adjacent-nav--bottom {
@@ -1162,7 +1168,6 @@ html[data-theme="dark"] .works-page {
 
 @media (max-width: 833px) {
   body.project-page {
-    --nav-pill-top: 14px;
     --project-page-x: var(--panel-x);
     --project-meta-gap: 24px;
     --project-meta-offset-y: 0px;
@@ -5086,12 +5091,10 @@ html[data-theme="dark"] .theme-toggle {
 @media (max-width: 833px) {
   .site-header {
     --nav-pill-height: 44px;
-    --nav-pill-top: 14px;
     --nav-pill-padding-x: 6px;
   }
 
   .nav-shell {
-    top: var(--nav-pill-top);
     left: 50%;
     width: fit-content;
     max-width: calc(100vw - 40px);
@@ -5158,7 +5161,7 @@ html[data-theme="dark"] .theme-toggle {
   .mobile-menu {
     position: fixed;
     z-index: 2;
-    top: calc(var(--nav-pill-top) + var(--nav-pill-height) + 8px);
+    top: calc(var(--safe-area-top) + var(--nav-pill-top) + var(--nav-pill-height) + 8px);
     right: auto;
     left: 50%;
     width: min(320px, calc(100vw - 40px));
@@ -5288,7 +5291,7 @@ html[data-theme="dark"] .theme-toggle {
 .nav-shell {
   --nav-scroll-visibility-y: 0px;
   position: fixed;
-  top: max(var(--nav-pill-top), var(--safe-area-top));
+  top: calc(var(--safe-area-top) + var(--nav-pill-top));
   /* Center against the visual viewport even when a scrollbar gutter is reserved. */
   left: 50vw;
   z-index: 1;
@@ -5513,7 +5516,6 @@ html[data-theme="dark"] .theme-toggle {
 
 @media (max-width: 833px) {
   .site-header {
-    --nav-pill-top: 14px;
     --nav-pill-padding-x: var(--nav-mobile-padding-x);
   }
 
