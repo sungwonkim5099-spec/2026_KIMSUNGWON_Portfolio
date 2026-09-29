@@ -104,8 +104,8 @@ body.project-page {
   --project-meta-offset-y: 10px;
   --project-cover-meta-top: clamp(24px, 3vw, 42px);
   --project-cover-aspect-ratio: 4 / 3;
-  --project-info-duration: var(--nav-pill-duration);
-  --project-info-ease: var(--nav-pill-ease);
+  --project-info-duration: 720ms;
+  --project-info-ease: cubic-bezier(0.42, 0, 0.58, 1);
   --project-info-gradient: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.1) 0%,
@@ -1248,6 +1248,9 @@ html.is-project-entry-zoom-running
   pointer-events: none;
   text-align: center;
   transform: translateX(-50%);
+  transition:
+    opacity var(--project-info-duration) var(--project-info-ease),
+    visibility 0s linear 0s;
 }
 
 .project-cover-title,
@@ -1348,7 +1351,10 @@ html.is-project-entry-zoom-running
   line-height: 1;
   opacity: 1;
   transform: none;
-  transition: color 180ms ease;
+  transition:
+    color 180ms ease,
+    opacity var(--project-info-duration) var(--project-info-ease),
+    visibility 0s linear 0s;
 }
 
 .project-close:hover {
@@ -1484,6 +1490,21 @@ body.is-project-info-open .project-info-layer {
   pointer-events: auto;
   opacity: 1;
   transition-delay: 0s;
+}
+
+body.is-project-info-open .project-cover-identity,
+body.is-project-info-open .project-close {
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+body.is-project-info-open .project-cover-identity {
+  transition-delay: 0s, var(--project-info-duration);
+}
+
+body.is-project-info-open .project-close {
+  transition-delay: 0s, 0s, var(--project-info-duration);
 }
 
 body.is-project-info-open .project-info-gradient,
@@ -1632,10 +1653,10 @@ body.is-project-info-open .project-info-content {
     --project-info-bottom: max(16px, var(--safe-area-bottom));
     --project-info-gradient: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.1) 0%,
-      rgba(0, 0, 0, 0.45) 10%,
-      rgba(0, 0, 0, 0.85) 21%,
-      rgba(0, 0, 0, 0.98) 36%,
+      rgba(0, 0, 0, 0.08) 0%,
+      rgba(0, 0, 0, 0.32) 18%,
+      rgba(0, 0, 0, 0.68) 42%,
+      rgba(0, 0, 0, 0.92) 72%,
       rgb(0, 0, 0) 100%
     );
     --project-adjacent-x: 20px;
