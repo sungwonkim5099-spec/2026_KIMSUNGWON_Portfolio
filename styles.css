@@ -115,6 +115,12 @@ body.project-page {
   --project-adjacent-type-gap: 7px;
   --project-adjacent-duration: 320ms;
   --project-adjacent-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Works -> Project Detail camera entrance controls. */
+  --project-entry-zoom-duration: 1200ms;
+  --project-entry-zoom-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --project-entry-zoom-scale: 1.06;
+  --project-entry-zoom-opacity: 0.6;
+  --project-entry-zoom-blur: 5px;
 }
 
 body.works-page,
@@ -646,6 +652,94 @@ img {
   --works-camera-wheel-cooldown: 400ms;
   --works-camera-wheel-gesture-end-delay: 180ms;
   --works-camera-swipe-threshold: 28px;
+  /* Works entry direction: default zooms in; project close zooms out. */
+  --works-entry-start-scale: 0.68;
+  --works-close-entry-start-scale: 1.32;
+  --works-entry-duration: 1000ms;
+  --works-entry-ease: cubic-bezier(0.8, 0, 0.32, 1);
+  /* Project click loader completes before the destination is revealed. */
+  --project-transition-loader-duration: 900ms;
+  --project-transition-ring-length: 201.062;
+  --project-transition-overlay-bg: rgba(6, 6, 6, 0.72);
+  --project-transition-overlay-blur: 18px;
+}
+
+.project-transition-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--project-transition-overlay-bg);
+  -webkit-backdrop-filter: blur(var(--project-transition-overlay-blur)) saturate(0.78);
+  backdrop-filter: blur(var(--project-transition-overlay-blur)) saturate(0.78);
+  transition:
+    opacity 180ms ease,
+    visibility 0s linear 180ms;
+}
+
+.project-transition-loader.is-active {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.project-transition-loader-mark {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+}
+
+.project-transition-loader-mark > img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  filter: invert(1);
+}
+
+.project-transition-loader-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.project-transition-loader-ring circle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.82);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray:
+    var(--project-transition-ring-length)
+    var(--project-transition-ring-length);
+  stroke-dashoffset: var(--project-transition-ring-length);
+}
+
+.project-transition-loader.is-active .project-transition-loader-ring circle {
+  animation: projectTransitionLineDraw var(--project-transition-loader-duration) linear forwards;
+}
+
+@keyframes projectTransitionLineDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+body.is-project-transitioning {
+  overflow: hidden;
 }
 
 .works-page {
@@ -721,17 +815,23 @@ img {
 
 /* Works — Initial Zoom In */
 .works-page .project-gallery.is-works-camera-ready {
-  scale: .68;
+  scale: var(--works-entry-start-scale);
   opacity: 0;
   transform-origin: center center;
   will-change: scale, opacity;
+}
+
+html.is-works-close-entry
+  .works-page
+  .project-gallery.is-works-camera-ready:not(.is-entry-visible) {
+  scale: var(--works-close-entry-start-scale);
 }
 
 .works-page .project-gallery.is-works-camera-ready.is-entry-visible {
   scale: 1;
   opacity: 1;
   transition:
-    scale 1000ms cubic-bezier(.8, 0, .32, 1),
+    scale var(--works-entry-duration) var(--works-entry-ease),
     opacity 300ms ease-out;
 }
 
@@ -1086,6 +1186,33 @@ img {
   display: block;
 }
 
+html.is-project-entry-zoom-pending
+  body.project-page
+  .project-image-stack
+  > .project-image-frame:first-child
+  > :is(img, video) {
+  opacity: var(--project-entry-zoom-opacity);
+  filter: blur(var(--project-entry-zoom-blur));
+  transform: scale(var(--project-entry-zoom-scale));
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+html.is-project-entry-zoom-running
+  body.project-page
+  .project-image-stack
+  > .project-image-frame:first-child
+  > :is(img, video) {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+  transition:
+    transform var(--project-entry-zoom-duration) var(--project-entry-zoom-ease),
+    opacity var(--project-entry-zoom-duration) var(--project-entry-zoom-ease),
+    filter var(--project-entry-zoom-duration) var(--project-entry-zoom-ease);
+}
+
 .project-cover-identity {
   position: fixed;
   top: calc(var(--safe-area-top) + var(--project-cover-meta-top));
@@ -1234,12 +1361,13 @@ img {
   border: 0;
   border-radius: 0;
   background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.05) 0%,
-    rgba(0, 0, 0, 0.2) 35%,
-    rgba(0, 0, 0, 0.65) 65%,
-    rgba(0, 0, 0, 1) 100%
-  );
+     to bottom,
+  rgba(0, 0, 0, 0.10) 0%,
+  rgba(0, 0, 0, 0.45) 20%,
+  rgba(0, 0, 0, 0.85) 42%,
+  rgba(0, 0, 0, 0.98) 70%,
+  rgba(0, 0, 0, 1) 100%
+);
   cursor: default;
   touch-action: none;
   opacity: 0;

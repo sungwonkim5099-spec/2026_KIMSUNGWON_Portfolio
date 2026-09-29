@@ -1,5 +1,56 @@
 (() => {
   const scriptUrl = document.currentScript?.src || new URL("./script.js", document.baseURI).href;
+  const PROJECT_DETAIL_ENTRY_KEY = "portfolio:project-detail-entry";
+  const PROJECT_DETAIL_ENTRY_MAX_AGE = 15000;
+  const WORKS_CLOSE_ENTRY_KEY = "portfolio:works-close-entry";
+  const WORKS_CLOSE_ENTRY_MAX_AGE = 15000;
+
+  const consumeProjectDetailEntry = () => {
+    try {
+      const rawEntry = window.sessionStorage.getItem(PROJECT_DETAIL_ENTRY_KEY);
+      window.sessionStorage.removeItem(PROJECT_DETAIL_ENTRY_KEY);
+      if (!rawEntry) return false;
+
+      const entry = JSON.parse(rawEntry);
+      const isCurrentDestination = entry?.path === window.location.pathname;
+      const isRecent = Number.isFinite(entry?.timestamp)
+        && Date.now() - entry.timestamp <= PROJECT_DETAIL_ENTRY_MAX_AGE;
+
+      return isCurrentDestination && isRecent;
+    } catch {
+      return false;
+    }
+  };
+
+  const projectDetailEntryRequested = consumeProjectDetailEntry();
+  if (projectDetailEntryRequested) {
+    document.documentElement.classList.add("is-project-entry-zoom-pending");
+  }
+
+  const consumeWorksCloseEntry = () => {
+    try {
+      const rawEntry = window.sessionStorage.getItem(WORKS_CLOSE_ENTRY_KEY);
+      window.sessionStorage.removeItem(WORKS_CLOSE_ENTRY_KEY);
+      if (!rawEntry) return null;
+
+      const entry = JSON.parse(rawEntry);
+      const isWorksDestination = /\/works\/?$/.test(window.location.pathname);
+      const isRecent = Number.isFinite(entry?.timestamp)
+        && Date.now() - entry.timestamp <= WORKS_CLOSE_ENTRY_MAX_AGE;
+
+      return isWorksDestination && isRecent && typeof entry?.slug === "string"
+        ? entry
+        : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const worksCloseEntry = consumeWorksCloseEntry();
+  const worksCloseEntryRequested = Boolean(worksCloseEntry);
+  if (worksCloseEntryRequested) {
+    document.documentElement.classList.add("is-works-close-entry");
+  }
 
   const onReady = () => {
     const projectGrid = document.querySelector("[data-project-grid]");
@@ -28,6 +79,61 @@
       } else if (coverMedia instanceof HTMLVideoElement) {
         coverMedia.preload = "auto";
       }
+    };
+
+    const initializeProjectDetailEntryZoom = () => {
+      const root = document.documentElement;
+      const media = document.querySelector(
+        ".project-page .project-image-stack > .project-image-frame:first-child > :is(img, video)",
+      );
+
+      if (!projectDetailEntryRequested || !document.body.classList.contains("project-page") || !media) {
+        root.classList.remove("is-project-entry-zoom-pending", "is-project-entry-zoom-running");
+        return;
+      }
+
+      let fallbackTimer = 0;
+      let hasStarted = false;
+
+      const finish = () => {
+        window.clearTimeout(fallbackTimer);
+        root.classList.remove("is-project-entry-zoom-pending", "is-project-entry-zoom-running");
+        media.removeEventListener("transitionend", handleTransitionEnd);
+      };
+      const handleTransitionEnd = (event) => {
+        if (event.target === media && event.propertyName === "transform") finish();
+      };
+      const start = () => {
+        if (hasStarted) return;
+        hasStarted = true;
+        media.addEventListener("transitionend", handleTransitionEnd);
+
+        window.requestAnimationFrame(() => {
+          media.getBoundingClientRect();
+          window.requestAnimationFrame(() => {
+            root.classList.add("is-project-entry-zoom-running");
+            const durationToken = getComputedStyle(document.body)
+              .getPropertyValue("--project-entry-zoom-duration")
+              .trim();
+            const duration = Number.parseFloat(durationToken) || 700;
+            fallbackTimer = window.setTimeout(finish, duration + 120);
+          });
+        });
+      };
+
+      if (media instanceof HTMLImageElement && !media.complete) {
+        media.addEventListener("load", start, { once: true });
+        media.addEventListener("error", start, { once: true });
+        return;
+      }
+
+      if (media instanceof HTMLVideoElement && media.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        media.addEventListener("loadeddata", start, { once: true });
+        media.addEventListener("error", start, { once: true });
+        return;
+      }
+
+      start();
     };
 
     const initializeProjectDetailMetadata = () => {
@@ -121,6 +227,33 @@
       closeLink.href = new URL("./works/", scriptUrl).href;
       closeLink.setAttribute("aria-label", "Close project");
       closeLink.textContent = "×";
+      closeLink.addEventListener("click", (event) => {
+        if (
+          event.defaultPrevented
+          || event.button !== 0
+          || event.metaKey
+          || event.ctrlKey
+          || event.shiftKey
+          || event.altKey
+        ) return;
+
+        try {
+          const normalizedPath = decodeURIComponent(window.location.pathname)
+            .replace(/\/index\.html$/i, "")
+            .replace(/\/+$/, "");
+          const currentSlug = normalizedPath.split("/").filter(Boolean).at(-1) || "";
+          const currentProject = projects.find((project) => project.slug === currentSlug);
+
+          if (currentProject) {
+            window.sessionStorage.setItem(
+              WORKS_CLOSE_ENTRY_KEY,
+              JSON.stringify({ slug: currentProject.slug, timestamp: Date.now() }),
+            );
+          }
+        } catch {
+          // Works still opens normally when session storage is unavailable.
+        }
+      });
 
       const layer = document.createElement("section");
       layer.className = "project-info-layer";
@@ -396,6 +529,7 @@
     };
 
     initializeProjectCoverMedia();
+    initializeProjectDetailEntryZoom();
     initializeProjectDetailMetadata();
     initializeProjectInfoExperience();
     initializeProjectDetailNavigation();
@@ -412,6 +546,7 @@
         const href = resolveProjectPath(project.href, rootPrefix);
         card.className = "project-card";
         card.href = href;
+        card.dataset.projectSlug = project.slug;
 
         if (project.nodeId) card.dataset.nodeId = project.nodeId;
         if (/^https?:/.test(project.href || "")) {
@@ -452,6 +587,90 @@
 
     renderProjectCards();
 
+    const initializeWorksProjectTransition = () => {
+      if (!document.body.classList.contains("works-page")) return () => false;
+
+      const overlay = document.createElement("div");
+      overlay.className = "project-transition-loader";
+      overlay.setAttribute("aria-hidden", "true");
+      overlay.innerHTML = `
+        <div class="project-transition-loader-mark">
+          <svg class="project-transition-loader-ring" viewBox="0 0 72 72" aria-hidden="true">
+            <circle cx="36" cy="36" r="32"></circle>
+          </svg>
+          <img src="${new URL("./assets/nav-logo.svg", scriptUrl).href}" alt="">
+        </div>
+      `;
+      document.body.append(overlay);
+
+      const ring = overlay.querySelector("circle");
+      let isRunning = false;
+      let fallbackTimer = 0;
+
+      const reset = () => {
+        window.clearTimeout(fallbackTimer);
+        fallbackTimer = 0;
+        isRunning = false;
+        overlay.classList.remove("is-active");
+        document.body.classList.remove("is-project-transitioning");
+      };
+      window.addEventListener("pageshow", reset);
+
+      const rememberEntry = (destination) => {
+        try {
+          window.sessionStorage.setItem(
+            PROJECT_DETAIL_ENTRY_KEY,
+            JSON.stringify({ path: destination.pathname, timestamp: Date.now() }),
+          );
+        } catch {
+          // Navigation still proceeds when session storage is unavailable.
+        }
+      };
+
+      return (href) => {
+        if (isRunning) return true;
+
+        const destination = new URL(href, window.location.href);
+        if (destination.origin !== window.location.origin) return false;
+
+        isRunning = true;
+        document.body.classList.add("is-project-transitioning");
+
+        let hasNavigated = false;
+        const navigate = () => {
+          if (hasNavigated) return;
+          hasNavigated = true;
+          window.clearTimeout(fallbackTimer);
+          ring?.removeEventListener("animationend", handleAnimationEnd);
+          rememberEntry(destination);
+          window.location.assign(destination.href);
+        };
+        const handleAnimationEnd = (event) => {
+          if (event.target !== ring || event.animationName !== "projectTransitionLineDraw") return;
+
+          // Let the fully closed ring paint before replacing the document.
+          window.requestAnimationFrame(() => {
+            ring.getBoundingClientRect();
+            window.requestAnimationFrame(navigate);
+          });
+        };
+
+        ring?.addEventListener("animationend", handleAnimationEnd);
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => overlay.classList.add("is-active"));
+        });
+
+        const durationToken = getComputedStyle(overlay)
+          .getPropertyValue("--project-transition-loader-duration")
+          .trim();
+        const duration = Number.parseFloat(durationToken) || 900;
+        fallbackTimer = window.setTimeout(navigate, duration + 180);
+        return true;
+      };
+    };
+
+    const startWorksProjectTransition = initializeWorksProjectTransition();
+
     const getCssMilliseconds = (element, propertyName, fallback) => {
       const token = getComputedStyle(element).getPropertyValue(propertyName).trim();
       const value = Number.parseFloat(token);
@@ -459,6 +678,11 @@
       if (!Number.isFinite(value)) return fallback;
       return token.endsWith("ms") ? value : value * 1000;
     };
+
+    const worksInitialProjectIndex = Math.max(
+      0,
+      projects.findIndex((project) => project.slug === worksCloseEntry?.slug),
+    );
 
     const initializeWorksGridEntrance = () => {
       const desktopEntryQuery = window.matchMedia("(min-width: 834px)");
@@ -477,14 +701,14 @@
 
       const getSpatialRevealOrder = () => {
         const allCards = cards();
-        const anchor = allCards[0];
+        const anchor = allCards[worksInitialProjectIndex];
         if (!anchor) return [];
 
         const anchorCenterX = anchor.offsetLeft + anchor.offsetWidth / 2;
         const anchorCenterY = anchor.offsetTop + anchor.offsetHeight / 2;
 
         return allCards
-          .slice(1)
+          .filter((card) => card !== anchor)
           .filter((card) => card.dataset.worksEntryPriority !== "true")
           .map((card, index) => {
             const cardCenterX = card.offsetLeft + card.offsetWidth / 2;
@@ -516,8 +740,10 @@
         prepare: () => {
           if (!shouldRun() || isPrepared) return isPrepared;
 
-          const [anchor, ...surroundingCards] = cards();
+          const allCards = cards();
+          const anchor = allCards[worksInitialProjectIndex];
           if (!anchor) return false;
+          const surroundingCards = allCards.filter((card) => card !== anchor);
 
           anchor.classList.add("is-works-entrance-anchor");
           surroundingCards.forEach((card) => card.style.removeProperty("--works-reveal-delay"));
@@ -686,7 +912,7 @@
 
       const establishInitialCameraFraming = (onReady = () => {}) => {
         gallery.classList.add("is-works-initializing");
-        setActiveIndex(0);
+        setActiveIndex(worksInitialProjectIndex);
         // Commit the initial camera transform with transitions disabled before revealing it.
         projectGrid.getBoundingClientRect();
         window.requestAnimationFrame(() => {
@@ -813,7 +1039,12 @@
         }
 
         const index = cards().indexOf(card);
-        if (index === activeIndex) return;
+        if (index === activeIndex) {
+          if (card.target !== "_blank" && startWorksProjectTransition(card.href)) {
+            event.preventDefault();
+          }
+          return;
+        }
 
         event.preventDefault();
         setActiveIndex(index, { focus: true });
@@ -881,10 +1112,20 @@
       gallery.classList.add("is-works-camera-ready");
 
       requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        gallery.classList.add("is-entry-visible");
+        requestAnimationFrame(() => {
+          gallery.classList.add("is-entry-visible");
         });
       });
+
+      if (worksCloseEntryRequested) {
+        const clearCloseEntry = (event) => {
+          if (event && (event.target !== gallery || event.propertyName !== "scale")) return;
+          document.documentElement.classList.remove("is-works-close-entry");
+          gallery.removeEventListener("transitionend", clearCloseEntry);
+        };
+        gallery.addEventListener("transitionend", clearCloseEntry);
+        window.setTimeout(clearCloseEntry, 1120);
+      }
       startWorksEntrance();
 
       gallery.addEventListener("wheel", onWheel, { passive: false });
