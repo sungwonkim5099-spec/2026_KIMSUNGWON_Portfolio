@@ -103,6 +103,7 @@ body.project-page {
   --project-meta-gap: 28px;
   --project-meta-offset-y: 10px;
   --project-cover-meta-top: clamp(24px, 3vw, 42px);
+  --project-cover-aspect-ratio: 4 / 3;
   --project-info-duration: var(--nav-pill-duration);
   --project-info-ease: var(--nav-pill-ease);
   --project-info-gradient: linear-gradient(
@@ -833,6 +834,7 @@ html.is-works-close-entry
   .works-page
   .project-gallery.is-works-camera-ready:not(.is-entry-visible) {
   scale: var(--works-close-entry-start-scale);
+  opacity: 1;
 }
 
 .works-page .project-gallery.is-works-camera-ready.is-entry-visible {
@@ -1192,6 +1194,17 @@ html.is-works-close-entry
   width: 100%;
   height: auto;
   display: block;
+}
+
+.project-page .project-image-stack > .project-image-frame:first-child {
+  aspect-ratio: var(--project-cover-aspect-ratio);
+}
+
+.project-page .project-image-stack > .project-image-frame:first-child > :is(img, video) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 html.is-project-entry-zoom-pending
