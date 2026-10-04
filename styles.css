@@ -1917,6 +1917,11 @@ body.is-project-info-open .project-info-content {
   color: var(--foreground);
 }
 
+body.elsewhere-page:has(#elsewhere-panel-unsplash.is-active) .elsewhere-main {
+  overflow-y: hidden;
+  scroll-snap-type: none;
+}
+
 .unsplash-gallery {
   /* Unsplash manual controls: desktop / base values. */
   --unsplash-card-width: clamp(120px, 21vw, 300px);
@@ -1963,13 +1968,14 @@ body.is-project-info-open .project-info-content {
   --unsplash-depth-near: -24;
   --unsplash-depth-far: -58;
   width: 100%;
+  height: 100svh;
   box-sizing: border-box;
-  min-height: 100svh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: calc(var(--header-height) + 52px) var(--panel-x) 64px;
+  padding: 0 var(--panel-x);
   overflow: hidden;
   text-align: center;
 }
@@ -2463,11 +2469,6 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
 }
 
 @media (max-width: 1099px) {
-  .unsplash-gallery {
-    padding-top: calc(var(--header-height) + 48px);
-    padding-bottom: 56px;
-  }
-
   .unsplash-gallery-header h2 {
     font-size: clamp(18px, 2.4vw, 22px);
   }
@@ -2496,8 +2497,6 @@ body.is-unsplash-lightbox-open .unsplash-lightbox {
     --unsplash-carousel-offset-x: 0px;
     --unsplash-carousel-offset-y: 0px;
     --unsplash-meta-gap: 16px;
-    padding-top: calc(var(--header-height) + 44px);
-    padding-bottom: 44px;
   }
 
   .unsplash-gallery-header {
@@ -3364,6 +3363,19 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
 .calmato-featured.is-visible .calmato-featured-content {
   opacity: 1;
   transform: translateY(var(--featured-final-y));
+  animation: calmatoFeaturedRiseIn 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes calmatoFeaturedRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--featured-final-y) + 64px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(var(--featured-final-y));
+  }
 }
 
 .calmato-featured-content h2 {
@@ -4644,6 +4656,10 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
     transition-duration: 0.01ms !important;
   }
 
+  .calmato-featured-content {
+    animation-duration: 0.01ms !important;
+  }
+
   .calmato-featured-video.is-sliding-in,
   .calmato-featured-video.is-sliding-out {
     animation-delay: 0s !important;
@@ -5159,8 +5175,6 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
     --unsplash-card-width: min(clamp(120px, 21vw, 300px), 240px);
     --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
     --unsplash-meta-gap: 20px;
-    padding-top: calc(var(--header-height) + 36px);
-    padding-bottom: 44px;
   }
 
   .elsewhere-page .unsplash-meta {
@@ -5221,8 +5235,6 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
     --unsplash-card-width: min(clamp(120px, 21vw, 300px), 210px);
     --unsplash-stage-height: calc(var(--unsplash-card-width) * 1.75);
     --unsplash-meta-gap: 14px;
-    padding-top: calc(var(--header-height) + 24px);
-    padding-bottom: 32px;
   }
 
   .elsewhere-page .unsplash-meta {
