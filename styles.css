@@ -4910,6 +4910,10 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
     --elsewhere-hero-underlay-position: 52% center;
   }
 
+  .elsewhere-page .calmato-dissolve-stage {
+    touch-action: pan-y;
+  }
+
   /* Keep the inactive panel transition inside the viewport at the tablet boundary. */
   .elsewhere-page .elsewhere-panel-stage {
     overflow-x: clip;
@@ -5649,6 +5653,12 @@ body:has([data-elsewhere-panel="calmato"].is-active):has(.calmato-hero--cinemati
   --nav-scroll-visibility-y: calc(-1 * var(--floating-ui-hidden-distance));
   opacity: 0;
   pointer-events: none;
+}
+
+.elsewhere-page .nav-shell.is-scroll-hidden {
+  --nav-scroll-visibility-y: 0px;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .nav-mode {

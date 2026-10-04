@@ -78,6 +78,36 @@
         coverMedia.fetchPriority = "high";
       } else if (coverMedia instanceof HTMLVideoElement) {
         coverMedia.preload = "auto";
+        coverMedia.autoplay = true;
+        coverMedia.muted = true;
+        coverMedia.defaultMuted = true;
+        coverMedia.playsInline = true;
+        coverMedia.controls = false;
+        coverMedia.setAttribute("autoplay", "");
+        coverMedia.setAttribute("muted", "");
+        coverMedia.setAttribute("playsinline", "");
+        coverMedia.setAttribute("webkit-playsinline", "");
+        coverMedia.removeAttribute("controls");
+
+        const playCoverVideo = () => {
+          const playAttempt = coverMedia.play();
+          if (playAttempt && typeof playAttempt.catch === "function") {
+            playAttempt.catch(() => {
+              // Muted inline playback is retried when the media becomes playable or the page returns.
+            });
+          }
+        };
+
+        if (coverMedia.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+          window.requestAnimationFrame(playCoverVideo);
+        } else {
+          coverMedia.addEventListener("canplay", playCoverVideo, { once: true });
+        }
+
+        window.addEventListener("pageshow", playCoverVideo);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") playCoverVideo();
+        });
       }
     };
 
@@ -3069,6 +3099,10 @@
     let calmatoWheelGestureActive = false;
     let calmatoWheelGestureTimer = 0;
     let calmatoWheelAccumulatedDelta = 0;
+    let calmatoWheelGestureEnded = true;
+    let calmatoWheelTransitionLocked = false;
+    let calmatoWheelSettleFrame = 0;
+    let calmatoWheelSettleFallbackTimer = 0;
 
     const readCalmatoDissolveNumber = (propertyName, fallback) => {
       if (!elsewhereSnapRoot) return fallback;
@@ -3246,17 +3280,67 @@
       return clampCalmatoDissolve(Math.round(rawIndex), 0, elsewhereSnapPanels.length - 1);
     };
 
+    const clearCalmatoWheelSettleWatcher = () => {
+      window.cancelAnimationFrame(calmatoWheelSettleFrame);
+      window.clearTimeout(calmatoWheelSettleFallbackTimer);
+      calmatoWheelSettleFrame = 0;
+      calmatoWheelSettleFallbackTimer = 0;
+    };
+
+    const resetCalmatoWheelGesture = () => {
+      if (calmatoWheelTransitionLocked) return;
+      calmatoWheelGestureActive = false;
+      calmatoWheelAccumulatedDelta = 0;
+    };
+
+    const finishCalmatoWheelTransition = () => {
+      clearCalmatoWheelSettleWatcher();
+      calmatoWheelTransitionLocked = false;
+      if (calmatoWheelGestureEnded) resetCalmatoWheelGesture();
+    };
+
+    const lockCalmatoWheelUntilSettled = (targetScrollTop) => {
+      clearCalmatoWheelSettleWatcher();
+      calmatoWheelTransitionLocked = true;
+      let settledFrames = 0;
+
+      const checkSettled = () => {
+        if (!elsewhereSnapScroller) {
+          finishCalmatoWheelTransition();
+          return;
+        }
+
+        if (Math.abs(elsewhereSnapScroller.scrollTop - targetScrollTop) <= 1) {
+          settledFrames += 1;
+        } else {
+          settledFrames = 0;
+        }
+
+        if (settledFrames >= 3) {
+          finishCalmatoWheelTransition();
+          return;
+        }
+
+        calmatoWheelSettleFrame = window.requestAnimationFrame(checkSettled);
+      };
+
+      calmatoWheelSettleFrame = window.requestAnimationFrame(checkSettled);
+      calmatoWheelSettleFallbackTimer = window.setTimeout(finishCalmatoWheelTransition, 1600);
+    };
+
     const scrollToCalmatoPage = (targetIndex, { immediate = false } = {}) => {
-      if (!elsewhereSnapScroller || elsewhereSnapPanels.length === 0) return;
+      if (!elsewhereSnapScroller || elsewhereSnapPanels.length === 0) return null;
       const nextIndex = clampCalmatoDissolve(targetIndex, 0, elsewhereSnapPanels.length - 1);
       syncCalmatoDissolveMetrics();
       clearCalmatoScrollHint();
+      const targetScrollTop = calmatoDissolveRootTop + calmatoDissolveDistance * nextIndex;
       elsewhereSnapScroller.scrollTo({
-        top: calmatoDissolveRootTop + calmatoDissolveDistance * nextIndex,
+        top: targetScrollTop,
         behavior: immediate || prefersReducedMotion ? "auto" : "smooth",
       });
       if (immediate) updateCalmatoDissolve();
       scheduleCalmatoScrollHint();
+      return { index: nextIndex, scrollTop: targetScrollTop };
     };
 
     if (elsewhereSnapRoot && elsewhereSnapScroller && elsewhereSnapPanels.length && elsewhereSnapDots.length) {
@@ -3269,9 +3353,11 @@
       });
 
       const calmatoMobileQuery = window.matchMedia("(max-width: 833px)");
+      const calmatoTabletQuery = window.matchMedia("(min-width: 834px) and (max-width: 1439px)");
       const isCalmatoSwipeTarget = (target) =>
         !target.closest("a, button, input, textarea, select, iframe, [data-youtube-frame]");
       let calmatoMobileSwipe = null;
+      let calmatoTabletSwipe = null;
 
       elsewhereSnapScroller.addEventListener(
         "wheel",
@@ -3291,14 +3377,15 @@
           if (Math.abs(wheelDelta) < 0.5) return;
           event.preventDefault();
 
+          calmatoWheelGestureEnded = false;
           window.clearTimeout(calmatoWheelGestureTimer);
           calmatoWheelGestureTimer = window.setTimeout(() => {
-            calmatoWheelGestureActive = false;
-            calmatoWheelAccumulatedDelta = 0;
             calmatoWheelGestureTimer = 0;
+            calmatoWheelGestureEnded = true;
+            resetCalmatoWheelGesture();
           }, gestureEndDelay);
 
-          if (calmatoWheelGestureActive) return;
+          if (calmatoWheelGestureActive || calmatoWheelTransitionLocked) return;
 
           if (
             calmatoWheelAccumulatedDelta !== 0 &&
@@ -3323,7 +3410,8 @@
           );
           if (nextIndex === currentIndex) return;
 
-          scrollToCalmatoPage(nextIndex);
+          const destination = scrollToCalmatoPage(nextIndex);
+          if (destination) lockCalmatoWheelUntilSettled(destination.scrollTop);
         },
         { passive: false }
       );
@@ -3396,6 +3484,83 @@
       );
 
       elsewhereSnapScroller.addEventListener(
+        "touchstart",
+        (event) => {
+          if (
+            !calmatoTabletQuery.matches ||
+            elsewhereActivePanel !== "calmato" ||
+            !isCalmatoSwipeTarget(event.target)
+          ) {
+            calmatoTabletSwipe = null;
+            return;
+          }
+
+          const touch = event.touches[0];
+          if (!touch) return;
+          calmatoTabletSwipe = {
+            startX: touch.clientX,
+            startY: touch.clientY,
+            startIndex: getCalmatoSnapIndex(),
+            axis: null,
+          };
+          scheduleCalmatoScrollHint();
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "touchmove",
+        (event) => {
+          if (!calmatoTabletSwipe) return;
+          const touch = event.touches[0];
+          if (!touch) return;
+
+          const deltaX = touch.clientX - calmatoTabletSwipe.startX;
+          const deltaY = touch.clientY - calmatoTabletSwipe.startY;
+          const absoluteX = Math.abs(deltaX);
+          const absoluteY = Math.abs(deltaY);
+
+          if (!calmatoTabletSwipe.axis && Math.max(absoluteX, absoluteY) > 14) {
+            if (absoluteX > absoluteY * 1.25) {
+              calmatoTabletSwipe.axis = "horizontal";
+            } else if (absoluteY > absoluteX * 1.25) {
+              calmatoTabletSwipe.axis = "vertical";
+            } else if (Math.max(absoluteX, absoluteY) > 28) {
+              calmatoTabletSwipe.axis = "diagonal";
+            }
+          }
+
+          if (calmatoTabletSwipe.axis === "horizontal") event.preventDefault();
+        },
+        { passive: false }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "touchend",
+        (event) => {
+          if (!calmatoTabletSwipe) return;
+          const touch = event.changedTouches[0];
+          const swipe = calmatoTabletSwipe;
+          calmatoTabletSwipe = null;
+          if (!touch || swipe.axis !== "horizontal") return;
+
+          const deltaX = touch.clientX - swipe.startX;
+          const deltaY = touch.clientY - swipe.startY;
+          if (Math.abs(deltaX) < 56 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+          scrollToCalmatoPage(swipe.startIndex + (deltaX < 0 ? 1 : -1));
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
+        "touchcancel",
+        () => {
+          calmatoTabletSwipe = null;
+        },
+        { passive: true }
+      );
+
+      elsewhereSnapScroller.addEventListener(
         "scroll",
         () => {
           requestCalmatoDissolve();
@@ -3422,9 +3587,14 @@
 
       const initializeElsewhereState = () => {
         window.clearTimeout(calmatoWheelGestureTimer);
+        clearCalmatoWheelSettleWatcher();
         calmatoWheelGestureTimer = 0;
         calmatoWheelGestureActive = false;
         calmatoWheelAccumulatedDelta = 0;
+        calmatoWheelGestureEnded = true;
+        calmatoWheelTransitionLocked = false;
+        calmatoMobileSwipe = null;
+        calmatoTabletSwipe = null;
 
         syncCalmatoDissolveMetrics();
         scrollToCalmatoPage(0, { immediate: true });
@@ -3458,7 +3628,7 @@
       if (!Number.isFinite(value)) return fallback;
       return token.endsWith("ms") ? value : value * 1000;
     };
-    const floatingControls = [floatingNavShell].filter(Boolean);
+    const floatingControls = isElsewhereNavigation ? [] : [floatingNavShell].filter(Boolean);
     const floatingControlsRevealDelay = readCssTime("--floating-ui-reveal-delay", 1000);
     let floatingControlsRevealTimer = 0;
 
@@ -3472,10 +3642,18 @@
       floatingControlsRevealTimer = window.setTimeout(showFloatingControls, floatingControlsRevealDelay);
     };
 
-    window.addEventListener("scroll", handleFloatingControlsActivity, { passive: true });
-    document.addEventListener("scroll", handleFloatingControlsActivity, { passive: true, capture: true });
-    window.addEventListener("wheel", handleFloatingControlsActivity, { passive: true, capture: true });
-    window.addEventListener("touchmove", handleFloatingControlsActivity, { passive: true, capture: true });
+    if (isElsewhereNavigation) {
+      const keepElsewhereNavigationVisible = () => {
+        floatingNavShell?.classList.remove("is-scroll-hidden");
+      };
+      keepElsewhereNavigationVisible();
+      window.addEventListener("pageshow", keepElsewhereNavigationVisible);
+    } else {
+      window.addEventListener("scroll", handleFloatingControlsActivity, { passive: true });
+      document.addEventListener("scroll", handleFloatingControlsActivity, { passive: true, capture: true });
+      window.addEventListener("wheel", handleFloatingControlsActivity, { passive: true, capture: true });
+      window.addEventListener("touchmove", handleFloatingControlsActivity, { passive: true, capture: true });
+    }
 
 }; // onReady 끝
 
