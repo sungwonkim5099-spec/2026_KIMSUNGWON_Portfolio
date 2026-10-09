@@ -103,7 +103,7 @@ body.project-page {
   --project-meta-gap: 28px;
   --project-meta-offset-y: 10px;
   --project-cover-meta-top: clamp(24px, 3vw, 42px);
-  --project-cover-aspect-ratio: 4 / 3;
+  --project-cover-aspect-ratio: 16 / 9;
   --project-info-duration: 720ms;
   --project-info-ease: cubic-bezier(0.42, 0, 0.58, 1);
   --project-info-gradient: linear-gradient(
