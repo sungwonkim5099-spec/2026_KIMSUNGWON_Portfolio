@@ -1245,12 +1245,20 @@ html.is-project-entry-zoom-running
   align-items: center;
   gap: 3px;
   color: #ffffff;
+  visibility: hidden;
   pointer-events: none;
   text-align: center;
+  opacity: 0;
   transform: translateX(-50%);
   transition:
     opacity var(--project-info-duration) var(--project-info-ease),
-    visibility 0s linear 0s;
+    visibility 0s linear var(--project-info-duration);
+}
+
+.project-cover-identity.is-visible {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s, 0s;
 }
 
 .project-cover-title,

@@ -346,6 +346,27 @@
       layer.append(gradient, content);
       document.body.append(identity, readabilityGradient, closeLink, trigger, layer);
 
+      const syncCoverIdentityVisibility = () => {
+        const hasPassedCover = coverFrame.getBoundingClientRect().bottom <= 0;
+        identity.classList.toggle("is-visible", hasPassedCover);
+      };
+
+      syncCoverIdentityVisibility();
+
+      if ("IntersectionObserver" in window) {
+        const coverObserver = new IntersectionObserver(
+          ([entry]) => {
+            identity.classList.toggle("is-visible", entry.boundingClientRect.bottom <= 0);
+          },
+          { threshold: 0 },
+        );
+        coverObserver.observe(coverFrame);
+      } else {
+        window.addEventListener("scroll", syncCoverIdentityVisibility, { passive: true });
+      }
+
+      window.addEventListener("pageshow", syncCoverIdentityVisibility);
+
       let isOpen = false;
       const setOpen = (nextOpen, { restoreFocus = true } = {}) => {
         isOpen = Boolean(nextOpen);
