@@ -3643,39 +3643,6 @@
       });
     }
 
-    const readCssTime = (propertyName, fallback) => {
-      const token = getComputedStyle(document.documentElement).getPropertyValue(propertyName).trim();
-      const value = Number.parseFloat(token);
-      if (!Number.isFinite(value)) return fallback;
-      return token.endsWith("ms") ? value : value * 1000;
-    };
-    const floatingControls = isElsewhereNavigation ? [] : [floatingNavShell].filter(Boolean);
-    const floatingControlsRevealDelay = readCssTime("--floating-ui-reveal-delay", 1000);
-    let floatingControlsRevealTimer = 0;
-
-    const showFloatingControls = () => {
-      floatingControls.forEach((control) => control.classList.remove("is-scroll-hidden"));
-    };
-    const handleFloatingControlsActivity = () => {
-      if (floatingControls.length === 0) return;
-      floatingControls.forEach((control) => control.classList.add("is-scroll-hidden"));
-      window.clearTimeout(floatingControlsRevealTimer);
-      floatingControlsRevealTimer = window.setTimeout(showFloatingControls, floatingControlsRevealDelay);
-    };
-
-    if (isElsewhereNavigation) {
-      const keepElsewhereNavigationVisible = () => {
-        floatingNavShell?.classList.remove("is-scroll-hidden");
-      };
-      keepElsewhereNavigationVisible();
-      window.addEventListener("pageshow", keepElsewhereNavigationVisible);
-    } else {
-      window.addEventListener("scroll", handleFloatingControlsActivity, { passive: true });
-      document.addEventListener("scroll", handleFloatingControlsActivity, { passive: true, capture: true });
-      window.addEventListener("wheel", handleFloatingControlsActivity, { passive: true, capture: true });
-      window.addEventListener("touchmove", handleFloatingControlsActivity, { passive: true, capture: true });
-    }
-
 }; // onReady 끝
 
 if (document.readyState === "loading") {
