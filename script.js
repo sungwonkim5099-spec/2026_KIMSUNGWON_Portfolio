@@ -53,12 +53,34 @@
   }
 
   const onReady = () => {
+    const root = document.documentElement;
+    const body = document.body;
     const projectGrid = document.querySelector("[data-project-grid]");
     const projects = Array.isArray(window.PORTFOLIO_PROJECTS) ? window.PORTFOLIO_PROJECTS : [];
     const projectSequence = Array.isArray(window.PORTFOLIO_PROJECT_SEQUENCE)
       ? window.PORTFOLIO_PROJECT_SEQUENCE
       : projects.filter((project) => project.sequence !== false);
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isProjectPage = body.classList.contains("project-page");
+    const normalizedProjectPath = isProjectPage
+      ? decodeURIComponent(window.location.pathname)
+        .replace(/\/index\.html$/i, "")
+        .replace(/\/+$/, "")
+      : "";
+    const currentProjectSlug = normalizedProjectPath.split("/").filter(Boolean).at(-1) || "";
+    const currentProject = projects.find((project) => project.slug === currentProjectSlug);
+    const projectDetailHero = isProjectPage
+      ? document.querySelector(".project-detail-hero")
+      : null;
+    const projectImageStack = isProjectPage
+      ? document.querySelector(".project-image-stack")
+      : null;
+    const projectCoverFrame = (
+      projectImageStack?.querySelector(":scope > .project-image-frame:first-child") || null
+    );
+    const projectCoverMedia = (
+      projectCoverFrame?.querySelector(":scope > :is(img, video)") || null
+    );
 
     const resolveProjectPath = (value, rootPrefix) => {
       if (!value) return "#";
@@ -68,29 +90,26 @@
     };
 
     const initializeProjectCoverMedia = () => {
-      const coverMedia = document.querySelector(
-        ".project-page .project-image-stack > .project-image-frame:first-child > :is(img, video)",
-      );
-      if (!coverMedia) return;
+      if (!projectCoverMedia) return;
 
-      if (coverMedia instanceof HTMLImageElement) {
-        coverMedia.loading = "eager";
-        coverMedia.fetchPriority = "high";
-      } else if (coverMedia instanceof HTMLVideoElement) {
-        coverMedia.preload = "auto";
-        coverMedia.autoplay = true;
-        coverMedia.muted = true;
-        coverMedia.defaultMuted = true;
-        coverMedia.playsInline = true;
-        coverMedia.controls = false;
-        coverMedia.setAttribute("autoplay", "");
-        coverMedia.setAttribute("muted", "");
-        coverMedia.setAttribute("playsinline", "");
-        coverMedia.setAttribute("webkit-playsinline", "");
-        coverMedia.removeAttribute("controls");
+      if (projectCoverMedia instanceof HTMLImageElement) {
+        projectCoverMedia.loading = "eager";
+        projectCoverMedia.fetchPriority = "high";
+      } else if (projectCoverMedia instanceof HTMLVideoElement) {
+        projectCoverMedia.preload = "auto";
+        projectCoverMedia.autoplay = true;
+        projectCoverMedia.muted = true;
+        projectCoverMedia.defaultMuted = true;
+        projectCoverMedia.playsInline = true;
+        projectCoverMedia.controls = false;
+        projectCoverMedia.setAttribute("autoplay", "");
+        projectCoverMedia.setAttribute("muted", "");
+        projectCoverMedia.setAttribute("playsinline", "");
+        projectCoverMedia.setAttribute("webkit-playsinline", "");
+        projectCoverMedia.removeAttribute("controls");
 
         const playCoverVideo = () => {
-          const playAttempt = coverMedia.play();
+          const playAttempt = projectCoverMedia.play();
           if (playAttempt && typeof playAttempt.catch === "function") {
             playAttempt.catch(() => {
               // Muted inline playback is retried when the media becomes playable or the page returns.
@@ -98,10 +117,10 @@
           }
         };
 
-        if (coverMedia.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        if (projectCoverMedia.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
           window.requestAnimationFrame(playCoverVideo);
         } else {
-          coverMedia.addEventListener("canplay", playCoverVideo, { once: true });
+          projectCoverMedia.addEventListener("canplay", playCoverVideo, { once: true });
         }
 
         window.addEventListener("pageshow", playCoverVideo);
@@ -112,15 +131,12 @@
     };
 
     const initializeProjectDetailEntryZoom = () => {
-      const root = document.documentElement;
-      const media = document.querySelector(
-        ".project-page .project-image-stack > .project-image-frame:first-child > :is(img, video)",
-      );
-
-      if (!projectDetailEntryRequested || !document.body.classList.contains("project-page") || !media) {
+      if (!projectDetailEntryRequested || !isProjectPage || !projectCoverMedia) {
         root.classList.remove("is-project-entry-zoom-pending", "is-project-entry-zoom-running");
         return;
       }
+
+      const media = projectCoverMedia;
 
       let fallbackTimer = 0;
       let hasStarted = false;
@@ -142,7 +158,7 @@
           media.getBoundingClientRect();
           window.requestAnimationFrame(() => {
             root.classList.add("is-project-entry-zoom-running");
-            const durationToken = getComputedStyle(document.body)
+            const durationToken = getComputedStyle(body)
               .getPropertyValue("--project-entry-zoom-duration")
               .trim();
             const duration = Number.parseFloat(durationToken) || 700;
@@ -167,17 +183,9 @@
     };
 
     const initializeProjectDetailMetadata = () => {
-      const hero = document.querySelector(".project-page .project-detail-hero");
-      if (!hero || projects.length === 0) return;
+      if (!projectDetailHero || !currentProject) return;
 
-      const normalizedPath = decodeURIComponent(window.location.pathname)
-        .replace(/\/index\.html$/i, "")
-        .replace(/\/+$/, "");
-      const currentSlug = normalizedPath.split("/").filter(Boolean).at(-1) || "";
-      const currentProject = projects.find((project) => project.slug === currentSlug);
-      if (!currentProject) return;
-
-      const projectMeta = hero.querySelector(".project-meta");
+      const projectMeta = projectDetailHero.querySelector(".project-meta");
       if (
         projectMeta
         && currentProject.projectOwnership
@@ -199,16 +207,16 @@
     };
 
     const initializeProjectInfoExperience = () => {
-      const hero = document.querySelector(".project-page .project-detail-hero");
-      const coverFrame = document.querySelector(
-        ".project-page .project-image-stack > .project-image-frame:first-child",
-      );
-      if (!hero || !coverFrame || document.querySelector("[data-project-info-trigger]")) return;
+      if (
+        !projectDetailHero
+        || !projectCoverFrame
+        || document.querySelector("[data-project-info-trigger]")
+      ) return;
 
-      const titleSource = hero.querySelector(".project-title-group h1");
-      const subtitleSource = hero.querySelector(".project-subtitle");
-      const descriptionSource = hero.querySelector(".project-description");
-      const metaSource = hero.querySelector(".project-meta");
+      const titleSource = projectDetailHero.querySelector(".project-title-group h1");
+      const subtitleSource = projectDetailHero.querySelector(".project-subtitle");
+      const descriptionSource = projectDetailHero.querySelector(".project-description");
+      const metaSource = projectDetailHero.querySelector(".project-meta");
       if (!titleSource || !subtitleSource || !descriptionSource || !metaSource) return;
 
       const identity = document.createElement("div");
@@ -268,12 +276,6 @@
         ) return;
 
         try {
-          const normalizedPath = decodeURIComponent(window.location.pathname)
-            .replace(/\/index\.html$/i, "")
-            .replace(/\/+$/, "");
-          const currentSlug = normalizedPath.split("/").filter(Boolean).at(-1) || "";
-          const currentProject = projects.find((project) => project.slug === currentSlug);
-
           if (currentProject) {
             window.sessionStorage.setItem(
               WORKS_CLOSE_ENTRY_KEY,
@@ -344,10 +346,10 @@
 
       content.append(copy, infoMeta);
       layer.append(gradient, content);
-      document.body.append(identity, readabilityGradient, closeLink, trigger, layer);
+      body.append(identity, readabilityGradient, closeLink, trigger, layer);
 
       const syncCoverIdentityVisibility = () => {
-        const hasPassedCover = coverFrame.getBoundingClientRect().bottom <= 0;
+        const hasPassedCover = projectCoverFrame.getBoundingClientRect().bottom <= 0;
         identity.classList.toggle("is-visible", hasPassedCover);
       };
 
@@ -360,7 +362,7 @@
           },
           { threshold: 0 },
         );
-        coverObserver.observe(coverFrame);
+        coverObserver.observe(projectCoverFrame);
       } else {
         window.addEventListener("scroll", syncCoverIdentityVisibility, { passive: true });
       }
@@ -370,8 +372,8 @@
       let isOpen = false;
       const setOpen = (nextOpen, { restoreFocus = true } = {}) => {
         isOpen = Boolean(nextOpen);
-        document.documentElement.classList.toggle("is-project-info-open", isOpen);
-        document.body.classList.toggle("is-project-info-open", isOpen);
+        root.classList.toggle("is-project-info-open", isOpen);
+        body.classList.toggle("is-project-info-open", isOpen);
         trigger.setAttribute("aria-expanded", String(isOpen));
         trigger.setAttribute(
           "aria-label",
@@ -409,15 +411,12 @@
     };
 
     const initializeProjectDetailNavigation = () => {
-      const imageStack = document.querySelector(".project-page .project-image-stack");
-      if (!imageStack || projectSequence.length < 2) return;
+      if (!projectImageStack || projectSequence.length < 2) return;
       if (document.querySelector("[data-project-adjacent-nav]")) return;
 
-      const normalizedPath = decodeURIComponent(window.location.pathname)
-        .replace(/\/index\.html$/i, "")
-        .replace(/\/+$/, "");
-      const currentSlug = normalizedPath.split("/").filter(Boolean).at(-1) || "";
-      const currentIndex = projectSequence.findIndex((project) => project.slug === currentSlug);
+      const currentIndex = projectSequence.findIndex(
+        (project) => project.slug === currentProjectSlug,
+      );
       if (currentIndex < 0) return;
 
       const previousProject = projectSequence[
@@ -485,7 +484,7 @@
       );
 
       endRegion.append(sentinel, navigation);
-      imageStack.insertAdjacentElement("afterend", endRegion);
+      projectImageStack.insertAdjacentElement("afterend", endRegion);
 
       const setVisible = (isVisible) => {
         navigation.classList.toggle("is-visible", isVisible);
@@ -504,7 +503,7 @@
     };
 
     const initializeProjectDetailSmoothScroll = () => {
-      if (!document.body.classList.contains("project-page")) return;
+      if (!isProjectPage) return;
 
       const desktopQuery = window.matchMedia("(min-width: 834px)");
       const lenisVersion = "1.3.26";
@@ -637,6 +636,9 @@
     };
 
     renderProjectCards();
+    const projectCards = projectGrid
+      ? [...projectGrid.querySelectorAll(".project-card")]
+      : [];
 
     const initializeWorksProjectTransition = () => {
       if (!document.body.classList.contains("works-page")) return () => false;
@@ -741,7 +743,7 @@
       let isRevealing = false;
       let revealTimer = 0;
 
-      const cards = () => (projectGrid ? [...projectGrid.querySelectorAll(".project-card")] : []);
+      const cards = () => projectCards;
       const shouldRun = () =>
         Boolean(
           projectGrid &&
@@ -868,7 +870,6 @@
       });
       gallery.append(cameraLengthProbe);
 
-      const cards = () => [...projectGrid.querySelectorAll(".project-card")];
       const getCssNumber = (propertyName, fallback) => {
         const value = Number.parseFloat(getComputedStyle(gallery).getPropertyValue(propertyName));
         return Number.isFinite(value) ? value : fallback;
@@ -884,16 +885,15 @@
       const getColumnCount = () => Math.max(1, Math.round(getCssNumber("--works-grid-columns", 4)));
 
       const getTargetIndex = (index, columnDelta, rowDelta) => {
-        const allCards = cards();
         const columnCount = getColumnCount();
-        const rowCount = Math.ceil(allCards.length / columnCount);
+        const rowCount = Math.ceil(projectCards.length / columnCount);
         const currentColumn = index % columnCount;
         const currentRow = Math.floor(index / columnCount);
         const nextColumn = Math.max(0, Math.min(columnCount - 1, currentColumn + columnDelta));
         const nextRow = Math.max(0, Math.min(rowCount - 1, currentRow + rowDelta));
         const targetIndex = nextRow * columnCount + nextColumn;
 
-        return targetIndex < allCards.length ? targetIndex : index;
+        return targetIndex < projectCards.length ? targetIndex : index;
       };
 
       const synchronizeCameraGeometry = () => {
@@ -917,8 +917,7 @@
       const positionCamera = () => {
         if (!isCameraEnabled() || !synchronizeCameraGeometry()) return;
 
-        const allCards = cards();
-        const activeCard = allCards[activeIndex];
+        const activeCard = projectCards[activeIndex];
         const activeMedia = activeCard?.querySelector(".project-media");
 
         if (!activeCard || !activeMedia) return;
@@ -948,17 +947,16 @@
       };
 
       const setActiveIndex = (nextIndex, { focus = false } = {}) => {
-        const allCards = cards();
-        const boundedIndex = Math.max(0, Math.min(allCards.length - 1, nextIndex));
+        const boundedIndex = Math.max(0, Math.min(projectCards.length - 1, nextIndex));
 
         activeIndex = boundedIndex;
-        allCards.forEach((card, index) => {
+        projectCards.forEach((card, index) => {
           card.classList.toggle("is-works-camera-active", index === activeIndex);
         });
         positionCamera();
         scheduleCameraOutline();
 
-        if (focus) allCards[activeIndex]?.focus({ preventScroll: true });
+        if (focus) projectCards[activeIndex]?.focus({ preventScroll: true });
       };
 
       const establishInitialCameraFraming = (onReady = () => {}) => {
@@ -1067,7 +1065,7 @@
         }
 
         if (event.key === "End") {
-          const lastIndex = cards().length - 1;
+          const lastIndex = projectCards.length - 1;
           if (activeIndex !== lastIndex) {
             event.preventDefault();
             setActiveIndex(lastIndex);
@@ -1089,7 +1087,7 @@
           return;
         }
 
-        const index = cards().indexOf(card);
+        const index = projectCards.indexOf(card);
         if (index === activeIndex) {
           if (card.target !== "_blank" && startWorksProjectTransition(card.href)) {
             event.preventDefault();
@@ -1370,7 +1368,7 @@
     initializeNavigationModes();
 
     const initializeNavSelectionIndicators = () => {
-      const navShell = document.querySelector(".nav-shell");
+      const navShell = floatingNavShell;
       const navPrimary = navShell?.querySelector(".nav-primary");
       if (!navShell || !navPrimary) {
         return {
@@ -1385,10 +1383,10 @@
       }
 
       const primaryIndicatorModifier = "nav-selection-indicator--primary";
-      const getPrimaryItems = () =>
-        [...navPrimary.children].flatMap((child) =>
-          child.matches("a") ? [child] : [...child.querySelectorAll(":scope > a")]
-        );
+      const primaryItems = [...navPrimary.children].flatMap((child) =>
+        child.matches("a") ? [child] : [...child.querySelectorAll(":scope > a")]
+      );
+      const getPrimaryItems = () => primaryItems;
       const groups = [
         {
           container: navPrimary,
@@ -1398,13 +1396,15 @@
             item.classList.contains("is-active") ||
             (item.hasAttribute("aria-current") && item.getAttribute("aria-current") !== "false"),
         },
-        ...elsewhereSubnavs
-          .map((container) => ({
+        ...elsewhereSubnavs.map((container) => {
+          const items = [...container.querySelectorAll(".elsewhere-subnav-link")];
+          return {
             container,
             modifier: "nav-selection-indicator--secondary",
-            getItems: () => [...container.querySelectorAll(".elsewhere-subnav-link")],
+            getItems: () => items,
             isActive: (item) => item.classList.contains("is-active") || item.getAttribute("aria-selected") === "true",
-          })),
+          };
+        }),
       ].map((group) => {
         let indicator = group.container.querySelector(`.${group.modifier}`);
         if (!indicator) {
@@ -1523,7 +1523,7 @@
     syncNavSelectionIndicators();
 
     const initializePrimaryNavLeaveMotion = () => {
-      const navPrimary = document.querySelector(".nav-primary");
+      const navPrimary = floatingNavShell?.querySelector(".nav-primary");
       if (!navPrimary) return;
 
       const primaryLinks = [...navPrimary.children].flatMap((child) =>

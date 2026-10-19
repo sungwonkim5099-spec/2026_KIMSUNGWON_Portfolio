@@ -2275,10 +2275,6 @@ body.elsewhere-page:has(#elsewhere-panel-unsplash.is-active) .elsewhere-main {
   );
 }
 
-.unsplash-carousel {
-  background: transparent;
-}
-
 .unsplash-carousel.is-dragging {
   cursor: grabbing;
 }
@@ -2442,9 +2438,6 @@ body.elsewhere-page:has(#elsewhere-panel-unsplash.is-active) .elsewhere-main {
   width: 15px;
   height: 15px;
   object-fit: contain;
-}
-
-.unsplash-external-logo {
   filter: invert(1);
 }
 
